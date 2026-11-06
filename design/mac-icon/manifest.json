@@ -1,0 +1,10 @@
+{
+  "iconName": "AppIcon",
+  "sources": {
+    "scripts/render-icons.swift": "43e8c0f2c925a90c31bb612b931c36741b55d00e7278edfd1cb10e3b53f71ecb",
+    "scripts/build-mac-icon.py": "d0f1f71acdacb3c44ecb4a58e61163f19b82b9d8a4af9faa214d60bc460fd674",
+    "design/AppIcon.icon/icon.json": "268ae2746b46045da77968fed15542ac6ee68cb6268e922e4b43bab703cefb73",
+    "design/AppIcon.icon/Assets/Conduit.svg": "9b0e5e3f1a04a3537194e8eef9fc36c8b9a7b4462d822ca253300b37b2931878"
+  },
+  "assetsSHA256": "5a608b4bbe9d8fcf350ac7c49967e0205900eb10b4070dbe75ceea0bc075aa85"
+}

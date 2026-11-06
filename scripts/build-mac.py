@@ -46,7 +46,7 @@ shutil.copy2(icon_catalog / 'Assets.car', resources / 'Assets.car')
 with (app / 'Contents/Info.plist').open('wb') as f:
     plistlib.dump({'CFBundleName':'Conduit', 'CFBundleDisplayName':'Conduit', 'CFBundleExecutable':'Conduit',
         'CFBundleIdentifier':'dev.conduit.mac', 'CFBundlePackageType':'APPL', 'CFBundleShortVersionString':'0.3.3',
-        'CFBundleVersion':'13', 'CFBundleIconFile':'AppIcon', 'CFBundleIconName':'AppIcon',
+        'CFBundleVersion':'14', 'CFBundleIconFile':'AppIcon', 'CFBundleIconName':'AppIcon',
         'CFBundleInfoDictionaryVersion':'6.0', 'CFBundleSupportedPlatforms':['MacOSX'], 'CFBundleDevelopmentRegion':'ru', 'CFBundleSignature':'????', 'LSMinimumSystemVersion':'13.0', 'NSHighResolutionCapable':True,
         'NSPrincipalClass':'NSApplication', 'NSBluetoothAlwaysUsageDescription':'Conduit соединяет Mac и Android для передачи буфера, уведомлений и файлов по Bluetooth.'}, f)
 (app / 'Contents/PkgInfo').write_bytes(b'APPL????')
