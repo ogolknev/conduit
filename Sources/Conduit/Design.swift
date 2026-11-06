@@ -32,15 +32,7 @@ enum ConduitSection: String, CaseIterable {
 
 private struct ConduitMark: View {
     var body: some View {
-        Canvas { context, size in
-            let u = size.width / 24
-            context.fill(Path(roundedRect: CGRect(x: u, y: u, width: 22*u, height: 22*u), cornerRadius: 5*u), with: .color(Palette.accent))
-            for x in [6.0, 13.5] {
-                context.stroke(Path(roundedRect: CGRect(x: x*u, y: 7*u, width: 4.5*u, height: 10*u), cornerRadius: 1.2*u), with: .color(Palette.canvas), lineWidth: 1.25*u)
-            }
-            var bridge = Path(); bridge.move(to: CGPoint(x: 10.5*u, y: 12*u)); bridge.addLine(to: CGPoint(x: 13.5*u, y: 12*u))
-            context.stroke(bridge, with: .color(Palette.canvas), lineWidth: 1.25*u)
-        }.frame(width: 32, height: 32).accessibilityHidden(true)
+        Image(nsImage: BrandMark.image()).resizable().frame(width: 32, height: 32).accessibilityHidden(true)
     }
 }
 

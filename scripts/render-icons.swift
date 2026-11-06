@@ -1,7 +1,17 @@
 import AppKit
 import Foundation
 
-// Vector artwork shared with android/res/drawable/ic_conduit.xml.
+// Geometry is shared by every Conduit mark through design/brand.json.
+struct Brand: Decodable {
+    struct Tile: Decodable { let x, y, size, radius: Double }
+    struct Glyph: Decodable { let rects: [[Double]]; let radius, stroke: Double; let bridge: [Double] }
+    let canvas: Double; let background: String; let tile: Tile; let glyph: Glyph
+}
+let source = URL(fileURLWithPath: #filePath).deletingLastPathComponent().deletingLastPathComponent().appendingPathComponent("design/brand.json")
+let brand = try JSONDecoder().decode(Brand.self, from: Data(contentsOf: source))
+let tile = brand.tile; let glyph = brand.glyph
+let color = UInt32(brand.background.dropFirst(), radix: 16)!
+
 let destination = URL(fileURLWithPath: CommandLine.arguments[1], isDirectory: true)
 try FileManager.default.createDirectory(at: destination, withIntermediateDirectories: true)
 for points in [16, 32, 128, 256, 512] {
@@ -13,17 +23,18 @@ for points in [16, 32, 128, 256, 512] {
         NSGraphicsContext.current = NSGraphicsContext(bitmapImageRep: bitmap)
         let context = NSGraphicsContext.current!.cgContext
         // macOS legacy icon keyline: 824 px artwork inside a 1024 px canvas.
-        let unit=Double(size)*824/1024/22
-        let padding=Double(size)*100/1024-unit
+        let unit=Double(size)*824/1024/tile.size
+        let padding=Double(size)*100/1024-unit*tile.x
         context.translateBy(x:padding,y:padding)
         context.scaleBy(x:unit,y:unit)
-        NSColor(srgbRed: 32.0/255, green: 32.0/255, blue: 32.0/255, alpha: 1).setFill()
-        NSBezierPath(roundedRect: NSRect(x: 1, y: 1, width: 22, height: 22), xRadius: 5, yRadius: 5).fill()
+        NSColor(srgbRed: Double((color >> 16) & 255)/255, green: Double((color >> 8) & 255)/255, blue: Double(color & 255)/255, alpha: 1).setFill()
+        NSBezierPath(roundedRect: NSRect(x: tile.x, y: tile.y, width: tile.size, height: tile.size), xRadius: tile.radius, yRadius: tile.radius).fill()
         NSColor(srgbRed: 1, green: 1, blue: 1, alpha: 1).setStroke()
-        for rect in [NSRect(x: 6, y: 7, width: 4.5, height: 10), NSRect(x: 13.5, y: 7, width: 4.5, height: 10)] {
-            let path = NSBezierPath(roundedRect: rect, xRadius: 1.2, yRadius: 1.2); path.lineWidth = 1.25; path.stroke()
+        for values in glyph.rects {
+            let rect = NSRect(x: values[0], y: values[1], width: values[2], height: values[3])
+            let path = NSBezierPath(roundedRect: rect, xRadius: glyph.radius, yRadius: glyph.radius); path.lineWidth = glyph.stroke; path.lineCapStyle = .round; path.stroke()
         }
-        let bridge = NSBezierPath(); bridge.lineWidth = 1.25; bridge.move(to: NSPoint(x: 10.5, y: 12)); bridge.line(to: NSPoint(x: 13.5, y: 12)); bridge.stroke()
+        let bridge = NSBezierPath(); bridge.lineWidth = glyph.stroke; bridge.lineCapStyle = .round; bridge.move(to: NSPoint(x: glyph.bridge[0], y: glyph.bridge[1])); bridge.line(to: NSPoint(x: glyph.bridge[2], y: glyph.bridge[3])); bridge.stroke()
         NSGraphicsContext.restoreGraphicsState()
         let name = "icon_\(points)x\(points)" + (scale == 2 ? "@2x" : "") + ".png"
         try bitmap.representation(using: .png, properties: [:])!.write(to: destination.appendingPathComponent(name))

@@ -632,9 +632,7 @@ public final class MainActivity extends Activity {
             c.translate(getPaddingLeft()+(w-24*scale)/2, getPaddingTop()+(h-24*scale)/2); c.scale(scale,scale);
             paint.setStrokeWidth(getResources().getDisplayMetrics().density*1.5f/scale);
             if (kind.equals("mark")) {
-                paint.setStyle(Paint.Style.FILL); paint.setColor(accent); c.drawRoundRect(1,1,23,23,5,5,paint);
-                paint.setStyle(Paint.Style.STROKE); paint.setColor(canvas); paint.setStrokeWidth(1.25f);
-                c.drawRoundRect(6,7,10.5f,17,1.2f,1.2f,paint); c.drawRoundRect(13.5f,7,18,17,1.2f,1.2f,paint); c.drawLine(10.5f,12,13.5f,12,paint);
+                BrandMark.drawTile(c,paint);
             }
             else if (kind.equals("home")) { for(int x=3;x<=14;x+=11) for(int y=3;y<=14;y+=11) c.drawRoundRect(x,y,x+7,y+7,2,2,paint); }
             else if (kind.equals("settings")) { for(int y=5;y<=19;y+=7) { float x=y==12?15:8; c.drawLine(3,y,x-2.5f,y,paint); c.drawLine(x+2.5f,y,21,y,paint); c.drawCircle(x,y,2.5f,paint); } }

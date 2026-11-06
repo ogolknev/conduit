@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-import argparse, hashlib, json, os, pathlib, plistlib, shutil, subprocess, zipfile
+import sys, argparse, hashlib, json, os, pathlib, plistlib, shutil, subprocess, zipfile
 
 p = argparse.ArgumentParser()
 p.add_argument('--scratch', required=True)
@@ -9,6 +9,7 @@ p.add_argument('--apk', required=True)
 p.add_argument('--output', required=True)
 args = p.parse_args()
 project = pathlib.Path(__file__).resolve().parents[1]
+subprocess.run([sys.executable, str(project / "scripts/generate-brand.py"), "--check"], check=True)
 scratch = pathlib.Path(args.scratch).resolve(); scratch.mkdir(parents=True, exist_ok=True)
 cache = scratch / 'module-cache'; cache.mkdir(exist_ok=True)
 env = dict(os.environ, CLANG_MODULE_CACHE_PATH=str(cache), SWIFTPM_MODULECACHE_OVERRIDE=str(cache))
@@ -37,7 +38,7 @@ subprocess.run(['/usr/bin/iconutil', '-c', 'icns', str(icons), '-o', str(resourc
 icon_catalog = project / 'design/mac-icon'
 manifest = json.loads((icon_catalog / 'manifest.json').read_text())
 assert manifest['iconName'] == 'AppIcon'
-for name in ['scripts/render-icons.swift', 'scripts/build-mac-icon.py', 'design/AppIcon.icon/icon.json', 'design/AppIcon.icon/Assets/Conduit.svg']:
+for name in ['scripts/render-icons.swift', 'scripts/build-mac-icon.py', 'design/AppIcon.icon/icon.json', 'design/AppIcon.icon/Assets/Conduit.svg', 'design/brand.json', 'scripts/generate-brand.py']:
     assert hashlib.sha256((project / name).read_bytes()).hexdigest() == manifest['sources'][name], 'Recompile the macOS icon catalog after changing its sources'
 assert hashlib.sha256((icon_catalog / 'Assets.car').read_bytes()).hexdigest() == manifest['assetsSHA256'], 'Invalid macOS icon catalog'
 shutil.copy2(icon_catalog / 'Assets.car', resources / 'Assets.car')
@@ -45,8 +46,8 @@ shutil.copy2(icon_catalog / 'Assets.car', resources / 'Assets.car')
 (resources / 'Conduit.icns').unlink(missing_ok=True)
 with (app / 'Contents/Info.plist').open('wb') as f:
     plistlib.dump({'CFBundleName':'Conduit', 'CFBundleDisplayName':'Conduit', 'CFBundleExecutable':'Conduit',
-        'CFBundleIdentifier':'dev.conduit.mac', 'CFBundlePackageType':'APPL', 'CFBundleShortVersionString':'0.3.3',
-        'CFBundleVersion':'14', 'CFBundleIconFile':'AppIcon', 'CFBundleIconName':'AppIcon',
+        'CFBundleIdentifier':'dev.conduit.mac', 'CFBundlePackageType':'APPL', 'CFBundleShortVersionString':'0.3.4',
+        'CFBundleVersion':'15', 'CFBundleIconFile':'AppIcon', 'CFBundleIconName':'AppIcon',
         'CFBundleInfoDictionaryVersion':'6.0', 'CFBundleSupportedPlatforms':['MacOSX'], 'CFBundleDevelopmentRegion':'ru', 'CFBundleSignature':'????', 'LSMinimumSystemVersion':'13.0', 'NSHighResolutionCapable':True,
         'NSPrincipalClass':'NSApplication', 'NSBluetoothAlwaysUsageDescription':'Conduit соединяет Mac и Android для передачи буфера, уведомлений и файлов по Bluetooth.'}, f)
 (app / 'Contents/PkgInfo').write_bytes(b'APPL????')

@@ -24,9 +24,17 @@ All navigation and feature icons use a 24-unit grid with a uniform visible
 keep stroke width constant; do not stretch width and height independently.
 `LineIcon.swift` and Android's `IconView` implement the same outline style.
 
-The application mark is defined in [mark.svg](mark.svg). It has two equal,
+The application mark is defined in [brand.json](brand.json). It has two equal,
 symmetrically placed device outlines, a centered connection, and a 1.25-unit stroke.
-The macOS icon generator, Android vector, and in-app marks use the same geometry.
+`scripts/generate-brand.py` generates the Swift and Java drawing code, Android
+vectors, SVG, and Icon Composer description. Both platform builds run `--check`
+and reject edited or stale generated files. The macOS ICNS renderer reads the same
+JSON directly. The menu bar uses a template version of this mark, not a system link symbol.
+
+Adaptive Android foreground artwork is reduced to account for the system mask:
+the glyph occupies about 60% of the visible icon width, matching the Mac tile.
+The menu bar glyph has a 16-point visible width in an 18-point canvas; system
+notification glyphs use the platform's monochrome keyline.
 
 Copy describes state and action directly: “Нет соединения”, “Подключено”,
 “Буфер обмена”, “Выбрать файлы”. Avoid slogans, rhetorical questions, and

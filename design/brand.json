@@ -1,0 +1,15 @@
+{
+  "canvas": 24,
+  "background": "#202020",
+  "tile": { "x": 1, "y": 1, "size": 22, "radius": 5 },
+  "glyph": {
+    "rects": [[6, 7, 4.5, 10], [13.5, 7, 4.5, 10]],
+    "radius": 1.2,
+    "stroke": 1.25,
+    "bridge": [10.5, 12, 13.5, 12]
+  },
+  "androidAdaptiveScale": 0.7272727273,
+  "notificationScale": 1.5,
+  "menuCanvas": 18,
+  "menuGlyphWidth": 16
+}

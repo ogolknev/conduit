@@ -2,7 +2,7 @@
 """Dependency-free Android build using an existing JDK + official SDK tools.
 The local development signing key stays in --scratch, outside the source package.
 """
-import argparse, pathlib, subprocess, zipfile, os, shutil
+import sys, argparse, pathlib, subprocess, zipfile, os, shutil
 
 p = argparse.ArgumentParser()
 p.add_argument('--jdk', required=True, help='JDK Contents/Home directory')
@@ -14,6 +14,7 @@ p.add_argument('--shizuku', required=True, help='Directory containing Shizuku ap
 p.add_argument('--server', required=True)
 args = p.parse_args()
 project = pathlib.Path(__file__).resolve().parents[1]
+subprocess.run([sys.executable, str(project / "scripts/generate-brand.py"), "--check"], check=True)
 scratch = pathlib.Path(args.scratch).resolve(); scratch.mkdir(parents=True, exist_ok=True)
 jdk, sdk, tools = map(lambda s: pathlib.Path(s).resolve(), [args.jdk, args.platform, args.build_tools])
 output = pathlib.Path(args.output).resolve(); output.parent.mkdir(parents=True, exist_ok=True)
