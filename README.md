@@ -1,4 +1,4 @@
-# Conduit 0.3.3
+# Conduit 0.3.4
 
 Нативное приложение для Mac и Android-компаньон: буфер обмена, уведомления,
 ответы и файлы. Основной режим — Bluetooth; USB / Wi-Fi через ADB тоже сохранён.
@@ -9,6 +9,17 @@
 Ручной и автоматический обратный буфер через Shizuku тоже подтверждены
 пользователем. Уведомления, файлы и длительная фоновая работа ещё проверяются.
 Подробности в `VALIDATION.md`.
+
+## Иконки 0.3.4
+
+Все значки Conduit используют одну геометрию из `design/brand.json`: иконки Mac
+и Android, знак внутри приложений, Android-уведомления и строка меню Mac.
+Сборки проверяют соответствие генерируемых ресурсов этому источнику.
+
+У адаптивной иконки Android уменьшен передний рисунок с учётом системной маски:
+ширина знака около 60% видимой иконки, как у Mac. В строке меню используется
+монохромный знак Conduit 16 pt в поле 18 pt, с системным цветом для светлой
+и тёмной темы. Встроенные цветные знаки сохраняют один фон и одинаковые пропорции.
 
 ## Исправления 0.3.3
 
@@ -62,9 +73,9 @@ Mac и Android используют единое монохромное офор
 
 ## Что скачать
 
-- [Conduit-0.3.3-Bluetooth-macOS.zip](https://github.com/ogolknev/conduit/releases/download/v0.3.3/Conduit-0.3.3-Bluetooth-macOS.zip): Mac Apple Silicon, macOS 13+.
-- [conduit-companion-0.3.3.apk](https://github.com/ogolknev/conduit/releases/download/v0.3.3/conduit-companion-0.3.3.apk): Android 8+, обновление с сохранением прежнего ключа подписи.
-- [Релиз 0.3.3](https://github.com/ogolknev/conduit/releases/tag/v0.3.3): обе сборки, исходники и SHA-256.
+- [Conduit-0.3.4-Bluetooth-macOS.zip](https://github.com/ogolknev/conduit/releases/download/v0.3.4/Conduit-0.3.4-Bluetooth-macOS.zip): Mac Apple Silicon, macOS 13+.
+- [conduit-companion-0.3.4.apk](https://github.com/ogolknev/conduit/releases/download/v0.3.4/conduit-companion-0.3.4.apk): Android 8+, обновление с сохранением прежнего ключа подписи.
+- [Релиз 0.3.4](https://github.com/ogolknev/conduit/releases/tag/v0.3.4): обе сборки, исходники и SHA-256.
 - Внутри Mac-приложения есть APK и ZIP с APK для отправки на телефон.
 
 ## Исправления 0.2.1–0.2.2 на Mac

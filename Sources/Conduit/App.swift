@@ -112,7 +112,7 @@ struct ConduitApp: App {
         MenuBarExtra {
             MenuView(model: model)
         } label: {
-            Image(nsImage: BrandMark.menuBarImage).help("Conduit · " + model.status)
+            Image(nsImage: BrandMark.menuBarImage).renderingMode(.template).help("Conduit · " + model.status)
         }
     }
 }

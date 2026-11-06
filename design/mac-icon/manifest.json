@@ -1,10 +1,12 @@
 {
   "iconName": "AppIcon",
   "sources": {
-    "scripts/render-icons.swift": "43e8c0f2c925a90c31bb612b931c36741b55d00e7278edfd1cb10e3b53f71ecb",
-    "scripts/build-mac-icon.py": "d0f1f71acdacb3c44ecb4a58e61163f19b82b9d8a4af9faa214d60bc460fd674",
-    "design/AppIcon.icon/icon.json": "268ae2746b46045da77968fed15542ac6ee68cb6268e922e4b43bab703cefb73",
-    "design/AppIcon.icon/Assets/Conduit.svg": "9b0e5e3f1a04a3537194e8eef9fc36c8b9a7b4462d822ca253300b37b2931878"
+    "scripts/render-icons.swift": "0cd711ac1f700dcfe07261f372a805d6b5bc9feccb7c904d20a3f16b10d2bc35",
+    "scripts/build-mac-icon.py": "aecbfcf97e4f1e220e06528977c5d769e7bf30422664c47f96ea02f9fa99aeae",
+    "design/AppIcon.icon/icon.json": "c6d5d380e50dba8c894792476b922eb2364b554fdb7ba8492d8b126f3d6259fc",
+    "design/AppIcon.icon/Assets/Conduit.svg": "86727dc8508d69f48e169f27e8db1917d6d25c8d21c388f43e614bd9c711a8ab",
+    "design/brand.json": "84f4429e3fb75fed15bb61b0da516057f838f51b7998823e13d6f1c382fd39bf",
+    "scripts/generate-brand.py": "aceed6754b4e629a154b477535bf9a296a4b93cee61afd06367619d6c0fa1328"
   },
-  "assetsSHA256": "5a608b4bbe9d8fcf350ac7c49967e0205900eb10b4070dbe75ceea0bc075aa85"
+  "assetsSHA256": "a584e821d5c6e2305a566804dda406e837ba9423f7c50ae0f652c68aefca7176"
 }
