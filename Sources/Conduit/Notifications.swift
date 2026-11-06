@@ -11,6 +11,17 @@ final class AppDelegate: NSObject, NSApplicationDelegate, UNUserNotificationCent
         NSApp.setActivationPolicy(.regular)
         let center = UNUserNotificationCenter.current()
         center.delegate = self
+        if CommandLine.arguments.contains("--notification-test") {
+            Task {
+                let settings = await center.notificationSettings()
+                guard settings.authorizationStatus == .authorized || settings.authorizationStatus == .provisional else { return }
+                let content = UNMutableNotificationContent()
+                content.title = "Conduit"; content.subtitle = "Conduit UI test"
+                content.body = "Проверка значка из каталога Xcode"
+                do { try await center.add(UNNotificationRequest(identifier: "conduit.ui.icon.test", content: content, trigger: nil)) }
+                catch { ConnectionDiagnostics.record("notification.test.failed", String(describing: type(of: error))) }
+            }
+        }
         let reply = UNTextInputNotificationAction(identifier: "REPLY", title: "Ответить", options: [], textInputButtonTitle: "Отправить", textInputPlaceholder: "Сообщение")
         center.setNotificationCategories([
             UNNotificationCategory(identifier: "PHONE_REPLY", actions: [reply], intentIdentifiers: [], options: [.customDismissAction]),

@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-import argparse, os, pathlib, plistlib, shutil, subprocess, zipfile
+import argparse, hashlib, json, os, pathlib, plistlib, shutil, subprocess, zipfile
 
 p = argparse.ArgumentParser()
 p.add_argument('--scratch', required=True)
@@ -32,12 +32,23 @@ icons = scratch / 'Conduit.iconset'
 if icons.exists(): shutil.rmtree(icons)
 subprocess.run(['swift', str(project / 'scripts/render-icons.swift'), str(icons)], check=True, env=env)
 subprocess.run(['/usr/bin/iconutil', '-c', 'icns', str(icons), '-o', str(resources / 'AppIcon.icns')], check=True)
+# A compiled catalog supplies the app icon on modern macOS notification surfaces.
+# Keep a checked-in build so Command Line Tools alone can package the app.
+icon_catalog = project / 'design/mac-icon'
+manifest = json.loads((icon_catalog / 'manifest.json').read_text())
+assert manifest['iconName'] == 'AppIcon'
+for name in ['scripts/render-icons.swift', 'scripts/build-mac-icon.py', 'design/AppIcon.icon/icon.json', 'design/AppIcon.icon/Assets/Conduit.svg']:
+    assert hashlib.sha256((project / name).read_bytes()).hexdigest() == manifest['sources'][name], 'Recompile the macOS icon catalog after changing its sources'
+assert hashlib.sha256((icon_catalog / 'Assets.car').read_bytes()).hexdigest() == manifest['assetsSHA256'], 'Invalid macOS icon catalog'
+shutil.copy2(icon_catalog / 'Assets.car', resources / 'Assets.car')
 # Remove the old resource name when rebuilding an existing bundle.
 (resources / 'Conduit.icns').unlink(missing_ok=True)
 with (app / 'Contents/Info.plist').open('wb') as f:
     plistlib.dump({'CFBundleName':'Conduit', 'CFBundleDisplayName':'Conduit', 'CFBundleExecutable':'Conduit',
         'CFBundleIdentifier':'dev.conduit.mac', 'CFBundlePackageType':'APPL', 'CFBundleShortVersionString':'0.3.3',
-        'CFBundleVersion':'13', 'CFBundleIconFile':'AppIcon.icns', 'LSMinimumSystemVersion':'13.0', 'NSHighResolutionCapable':True,
+        'CFBundleVersion':'13', 'CFBundleIconFile':'AppIcon', 'CFBundleIconName':'AppIcon',
+        'CFBundleInfoDictionaryVersion':'6.0', 'CFBundleSupportedPlatforms':['MacOSX'], 'CFBundleDevelopmentRegion':'ru', 'CFBundleSignature':'????', 'LSMinimumSystemVersion':'13.0', 'NSHighResolutionCapable':True,
         'NSPrincipalClass':'NSApplication', 'NSBluetoothAlwaysUsageDescription':'Conduit соединяет Mac и Android для передачи буфера, уведомлений и файлов по Bluetooth.'}, f)
+(app / 'Contents/PkgInfo').write_bytes(b'APPL????')
 subprocess.run(['/usr/bin/codesign', '--force', '--deep', '--sign', '-', str(app)], check=True)
 print('Built:', app)
