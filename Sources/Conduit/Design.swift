@@ -18,6 +18,9 @@ private enum Palette {
     static let accent = adaptive(0x202020, 0xEDEDED)
     static let soft = adaptive(0xF3F3F3, 0x292929)
     static let line = adaptive(0xE8E8E8, 0x333333)
+    static let success = adaptive(0x23834C, 0x76D39A)
+    static let warning = adaptive(0x97640F, 0xEAC17A)
+    static let error = adaptive(0xC83B3B, 0xF29696)
 }
 
 enum ConduitSection: String, CaseIterable {
@@ -102,6 +105,8 @@ struct MainView: View {
                 connectionAction
             }.padding(30).frame(width: 500).background(Palette.canvas).tint(Palette.accent)
         }
+        .task { await model.refreshSystemPermissions() }
+        .onReceive(NotificationCenter.default.publisher(for:NSApplication.didBecomeActiveNotification)) { _ in Task { await model.refreshSystemPermissions() } }
         .onChange(of: model.connected) { connected in if connected { connectionSheet = false } }
         .confirmationDialog("Забыть связь с телефоном?", isPresented: $forgetConfirmation) {
             Button("Забыть связь", role: .destructive) { Task { await model.forgetBluetoothPhone() } }
@@ -134,10 +139,10 @@ struct MainView: View {
 
     private var statusPill: some View {
         HStack(spacing: 7) {
-            Circle().fill(model.connected ? Palette.accent : Palette.muted.opacity(0.5)).frame(width: 6, height: 6)
+            Circle().fill(model.connected ? Palette.success : Palette.muted.opacity(0.5)).frame(width: 6, height: 6)
             Text(model.connected ? "Подключено · \(model.transport.rawValue)" : (model.busy ? "Подключение…" : "Нет соединения"))
                 .font(.system(size: 11, weight: .medium))
-        }.foregroundStyle(model.connected ? Palette.accent : Palette.muted).padding(.horizontal, 11).padding(.vertical, 7)
+        }.foregroundStyle(model.connected ? Palette.success : Palette.muted).padding(.horizontal, 11).padding(.vertical, 7)
             .background(Color.clear)
     }
 
@@ -167,9 +172,9 @@ struct MainView: View {
             }
             sectionLabel("СИНХРОНИЗАЦИЯ")
             VStack(spacing: 0) {
-                featureRow("doc.on.clipboard", title: "Буфер обмена", detail: clipboardDetail, isOn: $model.clipboardEnabled)
+                featureRow("doc.on.clipboard", title: "Буфер обмена", detail: clipboardDetail, stateColor: model.connected && model.clipboardEnabled ? (model.transport == .adb || model.bluetoothClipboardAuto ? Palette.success : Palette.warning) : Palette.muted, isOn: $model.clipboardEnabled)
                 Rectangle().fill(Palette.line).frame(height: 1).padding(.leading, 72)
-                featureRow("bell", title: "Уведомления", detail: !model.notificationsEnabled ? "Передача отключена" : !model.connected ? "Ожидание соединения" : model.notificationAccess ? "Доступ на Android разрешён" : "Требуется разрешение на Android", isOn: $model.notificationsEnabled)
+                featureRow("bell", title: "Уведомления", detail: notificationDetail, stateColor: model.connected && model.notificationsEnabled ? (model.notificationAccess && model.notificationListenerConnected && model.macNotificationPermission == .allowed ? Palette.success : Palette.warning) : Palette.muted, isOn: $model.notificationsEnabled)
             }.padding(6).background(Palette.surface, in: RoundedRectangle(cornerRadius: 10))
                 .overlay(RoundedRectangle(cornerRadius: 10).stroke(Palette.line, lineWidth: 1))
             HStack {
@@ -183,6 +188,15 @@ struct MainView: View {
         }
     }
 
+    private var notificationDetail: String {
+        if !model.notificationsEnabled { return "Передача отключена" }
+        if !model.connected { return "Ожидание соединения" }
+        if !model.notificationAccess { return "Требуется доступ Android" }
+        if !model.notificationListenerConnected { return "Служба Android переподключается" }
+        if model.macNotificationPermission == .quiet { return "Баннеры отключены в macOS" }
+        if !model.macNotificationPermission.allowsDelivery { return "Требуется доступ macOS" }
+        return "Уведомления Android → Mac"
+    }
     private var clipboardDetail: String {
         if !model.clipboardEnabled { return "Синхронизация приостановлена" }
         if !model.connected { return "Ожидание соединения" }
@@ -238,6 +252,10 @@ struct MainView: View {
                 }
                 Divider().overlay(Palette.line)
                 settingToggle("Автоматическое подключение", isOn: $model.autoReconnect)
+                HStack {
+                    Text("Доступ Bluetooth").font(.system(size:13)); Spacer()
+                    Text(model.macBluetoothPermission == .allowed ? "Разрешён" : model.macBluetoothPermission == .unknown ? "Не запрошен" : "Не разрешён").font(.system(size:12)).foregroundStyle(model.macBluetoothPermission == .allowed ? Palette.success : Palette.warning)
+                }
                 if model.transport == .bluetooth {
                     HStack {
                         Button("Настройки Bluetooth") { NSWorkspace.shared.open(URL(string: "x-apple.systempreferences:com.apple.BluetoothSettings")!) }
@@ -248,12 +266,19 @@ struct MainView: View {
             }
             sectionLabel("УВЕДОМЛЕНИЯ")
             panel {
-                Text(model.transport == .bluetooth ? (model.connected ? (model.notificationAccess ? "Доступ на Android разрешён" : "Требуется разрешение на Android") : "Статус доступа доступен после подключения") : model.companionStatus).font(.system(size: 13)).foregroundStyle(Palette.muted)
-                Button("Разрешить уведомления на Mac") { Task { await model.requestMacNotifications() } }.buttonStyle(ActionStyle())
+                Text(model.transport == .bluetooth ? (model.connected ? (model.notificationAccess ? (model.notificationListenerConnected ? "Доступ на Android разрешён" : "Доступ выдан, служба подключается") : "Требуется разрешение на Android") : "Нет соединения с Android") : model.companionStatus).font(.system(size: 13)).foregroundStyle(model.connected ? (model.notificationAccess && model.notificationListenerConnected ? Palette.success : Palette.warning) : Palette.muted)
+                HStack {
+                    VStack(alignment:.leading,spacing:5) {
+                        Text("Уведомления macOS").font(.system(size:13,weight:.medium))
+                        Text(model.macNotificationPermission.title).font(.system(size:12)).foregroundStyle(model.macNotificationPermission == .allowed ? Palette.success : model.macNotificationPermission == .denied || model.macNotificationPermission == .notAsked || model.macNotificationPermission == .quiet ? Palette.warning : Palette.muted)
+                    }
+                    Spacer()
+                    Button(model.macNotificationsRequesting ? "Проверка…" : model.macNotificationPermission.actionTitle) { Task { await model.requestMacNotifications() } }.buttonStyle(ActionStyle()).disabled(model.macNotificationsRequesting || model.macNotificationPermission == .checking)
+                }
                 if model.transport == .adb {
                     HStack {
                         Button("Установить на телефон") { Task { await model.startCompanion(install: true) } }
-                        Button("Подключить компаньон") { Task { await model.startCompanion(install: false) } }
+                        Button(model.companionReady ? "Компаньон подключён" : "Подключить компаньон") { Task { await model.startCompanion(install: false) } }.disabled(model.companionReady)
                     }.disabled(!model.connected || model.busy)
                     Button("Открыть Conduit на телефоне") { Task { await model.openPhoneApp() } }.disabled(!model.connected)
                 } else { Text("На Android доступ включается в Conduit → Настройки → Уведомления.").font(.system(size: 12)).foregroundStyle(Palette.muted) }
@@ -263,7 +288,7 @@ struct MainView: View {
                 settingToggle("Сохранять журнал телефона на Mac", isOn: $model.autoDiagnostics)
                 Text("После подключения и раз в минуту. Без содержимого буфера и уведомлений.").font(.system(size: 12)).foregroundStyle(Palette.muted)
                 HStack {
-                    Button("Обновить") { model.requestAndroidDiagnostics() }.disabled(!model.connected || model.androidDiagnosticsPending || model.transport != .bluetooth)
+                    Button(model.androidDiagnosticsPending ? "Запрос…" : "Обновить") { model.requestAndroidDiagnostics() }.disabled(!model.connected || model.androidDiagnosticsPending || model.transport != .bluetooth)
                     Button("Открыть папку") { NSWorkspace.shared.open(ConnectionDiagnostics.androidDirectory) }
                     Button("Скопировать отчёт") { model.copyConnectionDiagnostics() }
                 }.buttonStyle(ActionStyle())
@@ -340,16 +365,16 @@ struct MainView: View {
     private func settingToggle(_ title: String, isOn: Binding<Bool>) -> some View {
         HStack { Text(title).font(.system(size: 13)); Spacer(); Toggle(title, isOn: isOn).labelsHidden().toggleStyle(.switch).accessibilityLabel(title) }
     }
-    private func featureRow(_ icon: String, title: String, detail: String, isOn: Binding<Bool>) -> some View {
+    private func featureRow(_ icon: String, title: String, detail: String, stateColor: Color, isOn: Binding<Bool>) -> some View {
         HStack(spacing: 16) {
             LineIcon(icon).foregroundStyle(Palette.accent).frame(width: 32, height: 24)
-            VStack(alignment: .leading, spacing: 6) { Text(title).font(.system(size: 14, weight: .medium)); Text(detail).font(.system(size: 12)).foregroundStyle(Palette.muted).fixedSize(horizontal: false, vertical: true) }
+            VStack(alignment: .leading, spacing: 6) { Text(title).font(.system(size: 14, weight: .medium)); Text(detail).font(.system(size: 12)).foregroundStyle(stateColor).fixedSize(horizontal: false, vertical: true) }
             Spacer(minLength: 5)
             Toggle(title, isOn: isOn).labelsHidden().toggleStyle(.switch).accessibilityLabel(title)
         } .padding(16)
     }
     private func notice(_ text: String, icon: String, warning: Bool = false) -> some View {
-        Label(text, systemImage: icon).font(.system(size: 12)).foregroundStyle(warning ? Color.orange : Palette.muted)
+        Label(text, systemImage: icon).font(.system(size: 12)).foregroundStyle(warning ? Palette.error : Palette.warning)
             .fixedSize(horizontal: false, vertical: true).textSelection(.enabled)
     }
     private func acceptFiles(_ providers: [NSItemProvider]) -> Bool {

@@ -11,6 +11,10 @@ import ConduitCore
     @Published var busy = false
     @Published var transferBusy = false
     @Published var companionReady = false
+    @Published var macNotificationPermission = MacNotificationPermission.checking
+    @Published var macNotificationsRequesting = false
+    @Published var macBluetoothPermission = BluetoothPermission.unknown
+    @Published var notificationListenerConnected = false
     @Published var notificationAccess = false
     @Published var status = "Подключи телефон, чтобы начать"
     @Published var companionStatus = "Нужен Android-компаньон"
@@ -358,6 +362,7 @@ import ConduitCore
                 switch type {
                 case "ready", "status":
                     notificationAccess = event["notificationAccess"] as? Bool == true
+                    notificationListenerConnected = event["notificationListenerConnected"] as? Bool ?? notificationAccess
                     companionStatus = notificationAccess ? "Уведомления подключены" : "Разреши доступ к уведомлениям на телефоне"
                 case "pong": connectionHeartbeat.acknowledge(); ConnectionDiagnostics.record("heartbeat.pong")
                 case "notification":
@@ -379,10 +384,15 @@ import ConduitCore
     }
 
     func requestMacNotifications() async {
+        guard !macNotificationsRequesting else { return }
+        macNotificationsRequesting = true
+        defer { macNotificationsRequesting = false }
+        await refreshSystemPermissions()
+        guard macNotificationPermission == .notAsked else { openMacNotificationSettings(); return }
         do {
-            let allowed = try await UNUserNotificationCenter.current().requestAuthorization(options: [.alert, .sound, .badge])
-            log(allowed ? "macOS разрешила уведомления" : "Уведомления отключены в настройках macOS")
-        } catch { log(error.localizedDescription) }
+            _ = try await UNUserNotificationCenter.current().requestAuthorization(options: [.alert, .sound, .badge])
+        } catch { log("Не удалось запросить доступ к уведомлениям macOS") }
+        await refreshSystemPermissions()
     }
 
     func openPhoneApp() async {

@@ -1,11 +1,15 @@
 import AppKit
 import UserNotifications
 import CryptoKit
+import UniformTypeIdentifiers
+import ConduitCore
 
 final class AppDelegate: NSObject, NSApplicationDelegate, UNUserNotificationCenterDelegate {
     static var onAction: (([String: Any]) -> Void)?
 
     func applicationDidFinishLaunching(_ notification: Notification) {
+        NSApp.setActivationPolicy(.regular)
+        if let url=Bundle.main.url(forResource:"Conduit",withExtension:"icns"), let icon=NSImage(contentsOf:url) { NSApp.applicationIconImage=icon }
         let center = UNUserNotificationCenter.current()
         center.delegate = self
         let reply = UNTextInputNotificationAction(identifier: "REPLY", title: "Ответить", options: [], textInputButtonTitle: "Отправить", textInputPlaceholder: "Сообщение")
@@ -29,7 +33,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, UNUserNotificationCent
     }
 }
 
-enum PhoneNotifications {
+@MainActor enum PhoneNotifications {
     static func identifier(_ key: String) -> String {
         "phone." + SHA256.hash(data: Data(key.utf8)).map { String(format: "%02x", $0) }.joined()
     }
@@ -40,8 +44,29 @@ enum PhoneNotifications {
         content.subtitle = String((event["title"] as? String ?? "").prefix(256))
         content.body = String((event["body"] as? String ?? "").prefix(4096))
         content.userInfo = ["phoneKey": key]
+        if let encoded = event["iconPNG"] as? String, let attachment = iconAttachment(encoded) { content.attachments = [attachment] }
         content.categoryIdentifier = (event["replyable"] as? Bool == true) ? "PHONE_REPLY" : "PHONE"
-        try await UNUserNotificationCenter.current().add(UNNotificationRequest(identifier: identifier(key), content: content, trigger: nil))
+        do {
+            try await UNUserNotificationCenter.current().add(UNNotificationRequest(identifier: identifier(key), content: content, trigger: nil))
+            ConnectionDiagnostics.record("notification.accepted","attachments=\(content.attachments.count)")
+        } catch {
+            ConnectionDiagnostics.record("notification.failed",String(describing:type(of:error)))
+            throw error
+        }
+    }
+    private static func iconAttachment(_ encoded: String) -> UNNotificationAttachment? {
+        guard let data=NotificationIconPayload.decode(encoded), let bitmap=NSBitmapImageRep(data:data),
+              bitmap.pixelsWide<=256, bitmap.pixelsHigh<=256 else { return nil }
+        do {
+            let directory=FileManager.default.temporaryDirectory.appendingPathComponent("Conduit-notification-icons",isDirectory:true)
+            try FileManager.default.createDirectory(at:directory,withIntermediateDirectories:true,attributes:[.posixPermissions:0o700])
+            let previous=(try? FileManager.default.contentsOfDirectory(at:directory,includingPropertiesForKeys:[.creationDateKey])) ?? []
+            if previous.count>64 { for file in previous { try? FileManager.default.removeItem(at:file) } }
+            let url=directory.appendingPathComponent(UUID().uuidString+".png")
+            try data.write(to:url,options:.atomic)
+            try FileManager.default.setAttributes([.posixPermissions:0o600],ofItemAtPath:url.path)
+            return try UNNotificationAttachment(identifier:"android-app-icon",url:url,options:[UNNotificationAttachmentOptionsTypeHintKey:UTType.png.identifier,UNNotificationAttachmentOptionsThumbnailHiddenKey:false])
+        } catch { return nil }
     }
     static func remove(_ key: String) {
         UNUserNotificationCenter.current().removeDeliveredNotifications(withIdentifiers: [identifier(key)])

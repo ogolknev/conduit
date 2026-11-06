@@ -2,12 +2,28 @@ import SwiftUI
 import AppKit
 import UniformTypeIdentifiers
 import CryptoKit
+import UserNotifications
 
 private var appVersion: String { Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String ?? "dev" }
 
 @main enum EntryPoint {
     @MainActor static func main() {
         let args = CommandLine.arguments
+        if args.contains("--permission-status") || args.contains("--notification-check") {
+            NSApplication.shared.setActivationPolicy(.prohibited)
+            Task {
+                let center=UNUserNotificationCenter.current()
+                let settings=await center.notificationSettings()
+                var output:[String:Any]=["notificationAuthorization":settings.authorizationStatus.rawValue,"bluetooth":ConnectionDiagnostics.permission.rawValue]
+                if args.contains("--notification-check") {
+                    let delivered=await center.deliveredNotifications().filter { $0.request.content.subtitle == "Conduit UI test" }
+                    output["testNotifications"]=delivered.map { ["attachments":$0.request.content.attachments.count,"iconReadable":$0.request.content.attachments.first.map { FileManager.default.fileExists(atPath:$0.url.path) } ?? false] }
+                }
+                let data=try! JSONSerialization.data(withJSONObject:output,options:.sortedKeys)
+                print(String(data:data,encoding:.utf8)!); exit(0)
+            }
+            RunLoop.main.run(); return
+        }
         if let index = args.firstIndex(of: "--bluetooth-link-check"), args.count > index + 1 {
             NSApplication.shared.setActivationPolicy(.prohibited)
             let output = BluetoothServiceCheck.checkLink(address:args[index + 1])
@@ -31,7 +47,7 @@ private var appVersion: String { Bundle.main.object(forInfoDictionaryKey: "CFBun
         }
         if args.contains("--smoke-test") {
             let resources = Bundle.main.resourceURL!
-            let names = ["platform-tools/adb", "scrcpy-server-v5.0.1", "conduit-companion.apk"]
+            let names = ["platform-tools/adb", "scrcpy-server-v5.0.1", "conduit-companion.apk", "Conduit.icns"]
             guard names.allSatisfy({ FileManager.default.fileExists(atPath: resources.appendingPathComponent($0).path) }),
                   let server = try? Data(contentsOf: resources.appendingPathComponent("scrcpy-server-v5.0.1")) else { exit(1) }
             let hash = SHA256.hash(data: server).map { String(format: "%02x", $0) }.joined()
@@ -46,9 +62,11 @@ private var appVersion: String { Bundle.main.object(forInfoDictionaryKey: "CFBun
             app.appearance = NSAppearance(named: args.contains("--preview-dark") ? .darkAqua : .aqua)
             if args.contains("--preview-connected") {
                 model.connected = true; model.companionReady = true; model.status = "Bluetooth · Xiaomi 15"
-                model.bluetoothClipboardAuto = true; model.notificationAccess = true
-                model.companionStatus = "Уведомления подключены"
+                model.bluetoothClipboardAuto = true; model.notificationAccess = true; model.notificationListenerConnected = true
+                model.companionStatus = "Уведомления подключены"; model.macNotificationPermission = .allowed; model.macBluetoothPermission = .allowed
             }
+            if args.contains("--preview-permission-denied") { model.macNotificationPermission = .denied }
+            if args.contains("--preview-permission-needed") { model.macNotificationPermission = .notAsked }
             let section: ConduitSection = args.contains("--preview-settings") ? .settings : (args.contains("--preview-files") ? .files : .overview)
             let previewWidth: CGFloat = args.contains("--preview-compact") ? 860 : 980
             let view = NSHostingView(rootView: MainView(model: model, initialSection: section).frame(width: previewWidth, height: 760))

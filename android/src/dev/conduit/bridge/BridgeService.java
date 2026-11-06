@@ -45,10 +45,9 @@ public final class BridgeService extends Service {
         try {
             NotificationManager nm = getSystemService(NotificationManager.class);
             nm.createNotificationChannel(new NotificationChannel("connection", "Соединение с Mac", NotificationManager.IMPORTANCE_LOW));
-            PendingIntent open = PendingIntent.getActivity(this, 0, new Intent(this, MainActivity.class), PendingIntent.FLAG_IMMUTABLE);
-            startForeground(1, new Notification.Builder(this, "connection").setSmallIcon(android.R.drawable.ic_menu_share)
-                .setContentTitle("Conduit").setContentText("Соединение с Mac").setContentIntent(open).setOngoing(true).build());
+            startForeground(1, connectionNotification());
             PhoneDiagnostics.record(this, "service.foreground.ready");
+            PhoneNotifications.ensureConnected(this);
         } catch (RuntimeException e) {
             PhoneDiagnostics.record(this, "service.foreground.failed", e);
             foregroundFailure = "Android не разрешил фоновую службу Conduit (" + e.getClass().getSimpleName() + "). Скопируй диагностику соединения.";
@@ -110,9 +109,18 @@ public final class BridgeService extends Service {
         if (intent != null && "CLIPBOARD_START".equals(intent.getAction()) && clipboard != null) clipboard.startIfWanted();
         return wanted ? START_STICKY : START_NOT_STICKY;
     }
+    boolean isBluetoothListening() { return bluetooth!=null && bluetooth.isListening(); }
     boolean hasConnectionWakeLock() { return connectionWakeLock != null && connectionWakeLock.isHeld(); }
+    private Notification connectionNotification() {
+        Endpoint peer=client;
+        String text=peer==null?"Ожидание Mac":peer.isBluetooth()?"Mac подключён · Bluetooth":"Mac подключён · Отладка";
+        PendingIntent open=PendingIntent.getActivity(this,0,new Intent(this,MainActivity.class),PendingIntent.FLAG_IMMUTABLE);
+        return new Notification.Builder(this,"connection").setSmallIcon(R.drawable.ic_notification).setContentTitle("Conduit").setContentText(text)
+            .setContentIntent(open).setOngoing(true).setOnlyAlertOnce(true).setShowWhen(false).build();
+    }
     private void updateConnectionPower() {
         main.removeCallbacks(renewPower);
+        try { getSystemService(NotificationManager.class).notify(1,connectionNotification()); } catch(RuntimeException ignored) {}
         try {
             if (running && client != null && client.isBluetooth()) {
                 if (connectionWakeLock != null) connectionWakeLock.acquire(120000);
@@ -181,7 +189,7 @@ public final class BridgeService extends Service {
     }
     static JSONObject status(String type, int protocol) {
         BridgeService service = instance;
-        return object("type", type, "protocol", protocol, "notificationAccess", service != null && PhoneNotifications.hasAccess(service),
+        return object("type", type, "protocol", protocol, "notificationListenerConnected",PhoneNotifications.isConnected(), "notificationAccess", service != null && PhoneNotifications.hasAccess(service),
             "clipboardAuto", service != null && service.clipboard != null && service.clipboard.isReady(),
             "deviceLocked", service != null && deviceLocked(service));
     }

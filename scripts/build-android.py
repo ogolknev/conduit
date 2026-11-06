@@ -26,15 +26,19 @@ def run(*cmd): subprocess.run([str(x) for x in cmd], check=True)
 
 jar = sdk / 'android.jar'
 dependencies = [pathlib.Path(args.shizuku).resolve() / (m + '.jar') for m in ['api','provider','aidl','shared']]
-sources = sorted((project / 'android/src').rglob('*.java'))
+unsigned = scratch / 'unsigned.apk'
+resources = scratch / 'resources.zip'
+generated = scratch / 'generated'
+if generated.exists(): shutil.rmtree(generated)
+generated.mkdir()
+run(tools / 'aapt2', 'compile', '--dir', project / 'android/res', '-o', resources)
+run(tools / 'aapt2', 'link', '-o', unsigned, '-I', jar, '--java', generated, '--manifest', project / 'android/AndroidManifest.xml', resources)
+sources = sorted((project / 'android/src').rglob('*.java')) + sorted(generated.rglob('*.java'))
 run(jdk / 'bin/javac', '--release', '8', '-encoding', 'UTF-8', '-classpath', os.pathsep.join(str(p) for p in [jar] + dependencies + [pathlib.Path(args.shizuku).resolve() / 'annotation.jar']), '-d', classes, *sources)
 classes_jar = scratch / 'classes.jar'
 run(jdk / 'bin/jar', 'cf', classes_jar, '-C', classes, '.')
 run(jdk / 'bin/java', '-cp', tools / 'lib/d8.jar', 'com.android.tools.r8.D8', '--min-api', '26', '--lib', jar, '--output', dex, classes_jar, *dependencies)
-unsigned = scratch / 'unsigned.apk'
-resources = scratch / 'resources.zip'
-run(tools / 'aapt2', 'compile', '--dir', project / 'android/res', '-o', resources)
-run(tools / 'aapt2', 'link', '-o', unsigned, '-I', jar, '--manifest', project / 'android/AndroidManifest.xml', resources)
+aligned = scratch / 'aligned.apk'
 with zipfile.ZipFile(unsigned, 'a', zipfile.ZIP_DEFLATED) as z:
     for file in dex.glob('*.dex'): z.write(file, file.name)
     z.write(args.server, 'assets/scrcpy-server-v5.0.1', compress_type=zipfile.ZIP_STORED)

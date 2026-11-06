@@ -5,11 +5,42 @@ import android.content.*;
 import android.os.*;
 import android.provider.Settings;
 import android.service.notification.*;
+import android.graphics.*;
+import android.graphics.drawable.Drawable;
+import android.util.Base64;
+import android.util.LruCache;
+import java.io.ByteArrayOutputStream;
 import java.util.*;
 
 public final class PhoneNotifications extends NotificationListenerService {
     private static volatile PhoneNotifications instance;
+    private final LruCache<String,String> icons=new LruCache<>(40);
+    private static long lastRebind;
+    private static boolean registrationRefreshed;
+    static boolean isConnected() { return instance!=null; }
+    static void ensureConnected(Context context) {
+        long now=SystemClock.elapsedRealtime();
+        if(instance!=null || !hasAccess(context) || now-lastRebind<15000) return;
+        lastRebind=now;
+        try {
+            ComponentName component=new ComponentName(context,PhoneNotifications.class);
+            if(!registrationRefreshed) {
+                registrationRefreshed=true;
+                android.content.pm.PackageManager pm=context.getPackageManager();
+                int state=pm.getComponentEnabledSetting(component);
+                // Both states leave this manifest-enabled service enabled. The package-change
+                // broadcast makes Android rescan its stale listener registration after an update.
+                if(state==android.content.pm.PackageManager.COMPONENT_ENABLED_STATE_DEFAULT || state==android.content.pm.PackageManager.COMPONENT_ENABLED_STATE_ENABLED) {
+                    pm.setComponentEnabledSetting(component,state==android.content.pm.PackageManager.COMPONENT_ENABLED_STATE_DEFAULT ? android.content.pm.PackageManager.COMPONENT_ENABLED_STATE_ENABLED : android.content.pm.PackageManager.COMPONENT_ENABLED_STATE_DEFAULT,android.content.pm.PackageManager.DONT_KILL_APP);
+                    PhoneDiagnostics.record(context,"notification.listener.registration.refreshed");
+                }
+            }
+            requestRebind(component); PhoneDiagnostics.record(context,"notification.listener.rebind");
+        }
+        catch(RuntimeException failure) { PhoneDiagnostics.record(context,"notification.listener.failed",failure); }
+    }
     static boolean hasAccess(Context context) {
+        if(Build.VERSION.SDK_INT>=27) return context.getSystemService(NotificationManager.class).isNotificationListenerAccessGranted(new ComponentName(context,PhoneNotifications.class));
         String enabled = Settings.Secure.getString(context.getContentResolver(), "enabled_notification_listeners");
         if (enabled == null) return false;
         ComponentName own = new ComponentName(context, PhoneNotifications.class);
@@ -17,8 +48,8 @@ public final class PhoneNotifications extends NotificationListenerService {
         return false;
     }
 
-    @Override public void onListenerConnected() { instance = this; BridgeService.emit(BridgeService.status("status")); }
-    @Override public void onListenerDisconnected() { instance = null; BridgeService.emit(BridgeService.status("status")); }
+    @Override public void onListenerConnected() { instance = this; PhoneDiagnostics.record(this,"notification.listener.connected"); BridgeService.emit(BridgeService.status("status")); }
+    @Override public void onListenerDisconnected() { instance = null; PhoneDiagnostics.record(this,"notification.listener.disconnected"); BridgeService.emit(BridgeService.status("status")); }
     @Override public void onDestroy() { if (instance == this) instance = null; super.onDestroy(); }
 
     @Override public void onNotificationPosted(StatusBarNotification sbn) {
@@ -40,7 +71,20 @@ public final class PhoneNotifications extends NotificationListenerService {
         try { app = getPackageManager().getApplicationLabel(getPackageManager().getApplicationInfo(app, 0)).toString(); } catch (Exception ignored) {}
         if (title.isEmpty() && body.isEmpty()) return;
         BridgeService.emit(BridgeService.object("type", "notification", "key", sbn.getKey(), "package", sbn.getPackageName(),
-            "app", clipped(app, 128), "title", title, "body", body, "replyable", replyAction(n) != null));
+            "app", clipped(app, 128), "title", title, "body", body, "replyable", replyAction(n) != null, "iconPNG", applicationIcon(sbn.getPackageName())));
+    }
+    private String applicationIcon(String pkg) {
+        Bitmap bitmap=null;
+        try {
+            String key=pkg+":"+getPackageManager().getPackageInfo(pkg,0).lastUpdateTime;
+            String cached=icons.get(key); if(cached!=null) return cached;
+            Drawable drawable=getPackageManager().getApplicationIcon(pkg);
+            bitmap=Bitmap.createBitmap(64,64,Bitmap.Config.ARGB_8888); drawable.setBounds(0,0,64,64); drawable.draw(new Canvas(bitmap));
+            ByteArrayOutputStream bytes=new ByteArrayOutputStream(); bitmap.compress(Bitmap.CompressFormat.PNG,100,bytes);
+            if(bytes.size()>32768) return "";
+            String encoded=Base64.encodeToString(bytes.toByteArray(),Base64.NO_WRAP); icons.put(key,encoded); return encoded;
+        } catch(Exception failure) { return ""; }
+        finally { if(bitmap!=null) bitmap.recycle(); }
     }
     @Override public void onNotificationRemoved(StatusBarNotification sbn) {
         if (sbn != null) BridgeService.emit(BridgeService.object("type", "removed", "key", sbn.getKey()));

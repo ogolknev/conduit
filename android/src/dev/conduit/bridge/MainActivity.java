@@ -19,17 +19,22 @@ import android.widget.*;
 import java.util.*;
 
 public final class MainActivity extends Activity {
-    private TextView connection, access, pairing, clipboardState, backgroundState, heroTitle, stateBadge;
-    private Button bluetoothButton, pairButton, settingsPairButton;
+    private TextView connection, access, pairing, clipboardState, heroTitle, stateBadge;
+    private Button bluetoothButton, pairButton;
+    private SettingsRow backgroundRow, notificationPermissionRow, applicationsRow, manualClipboardRow, connectionControlRow, authorizationRow;
+    private TextView settingsConnectionState;
+    private SettingsRow appearanceRow;
     private MinimalSwitch autoClipboard;
     private LinearLayout page;
     private int selectedPage;
-    private int canvas, surface, ink, muted, accent, soft, line;
+    private int canvas, surface, ink, muted, accent, soft, line, success, warning, error, info;
+    private SettingsRow bluetoothPermissionRow, ownNotificationsRow, shizukuPermissionRow;
     private boolean discoverAfterPermission, bluetoothBusy;
     private int startAttempt;
     private Runnable startupTimeout;
     private final Handler handler = new Handler(Looper.getMainLooper());
     private final Shizuku.OnRequestPermissionResultListener permissionResult = (code, grant) -> {
+        if (code == 57) { if(grant==PackageManager.PERMISSION_GRANTED && BridgeService.instance!=null && BridgeService.instance.clipboard!=null) BridgeService.instance.clipboard.startIfWanted(); refreshState(); return; }
         if (code != 55) return;
         getSharedPreferences("settings", MODE_PRIVATE).edit().putBoolean("autoClipboard", grant == PackageManager.PERMISSION_GRANTED).apply();
         if (grant == PackageManager.PERMISSION_GRANTED && BridgeService.instance != null && BridgeService.instance.clipboard != null) BridgeService.instance.clipboard.startIfWanted();
@@ -40,6 +45,16 @@ public final class MainActivity extends Activity {
         @Override public void run() { refreshState(); handler.postDelayed(this, 2000); }
     };
 
+    @Override protected void attachBaseContext(Context base) {
+        String appearance=base.getSharedPreferences("settings",MODE_PRIVATE).getString("appearance","system");
+        if (!"system".equals(appearance)) {
+            Configuration configuration=new Configuration(base.getResources().getConfiguration());
+            configuration.uiMode=(configuration.uiMode & ~Configuration.UI_MODE_NIGHT_MASK) | ("dark".equals(appearance) ? Configuration.UI_MODE_NIGHT_YES : Configuration.UI_MODE_NIGHT_NO);
+            base=base.createConfigurationContext(configuration);
+        }
+        super.attachBaseContext(base);
+    }
+
     @Override public void onCreate(Bundle state) {
         super.onCreate(state);
         if (state != null) { discoverAfterPermission = state.getBoolean("discoverAfterPermission"); selectedPage = state.getInt("page", 0); }
@@ -49,6 +64,8 @@ public final class MainActivity extends Activity {
         ink = Color.parseColor(dark ? "#F2F2F2" : "#191919"); muted = Color.parseColor(dark ? "#ABABAB" : "#696969");
         accent = Color.parseColor(dark ? "#EDEDED" : "#202020"); soft = Color.parseColor(dark ? "#292929" : "#F3F3F3");
         line = Color.parseColor(dark ? "#333333" : "#E8E8E8");
+        success=Color.parseColor(dark?"#76D39A":"#23834C"); warning=Color.parseColor(dark?"#EAC17A":"#97640F");
+        error=Color.parseColor(dark?"#F29696":"#C83B3B"); info=Color.parseColor(dark?"#A3C3FF":"#356DD4");
         getWindow().setStatusBarColor(Color.TRANSPARENT); getWindow().setNavigationBarColor(Color.TRANSPARENT);
         getWindow().getDecorView().setSystemUiVisibility((dark ? 0 : View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR | View.SYSTEM_UI_FLAG_LIGHT_NAVIGATION_BAR) | (Build.VERSION.SDK_INT < 30 ? View.SYSTEM_UI_FLAG_LAYOUT_STABLE | View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN | View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION : 0));
         if (Build.VERSION.SDK_INT >= 29) getWindow().setNavigationBarContrastEnforced(false);
@@ -59,8 +76,11 @@ public final class MainActivity extends Activity {
     }
 
     private void buildScreen() {
-        connection = access = clipboardState = backgroundState = heroTitle = stateBadge = null;
-        bluetoothButton = pairButton = settingsPairButton = null; autoClipboard = null;
+        connection = access = clipboardState = heroTitle = stateBadge = null;
+        bluetoothButton = pairButton = null; autoClipboard = null;
+        backgroundRow = notificationPermissionRow = applicationsRow = manualClipboardRow = connectionControlRow = authorizationRow = null;
+        settingsConnectionState = null; appearanceRow = null;
+        bluetoothPermissionRow = ownNotificationsRow = shizukuPermissionRow = null;
         LinearLayout shell = column(); shell.setBackgroundColor(canvas);
         shell.setOnApplyWindowInsetsListener((view, insets) -> {
             if (Build.VERSION.SDK_INT >= 30) {
@@ -77,7 +97,7 @@ public final class MainActivity extends Activity {
         brand.addView(mark, new LinearLayout.LayoutParams(dp(32), dp(32)));
         TextView wordmark = label("Conduit", 20, true, ink); LinearLayout.LayoutParams wordmarkParams = new LinearLayout.LayoutParams(0, -2, 1); wordmarkParams.leftMargin = dp(11); brand.addView(wordmark, wordmarkParams);
 
-        page.addView(brand); gap(page, 32);
+        if (selectedPage != 2) { page.addView(brand); gap(page, 32); }
         if (selectedPage == 0) overviewPage(); else if (selectedPage == 1) filesPage(); else settingsPage();
         View divider = new View(this); divider.setBackgroundColor(line); shell.addView(divider, new LinearLayout.LayoutParams(-1, dp(1)));
         LinearLayout nav = row(); nav.setPadding(dp(12), dp(7), dp(12), dp(7)); nav.setBackgroundColor(surface);
@@ -108,10 +128,10 @@ public final class MainActivity extends Activity {
         gap(hero, 22);
         bluetoothButton = button(hero, "Включить соединение", () -> {
             if (BridgeService.client != null) new AlertDialog.Builder(this).setTitle("Отключиться от Mac?").setMessage("Буфер, уведомления и передача файлов будут приостановлены.").setNegativeButton("Отмена", null).setPositiveButton("Отключить", (d, w) -> disconnect()).show();
-            else if (BridgeService.instance == null) beginBluetooth(false);
+            else if (BridgeService.instance == null || !BridgeService.instance.isBluetoothListening()) beginBluetooth(false);
             else showConnectionHelp();
         }, true);
-        pairButton = textButton(hero, "Авторизация Mac", () -> beginBluetooth(true));
+        pairButton = textButton(hero, "Добавить Mac", () -> beginBluetooth(true));
         page.addView(hero); gap(page, 20);
         LinearLayout features = card(); features.setPadding(dp(18), dp(4), dp(18), dp(4));
         feature(features, "clipboard", "Буфер обмена", "Передача текста", true);
@@ -154,60 +174,137 @@ public final class MainActivity extends Activity {
 
     private void settingsPage() {
         heading("Настройки");
-        section("СОЕДИНЕНИЕ"); LinearLayout connect = card();
-        settingsPairButton = button(connect, "Связать Mac", () -> beginBluetooth(true), true);
-        gap(connect, 8); textButton(connect, "Настройки Bluetooth", () -> startActivity(new Intent(Settings.ACTION_BLUETOOTH_SETTINGS)));
-        rule(connect);
-        backgroundState = label("", 13, false, muted); connect.addView(backgroundState); gap(connect, 10);
-        textButton(connect, "Разрешить фоновую работу", this::requestBackground);
+        section("СОЕДИНЕНИЕ"); LinearLayout connect = settingsCard();
+        settingsConnectionState = label("", 13, false, muted); settingsConnectionState.setPadding(0,dp(14),0,dp(14)); connect.addView(settingsConnectionState);
+        rowDivider(connect);
+        authorizationRow = new SettingsRow(connect, "Добавить Mac", "", () -> beginBluetooth(true), "chevron");
+        new SettingsRow(connect, "Bluetooth", "", () -> startActivity(new Intent(Settings.ACTION_BLUETOOTH_SETTINGS)), "chevron");
+        bluetoothPermissionRow = new SettingsRow(connect,"Доступ Bluetooth","",this::openApplicationSettings,"chevron");
+        backgroundRow = new SettingsRow(connect, "Работа в фоне", "", this::requestBackground, "chevron");
+        rowDivider(connect);
+        connectionControlRow = new SettingsRow(connect, "", "", () -> {
+            BridgeService current=BridgeService.instance;
+            boolean needsRetry=current!=null && BridgeService.client==null && getSharedPreferences("settings",MODE_PRIVATE).getBoolean("bluetoothWanted",false) && !current.isBluetoothListening();
+            if (current==null || needsRetry) beginBluetooth(false); else confirmDisconnect();
+        }, "");
         page.addView(connect); gap(page, 24);
-        section("ОБЩИЙ БУФЕР"); LinearLayout clip = card();
-        autoClipboard = switchRow(clip, "Автоматически с телефона", getSharedPreferences("settings", MODE_PRIVATE).getBoolean("autoClipboard", false));
-        autoClipboard.setOnCheckedChangeListener((v, enabled) -> setAutoClipboard(enabled));
-        gap(clip, 10); clipboardState = label("", 13, false, muted); clip.addView(clipboardState);
-        gap(clip, 16); button(clip, "Отправить скопированный текст", this::sendClipboard, false);
-        gap(clip, 8); textButton(clip, "Требования Shizuku", () -> new AlertDialog.Builder(this).setTitle("Автоматический буфер").setMessage("Для чтения буфера в фоне требуется запущенный Shizuku. После перезагрузки Android Shizuku необходимо запустить повторно.\n\nПри полной блокировке Android чтение приостанавливается до разблокировки.").setPositiveButton("Закрыть", null).show());
-        page.addView(clip); gap(page, 24);
-        section("УВЕДОМЛЕНИЯ"); LinearLayout notifications = card();
-        SharedPreferences prefs = getSharedPreferences("settings", MODE_PRIVATE);
-        MinimalSwitch forwarding = switchRow(notifications, "Показывать на Mac", prefs.getBoolean("forward", true));
-        forwarding.setOnCheckedChangeListener((v, enabled) -> prefs.edit().putBoolean("forward", enabled).apply());
-        gap(notifications, 12); access = label("", 13, false, muted); notifications.addView(access); gap(notifications, 14);
-        button(notifications, "Разрешить доступ", () -> startActivity(new Intent(Settings.ACTION_NOTIFICATION_LISTENER_SETTINGS)), false);
-        textButton(notifications, "Выбрать приложения", this::chooseApps);
-        page.addView(notifications); gap(page, 24);
-        section("ДИАГНОСТИКА"); LinearLayout diagnostics = card();
-        diagnostics.addView(label("Диагностика связи", 16, true, ink)); gap(diagnostics, 10);
-        diagnostics.addView(label("Передаётся при подключении и раз в минуту, если включено на Mac. Без текста буфера, уведомлений и кодов.", 13, false, muted)); gap(diagnostics, 16);
-        button(diagnostics, "Скопировать отчёт", this::copyDiagnostics, false);
-        page.addView(diagnostics); gap(page, 24);
-        LinearLayout footer = column();
-        textButton(footer, "Отключить соединение", this::disconnect);
-        textButton(footer, "Забыть разрешённые Mac", this::forgetMacs);
-        gap(footer, 20);
-        String version = ""; try { version = getPackageManager().getPackageInfo(getPackageName(), 0).versionName; } catch (PackageManager.NameNotFoundException ignored) {}
-        footer.addView(label("Conduit " + version + " · Локальная связь", 12, false, muted)); page.addView(footer);
-    }
 
+        section("БУФЕР ОБМЕНА"); LinearLayout clip = settingsCard();
+        autoClipboard = switchRow(clip, "Автоматическая отправка", getSharedPreferences("settings", MODE_PRIVATE).getBoolean("autoClipboard", false));
+        autoClipboard.setOnCheckedChangeListener((v, enabled) -> setAutoClipboard(enabled));
+        clipboardState = label("", 12, false, muted); clip.addView(clipboardState); gap(clip,12);
+        rowDivider(clip);
+        manualClipboardRow = new SettingsRow(clip, "Отправить буфер", "", this::sendClipboard, "send");
+        shizukuPermissionRow=new SettingsRow(clip,"Доступ Shizuku","",this::configureShizuku,"chevron");
+        new SettingsRow(clip, "О Shizuku", "", this::showShizukuHelp, "chevron");
+        page.addView(clip); gap(page, 24);
+
+        section("УВЕДОМЛЕНИЯ"); LinearLayout notifications = settingsCard();
+        SharedPreferences prefs = getSharedPreferences("settings", MODE_PRIVATE);
+        MinimalSwitch forwarding = switchRow(notifications, "Передавать на Mac", prefs.getBoolean("forward", true));
+        forwarding.setOnCheckedChangeListener((v, enabled) -> { prefs.edit().putBoolean("forward", enabled).apply(); refreshState(); });
+        rowDivider(notifications);
+        notificationPermissionRow = new SettingsRow(notifications, "Чтение уведомлений", "", this::openNotificationAccessSettings, "chevron");
+        ownNotificationsRow=new SettingsRow(notifications,"Уведомления Conduit","",this::configureOwnNotifications,"chevron");
+        applicationsRow = new SettingsRow(notifications, "Приложения", "", this::chooseApps, "chevron");
+        page.addView(notifications); gap(page,24);
+
+        section("ДИАГНОСТИКА"); LinearLayout diagnostics = settingsCard();
+        new SettingsRow(diagnostics,"Скопировать отчёт","",this::copyDiagnostics,"copy");
+        new SettingsRow(diagnostics,"Автоперенос журнала","Настраивается на Mac",() -> new AlertDialog.Builder(this).setTitle("Автоперенос журнала").setMessage("На Mac: Conduit → Настройки → Диагностика. Журнал передаётся при подключении и раз в минуту. Текст буфера, уведомления и коды исключены из отчёта.").setPositiveButton("Закрыть",null).show(),"chevron");
+        page.addView(diagnostics); gap(page,24);
+
+        section("ИНТЕРФЕЙС"); LinearLayout appearance=settingsCard();
+        appearanceRow=new SettingsRow(appearance,"Оформление","",this::chooseAppearance,"chevron");
+        page.addView(appearance); gap(page,24);
+        LinearLayout trust = settingsCard();
+        new SettingsRow(trust,"Забыть разрешённые Mac","",this::forgetMacs,""); page.addView(trust); gap(page,20);
+        String version=""; try { version=getPackageManager().getPackageInfo(getPackageName(),0).versionName; } catch(PackageManager.NameNotFoundException ignored) {}
+        page.addView(label("Conduit " + version,12,false,muted));
+    }
+    private void chooseAppearance() {
+        String[] values={"system","light","dark"}, labels={"Системное","Светлое","Тёмное"};
+        String current=getSharedPreferences("settings",MODE_PRIVATE).getString("appearance","system");
+        int selected="light".equals(current)?1:"dark".equals(current)?2:0;
+        new AlertDialog.Builder(this).setTitle("Оформление").setSingleChoiceItems(labels,selected,(dialog,which)-> {
+            getSharedPreferences("settings",MODE_PRIVATE).edit().putString("appearance",values[which]).apply(); dialog.dismiss(); recreate();
+        }).setNegativeButton("Отмена",null).show();
+    }
+    private void showShizukuHelp() {
+        new AlertDialog.Builder(this).setTitle("Автоматическая отправка").setMessage("Для чтения буфера в фоне требуется запущенный Shizuku и разрешение Conduit. После перезагрузки Android Shizuku необходимо запустить повторно.\n\nПри полной блокировке Android чтение приостанавливается до разблокировки.").setPositiveButton("Закрыть",null).show();
+    }
+    private void confirmDisconnect() {
+        new AlertDialog.Builder(this).setTitle("Отключить соединение?").setMessage("Передача буфера, уведомлений и файлов будет приостановлена.").setNegativeButton("Отмена",null).setPositiveButton("Отключить",(d,w)->disconnect()).show();
+    }
     private void refreshState() {
+        PhoneNotifications.ensureConnected(this);
         BridgeService.Endpoint peer = BridgeService.client;
         boolean connected = peer != null;
-        boolean running = BridgeService.instance != null;
+        BridgeService serviceState=BridgeService.instance;
+        boolean running = serviceState != null;
+        boolean failed = !connected && !bluetoothBusy && running && getSharedPreferences("settings",MODE_PRIVATE).getBoolean("bluetoothWanted",false) && !serviceState.isBluetoothListening();
         if (heroTitle != null) heroTitle.setText(connected ? "Устройства" : "Устройства");
-        if (stateBadge != null) { stateBadge.setText(connected ? "Подключено" : running ? "Ожидание Mac" : "Нет соединения"); stateBadge.setTextColor(connected ? accent : muted); }
-        if (connection != null) connection.setText(connected ? (peer.isBluetooth() ? "Подключён по Bluetooth" : "Подключён через отладку") : bluetoothBusy ? BluetoothLink.status : running ? "Ожидание подключения" : "Соединение отключено");
-        if (bluetoothButton != null) { bluetoothButton.setText(bluetoothBusy ? "Подключение…" : connected ? "Отключить Mac" : running ? "Подключить Mac" : "Включить соединение"); bluetoothButton.setEnabled(!bluetoothBusy); }
-        if (pairButton != null) { pairButton.setVisibility(running ? View.VISIBLE : View.GONE); pairButton.setEnabled(!bluetoothBusy); }
-        if (settingsPairButton != null) { settingsPairButton.setEnabled(!bluetoothBusy); settingsPairButton.setText(bluetoothBusy ? "Запускаю соединение…" : "Связать Mac"); }
-        if (pairing != null) { String code = BluetoothLink.PAIRING.display(); pairing.setText(code.isEmpty() ? "Код истёк" : code.substring(0, 4) + "  " + code.substring(4)); }
+        if (stateBadge != null) { stateBadge.setText(connected ? "Подключено" : failed ? "Ошибка соединения" : running ? "Ожидание Mac" : "Нет соединения"); stateBadge.setTextColor(connected ? success : failed ? error : bluetoothBusy ? info : running ? warning : muted); }
+        if (connection != null) connection.setText(connected ? (peer.isBluetooth() ? "Подключён по Bluetooth" : "Подключён через отладку") : bluetoothBusy || failed ? BluetoothLink.status : running ? "Ожидание подключения" : "Соединение отключено");
+        if (bluetoothButton != null) { bluetoothButton.setText(bluetoothBusy ? "Подключение…" : connected ? "Отключить Mac" : failed ? "Повторить запуск" : running ? "Подключить Mac" : "Включить соединение"); bluetoothButton.setEnabled(!bluetoothBusy); }
+        if(bluetoothButton!=null && !Objects.equals(bluetoothButton.getTag(),connected)) {
+            bluetoothButton.setTag(connected); bluetoothButton.setBackground(pressBackground(connected?soft:accent,connected?line:muted));
+            bluetoothButton.setTextColor(new ColorStateList(new int[][]{new int[]{-android.R.attr.state_enabled},new int[]{}},new int[]{muted,connected?ink:canvas}));
+        }
+        if (pairButton != null) { pairButton.setVisibility(running && !connected ? View.VISIBLE : View.GONE); pairButton.setEnabled(!bluetoothBusy); }
+        if (settingsConnectionState != null) settingsConnectionState.setText(bluetoothBusy || failed ? BluetoothLink.status : connected ? (peer.isBluetooth() ? "Mac подключён по Bluetooth" : "Mac подключён через отладку") : running ? "Ожидание подключения Mac" : "Соединение отключено");
+        if (settingsConnectionState != null) settingsConnectionState.setTextColor(connected?success:failed?error:bluetoothBusy?info:running?warning:muted);
+        if (bluetoothPermissionRow != null) { boolean allowed=missingBluetoothPermissions(false).length==0; bluetoothPermissionRow.setStatus(allowed?"Разрешён":"Не разрешён",allowed?success:warning); }
+        if (ownNotificationsRow != null) {
+            NotificationManager nm=getSystemService(NotificationManager.class); NotificationChannel channel=nm.getNotificationChannel("connection");
+            boolean allowed=nm.areNotificationsEnabled(), channelEnabled=channel==null || channel.getImportance()!=NotificationManager.IMPORTANCE_NONE;
+            ownNotificationsRow.setStatus(!allowed?"Отключены":!channelEnabled?"Канал отключён":"Разрешены",allowed && channelEnabled?success:warning);
+        }
+        if (shizukuPermissionRow != null) {
+            boolean alive=false,granted=false; try { alive=Shizuku.pingBinder(); granted=alive && Shizuku.checkSelfPermission()==PackageManager.PERMISSION_GRANTED; } catch(RuntimeException ignored) {}
+            shizukuPermissionRow.setStatus(!alive?"Не запущен":granted?"Разрешён":"Не разрешён",granted?success:warning);
+        }
+        if (authorizationRow != null) {
+            authorizationRow.setEnabled(!bluetoothBusy);
+            int trusted = getSharedPreferences("bluetooth-trust", MODE_PRIVATE).getAll().size();
+            authorizationRow.setStatus(trusted == 0 ? "Нет устройств" : "Сохранено: " + trusted);
+        }
+        if (connectionControlRow != null) { connectionControlRow.setTitle(bluetoothBusy ? "Запуск соединения…" : failed ? "Повторить запуск" : running ? "Отключить соединение" : "Включить соединение"); connectionControlRow.setEnabled(!bluetoothBusy); }
+        if (manualClipboardRow != null) {
+            boolean canSend=connected && BridgeService.remoteClipboardEnabled;
+            manualClipboardRow.setEnabled(canSend);
+            manualClipboardRow.setDetail(!connected ? "Нет соединения с Mac" : !BridgeService.remoteClipboardEnabled ? "Буфер отключён на Mac" : "");
+        }
+        if (notificationPermissionRow != null) {
+            boolean access=PhoneNotifications.hasAccess(this);
+            notificationPermissionRow.setStatus(access?"Разрешено":"Не разрешено",access?success:warning);
+            notificationPermissionRow.setDetail(access && !PhoneNotifications.isConnected()?"Служба переподключается":"",warning);
+        }
+        if (applicationsRow != null) {
+            int excluded=getSharedPreferences("settings",MODE_PRIVATE).getStringSet("blocked",Collections.emptySet()).size();
+            applicationsRow.setStatus(excluded==0 ? "Все" : "Исключения: " + excluded);
+        }
+        if (appearanceRow != null) {
+            String appearance=getSharedPreferences("settings",MODE_PRIVATE).getString("appearance","system");
+            appearanceRow.setStatus("dark".equals(appearance)?"Тёмное":"light".equals(appearance)?"Светлое":"Системное");
+        }
+        if (backgroundRow != null) {
+            PowerManager power=getSystemService(PowerManager.class);
+            boolean unrestricted=power!=null && power.isIgnoringBatteryOptimizations(getPackageName());
+            backgroundRow.setStatus(unrestricted ? "Разрешена" : "Ограничена",unrestricted?success:warning);
+            backgroundRow.setDetail(unrestricted ? "" : "Требуется для связи с выключенным экраном");
+        }
+        if (pairing != null) { String code = BluetoothLink.PAIRING.display(); pairing.setText(code.isEmpty() ? "Код не активен" : code.substring(0, 4) + "  " + code.substring(4)); }
         if (clipboardState != null) {
             boolean enabled = getSharedPreferences("settings", MODE_PRIVATE).getBoolean("autoClipboard", false);
-            clipboardState.setText(selectedPage == 0 && !enabled ? "Автоматическая отправка отключена" : ClipboardRelay.status);
+            BridgeService service=BridgeService.instance;
+            clipboardState.setText(!enabled ? (selectedPage==2 ? "Для чтения в фоне требуется Shizuku" : "Автоматическая отправка отключена") : !connected ? "Ожидание соединения с Mac" : service!=null && service.clipboard!=null && service.clipboard.isReady() ? "Shizuku подключён" : ClipboardRelay.status);
         }
-        if (access != null) access.setText(!getSharedPreferences("settings", MODE_PRIVATE).getBoolean("forward", true) ? "Отправка приостановлена" : PhoneNotifications.hasAccess(this) ? "Доступ к уведомлениям разрешён" : "Требуется разрешение Android");
-        if (backgroundState != null) {
-            PowerManager power = getSystemService(PowerManager.class);
-            backgroundState.setText(power != null && power.isIgnoringBatteryOptimizations(getPackageName()) ? "Фоновая работа разрешена" : "Для связи с выключенным экраном разреши работу в фоне");
+        if (clipboardState != null) clipboardState.setTextColor(clipboardState.getText().toString().equals("Shizuku подключён")?success:clipboardState.getText().toString().contains("Не удалось")?error:muted);
+        if (access != null) {
+            boolean forwarding=getSharedPreferences("settings",MODE_PRIVATE).getBoolean("forward",true), granted=PhoneNotifications.hasAccess(this);
+            access.setText(!forwarding?"Отправка приостановлена":!granted?"Требуется разрешение Android":!PhoneNotifications.isConnected()?"Служба уведомлений переподключается":"Передача уведомлений включена");
+            access.setTextColor(!forwarding?muted:granted && PhoneNotifications.isConnected()?success:warning);
         }
     }
 
@@ -228,6 +325,35 @@ public final class MainActivity extends Activity {
     private void chooseFiles() {
         Intent choose = new Intent(Intent.ACTION_OPEN_DOCUMENT).setType("*/*").addCategory(Intent.CATEGORY_OPENABLE);
         choose.putExtra(Intent.EXTRA_ALLOW_MULTIPLE, true); choose.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION); startActivityForResult(choose, 20);
+    }
+    private void openNotificationAccessSettings() {
+        try {
+            if(Build.VERSION.SDK_INT>=30) {
+                startActivity(new Intent(Settings.ACTION_NOTIFICATION_LISTENER_DETAIL_SETTINGS).putExtra(Settings.EXTRA_NOTIFICATION_LISTENER_COMPONENT_NAME,new ComponentName(this,PhoneNotifications.class).flattenToString())); return;
+            }
+        } catch(ActivityNotFoundException ignored) {}
+        startActivity(new Intent(Settings.ACTION_NOTIFICATION_LISTENER_SETTINGS));
+    }
+    private void openApplicationSettings() { startActivity(new Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS,Uri.parse("package:"+getPackageName()))); }
+    private void configureOwnNotifications() {
+        SharedPreferences prefs=getSharedPreferences("settings",MODE_PRIVATE);
+        if (Build.VERSION.SDK_INT>=33 && checkSelfPermission(Manifest.permission.POST_NOTIFICATIONS)!=PackageManager.PERMISSION_GRANTED &&
+            (!prefs.getBoolean("notificationsPermissionRequested",false) || shouldShowRequestPermissionRationale(Manifest.permission.POST_NOTIFICATIONS))) {
+            prefs.edit().putBoolean("notificationsPermissionRequested",true).apply();
+            requestPermissions(new String[]{Manifest.permission.POST_NOTIFICATIONS},56);
+        } else {
+            NotificationChannel channel=getSystemService(NotificationManager.class).getNotificationChannel("connection");
+            Intent intent=channel!=null && channel.getImportance()==NotificationManager.IMPORTANCE_NONE ?
+                new Intent(Settings.ACTION_CHANNEL_NOTIFICATION_SETTINGS).putExtra(Settings.EXTRA_CHANNEL_ID,"connection") : new Intent(Settings.ACTION_APP_NOTIFICATION_SETTINGS);
+            startActivity(intent.putExtra(Settings.EXTRA_APP_PACKAGE,getPackageName()));
+        }
+    }
+    private void configureShizuku() {
+        try {
+            if (Shizuku.pingBinder() && Shizuku.checkSelfPermission()!=PackageManager.PERMISSION_GRANTED) { Shizuku.requestPermission(57); return; }
+            Intent launch=getPackageManager().getLaunchIntentForPackage("moe.shizuku.privileged.api");
+            if(launch!=null) startActivity(launch); else showShizukuHelp();
+        } catch(RuntimeException failure) { showShizukuHelp(); }
     }
     private void requestBackground() {
         try {
@@ -352,6 +478,7 @@ public final class MainActivity extends Activity {
     }
     @Override public void onRequestPermissionsResult(int request, String[] permissions, int[] grants) {
         super.onRequestPermissionsResult(request, permissions, grants);
+        if(request==56) { refreshState(); return; }
         if (request == 40) {
             if (missingBluetoothPermissions(discoverAfterPermission).length != 0) {
                 PhoneDiagnostics.record(this, grants.length == 0 ? "permission.cancelled" : "permission.denied");
@@ -418,6 +545,34 @@ public final class MainActivity extends Activity {
         GradientDrawable drawable = new GradientDrawable(); drawable.setColor(color); drawable.setCornerRadius(dp(radius)); if (border) drawable.setStroke(dp(1), line); return drawable;
     }
     private LinearLayout card() { LinearLayout view = column(); view.setPadding(dp(22), dp(22), dp(22), dp(22)); view.setBackground(shape(surface, 10, true)); return view; }
+    private LinearLayout settingsCard() {
+        LinearLayout card=column(); card.setPadding(dp(20),dp(4),dp(20),dp(4)); card.setBackground(shape(surface,10,true)); return card;
+    }
+    private void rowDivider(LinearLayout parent) {
+        View divider=new View(this); divider.setBackgroundColor(line); parent.addView(divider,new LinearLayout.LayoutParams(-1,dp(1)));
+    }
+    private final class SettingsRow extends LinearLayout {
+        private final TextView title,detail,status;
+        SettingsRow(LinearLayout parent,String heading,String description,Runnable action,String accessory) {
+            super(MainActivity.this); setOrientation(HORIZONTAL); setGravity(Gravity.CENTER_VERTICAL); setMinimumHeight(dp(52));
+            setPadding(0,dp(12),0,dp(12)); setBackground(pressBackground(Color.TRANSPARENT,soft));
+            LinearLayout words=column(); title=label(heading,14,false,ink); words.addView(title); detail=label("",12,false,muted);
+            LinearLayout.LayoutParams detailParams=new LinearLayout.LayoutParams(-1,-2); detailParams.topMargin=dp(4); words.addView(detail,detailParams);
+            addView(words,new LinearLayout.LayoutParams(0,-2,1));
+            status=label("",12,false,muted); status.setGravity(Gravity.END); status.setMaxWidth(dp(110));
+            LinearLayout.LayoutParams statusParams=new LinearLayout.LayoutParams(-2,-2); statusParams.leftMargin=dp(12); addView(status,statusParams);
+            if (!accessory.isEmpty()) {
+                LinearLayout.LayoutParams iconParams=new LinearLayout.LayoutParams(dp(18),dp(18)); iconParams.leftMargin=dp(10); addView(new IconView(accessory,muted),iconParams);
+            }
+            setOnClickListener(v->action.run()); setDetail(description); setStatus(""); parent.addView(this,new LinearLayout.LayoutParams(-1,-2));
+        }
+        void setTitle(String value) { if (!value.contentEquals(title.getText())) title.setText(value); }
+        void setStatus(String value) { if (!value.contentEquals(status.getText())) status.setText(value); status.setVisibility(value.isEmpty()?GONE:VISIBLE); }
+        void setStatus(String value,int color) { setStatus(value); status.setTextColor(color); }
+        void setDetail(String value,int color) { setDetail(value); detail.setTextColor(color); }
+        void setDetail(String value) { if (!value.contentEquals(detail.getText())) detail.setText(value); detail.setVisibility(value.isEmpty()?GONE:VISIBLE); }
+        @Override public void setEnabled(boolean enabled) { super.setEnabled(enabled); setAlpha(enabled?1f:0.45f); }
+    }
     private View iconTile(String icon, int size) {
         IconView view = new IconView(icon, accent); int padding = size <= 32 ? 4 : size < 50 ? 10 : 12; view.setPadding(dp(padding), dp(padding), dp(padding), dp(padding));  return view;
     }
@@ -441,7 +596,7 @@ public final class MainActivity extends Activity {
         states.addState(new int[]{android.R.attr.state_pressed}, shape(pressed,7,false)); states.addState(new int[]{},shape(normal,7,false)); return states;
     }
     private MinimalSwitch switchRow(LinearLayout parent, String title, boolean checked) {
-        MinimalSwitch view = new MinimalSwitch(); view.setText(title); view.setTextSize(15); view.setTextColor(ink); view.setMinHeight(dp(48)); view.setChecked(checked);
+        MinimalSwitch view = new MinimalSwitch(); view.setText(title); view.setTextSize(15); view.setTextColor(ink); view.setMinHeight(dp(56)); view.setChecked(checked);
         parent.addView(view, new LinearLayout.LayoutParams(-1, -2)); return view;
     }
     private final class MinimalSwitch extends CompoundButton {
@@ -481,6 +636,8 @@ public final class MainActivity extends Activity {
             else if (kind.equals("clipboard")) { c.drawRoundRect(5,5,19,22,2,2,paint); c.drawRoundRect(9,2,15,7,1.5f,1.5f,paint); c.drawLine(9,12,15,12,paint); c.drawLine(9,16,14,16,paint); }
             else if (kind.equals("bell")) { Path p=new Path(); p.moveTo(5,17); p.lineTo(7,14); p.lineTo(7,9); p.cubicTo(7,2,17,2,17,9); p.lineTo(17,14); p.lineTo(19,17); p.close(); c.drawPath(p,paint); c.drawArc(10,17,14,22,0,180,false,paint); }
             else if (kind.equals("upload")) { c.drawRoundRect(5,3,19,22,2,2,paint); c.drawLine(12,16,12,8,paint); c.drawLine(8,12,12,8,paint); c.drawLine(16,12,12,8,paint); }
+            else if (kind.equals("copy")) { c.drawRoundRect(8,8,21,21,2,2,paint); Path p=new Path(); p.moveTo(5,16); p.lineTo(3,16); p.lineTo(3,3); p.lineTo(16,3); p.lineTo(16,5); c.drawPath(p,paint); }
+            else if (kind.equals("send")) { c.drawLine(5,19,19,5,paint); c.drawLine(9,5,19,5,paint); c.drawLine(19,5,19,15,paint); }
             else if (kind.equals("chevron")) { c.drawLine(9,6,15,12,paint); c.drawLine(15,12,9,18,paint); }
             else { Path p=new Path(); p.moveTo(3,7); p.lineTo(3,20); p.lineTo(21,20); p.lineTo(21,7); p.lineTo(12,7); p.lineTo(10,4); p.lineTo(3,4); p.close(); c.drawPath(p,paint); }
             c.restore();

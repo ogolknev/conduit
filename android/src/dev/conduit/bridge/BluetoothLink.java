@@ -22,6 +22,7 @@ final class BluetoothLink {
     private BluetoothServerSocket server;
     private final Semaphore handshakes = new Semaphore(2);
     BluetoothLink(BridgeService context) { this.context = context; }
+    boolean isListening() { return running; }
     static final class StartResult {
         final boolean ready; final String message;
         StartResult(boolean ready, String message) { this.ready = ready; this.message = message; }

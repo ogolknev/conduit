@@ -40,5 +40,17 @@ Conduit.app/Contents/MacOS/Conduit --render-preview dark.png --preview-connected
 Conduit.app/Contents/MacOS/Conduit --render-preview settings.png --preview-settings --preview-compact
 ```
 
-Preview connection data is simulated. Android still needs a device review after
-installation; compiling the APK does not verify its appearance on a phone.
+Preview connection data is simulated. Android 0.3.2 was additionally reviewed on a physical Xiaomi 15 in both themes; screenshots from the phone remain local and are not included in this public source repository.
+
+
+## States and permissions in 0.3.2
+
+Use accent colors only for state: green for granted / connected, amber for required
+attention, red for errors, blue for an active operation, gray for inactive state.
+Every color has a text label. Keep the surrounding surfaces monochrome.
+
+Android settings use shared rows with state values and navigation arrows; no repeated
+permission request when access is already granted. Distinguish notification-reading
+access, listener connectivity, permission to post Conduit notifications, and channel state.
+The launcher icon is adaptive; foreground notifications use a dedicated monochrome glyph.
+Mac notifications include the Android app icon as a bounded PNG attachment.

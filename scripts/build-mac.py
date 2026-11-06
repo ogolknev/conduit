@@ -34,8 +34,8 @@ subprocess.run(['swift', str(project / 'scripts/render-icons.swift'), str(icons)
 subprocess.run(['/usr/bin/iconutil', '-c', 'icns', str(icons), '-o', str(resources / 'Conduit.icns')], check=True)
 with (app / 'Contents/Info.plist').open('wb') as f:
     plistlib.dump({'CFBundleName':'Conduit', 'CFBundleDisplayName':'Conduit', 'CFBundleExecutable':'Conduit',
-        'CFBundleIdentifier':'dev.conduit.mac', 'CFBundlePackageType':'APPL', 'CFBundleShortVersionString':'0.3.0',
-        'CFBundleVersion':'11', 'CFBundleIconFile':'Conduit.icns', 'LSMinimumSystemVersion':'13.0', 'NSHighResolutionCapable':True,
+        'CFBundleIdentifier':'dev.conduit.mac', 'CFBundlePackageType':'APPL', 'CFBundleShortVersionString':'0.3.2',
+        'CFBundleVersion':'12', 'CFBundleIconFile':'Conduit.icns', 'LSMinimumSystemVersion':'13.0', 'NSHighResolutionCapable':True,
         'NSPrincipalClass':'NSApplication', 'NSBluetoothAlwaysUsageDescription':'Conduit соединяет Mac и Android для передачи буфера, уведомлений и файлов по Bluetooth.'}, f)
 subprocess.run(['/usr/bin/codesign', '--force', '--deep', '--sign', '-', str(app)], check=True)
 print('Built:', app)
