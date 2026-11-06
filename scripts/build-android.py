@@ -32,7 +32,9 @@ classes_jar = scratch / 'classes.jar'
 run(jdk / 'bin/jar', 'cf', classes_jar, '-C', classes, '.')
 run(jdk / 'bin/java', '-cp', tools / 'lib/d8.jar', 'com.android.tools.r8.D8', '--min-api', '26', '--lib', jar, '--output', dex, classes_jar, *dependencies)
 unsigned = scratch / 'unsigned.apk'
-run(tools / 'aapt2', 'link', '-o', unsigned, '-I', jar, '--manifest', project / 'android/AndroidManifest.xml')
+resources = scratch / 'resources.zip'
+run(tools / 'aapt2', 'compile', '--dir', project / 'android/res', '-o', resources)
+run(tools / 'aapt2', 'link', '-o', unsigned, '-I', jar, '--manifest', project / 'android/AndroidManifest.xml', resources)
 with zipfile.ZipFile(unsigned, 'a', zipfile.ZIP_DEFLATED) as z:
     for file in dex.glob('*.dex'): z.write(file, file.name)
     z.write(args.server, 'assets/scrcpy-server-v5.0.1', compress_type=zipfile.ZIP_STORED)

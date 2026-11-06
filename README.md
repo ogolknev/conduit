@@ -1,4 +1,4 @@
-# Conduit 0.2.8 — Bluetooth
+# Conduit 0.3.0
 
 Нативное приложение для Mac и Android-компаньон: буфер обмена, уведомления,
 ответы и файлы. Основной режим — Bluetooth; USB / Wi-Fi через ADB тоже сохранён.
@@ -10,14 +10,26 @@
 пользователем. Уведомления, файлы и длительная фоновая работа ещё проверяются.
 Подробности в `VALIDATION.md`.
 
+## Интерфейс 0.3.0
+
+Mac и Android используют единое монохромное оформление, светлую и тёмную темы.
+Три раздела: «Устройства», «Файлы», «Настройки». На главном экране — соединение,
+буфер и уведомления; разрешения и диагностика вынесены в настройки.
+Текст описывает состояние и действие. Иконки имеют общий контур; знак приложения
+симметричен и одинаков на обеих платформах. Параметры — в [design/README.md](design/README.md).
+
+Обе сборки 0.3.0 проверены компиляцией. SwiftUI-экраны просмотрены в обеих темах
+и при минимальной ширине окна. Android 0.3.0 ещё не проверен на физическом телефоне:
+результаты испытаний ниже относятся к предыдущим версиям транспорта.
+
+![Conduit на macOS — светлая тема, тестовое состояние подключения](design/mac-light.png)
+
 ## Что скачать
 
-- [Conduit-0.2.8-Bluetooth-macOS.zip](https://github.com/ogolknev/conduit/releases/download/v0.2.8/Conduit-0.2.8-Bluetooth-macOS.zip): Mac Apple Silicon, macOS 13+.
-- [conduit-companion-0.2.8.apk](https://github.com/ogolknev/conduit/releases/download/v0.2.8/conduit-companion-0.2.8.apk): Android 8+. Это обновление того же компаньона 0.1,
-  подписанное тем же локальным ключом разработки.
-- Внутри Mac-приложения уже есть APK и ZIP с APK для отправки на телефон.
-- [Релиз 0.2.8](https://github.com/ogolknev/conduit/releases/tag/v0.2.8) содержит
-  обе сборки, архив исходников и контрольные суммы SHA-256.
+- [Conduit-0.3.0-Bluetooth-macOS.zip](https://github.com/ogolknev/conduit/releases/download/v0.3.0/Conduit-0.3.0-Bluetooth-macOS.zip): Mac Apple Silicon, macOS 13+.
+- [conduit-companion-0.3.0.apk](https://github.com/ogolknev/conduit/releases/download/v0.3.0/conduit-companion-0.3.0.apk): Android 8+, обновление с сохранением прежнего ключа подписи.
+- [Релиз 0.3.0](https://github.com/ogolknev/conduit/releases/tag/v0.3.0): обе сборки, исходники и SHA-256.
+- Внутри Mac-приложения есть APK и ZIP с APK для отправки на телефон.
 
 ## Исправления 0.2.1–0.2.2 на Mac
 
