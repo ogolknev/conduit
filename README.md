@@ -1,4 +1,4 @@
-# Conduit 0.3.2
+# Conduit 0.3.3
 
 Нативное приложение для Mac и Android-компаньон: буфер обмена, уведомления,
 ответы и файлы. Основной режим — Bluetooth; USB / Wi-Fi через ADB тоже сохранён.
@@ -9,6 +9,17 @@
 Ручной и автоматический обратный буфер через Shizuku тоже подтверждены
 пользователем. Уведомления, файлы и длительная фоновая работа ещё проверяются.
 Подробности в `VALIDATION.md`.
+
+## Исправления 0.3.3
+
+Подписи нижней навигации Android имеют одинаковый шрифт, высоту и выравнивание
+на всех вкладках. Выбранная вкладка выделяется цветом и фоном без изменения
+метрик текста.
+
+Иконка Mac уменьшена до стандартных отступов: рисунок занимает 824 × 824 пикселя
+на холсте 1024 × 1024. Убрана ручная подстановка иконки Dock; приложение использует
+зарегистрированный значок из пакета. Ресурс переименован в `AppIcon.icns`, чтобы
+обновить ссылку на значок при регистрации новой версии.
 
 ## Исправления 0.3.2
 
@@ -47,9 +58,9 @@ Mac и Android используют единое монохромное офор
 
 ## Что скачать
 
-- [Conduit-0.3.2-Bluetooth-macOS.zip](https://github.com/ogolknev/conduit/releases/download/v0.3.2/Conduit-0.3.2-Bluetooth-macOS.zip): Mac Apple Silicon, macOS 13+.
-- [conduit-companion-0.3.2.apk](https://github.com/ogolknev/conduit/releases/download/v0.3.2/conduit-companion-0.3.2.apk): Android 8+, обновление с сохранением прежнего ключа подписи.
-- [Релиз 0.3.2](https://github.com/ogolknev/conduit/releases/tag/v0.3.2): обе сборки, исходники и SHA-256.
+- [Conduit-0.3.3-Bluetooth-macOS.zip](https://github.com/ogolknev/conduit/releases/download/v0.3.3/Conduit-0.3.3-Bluetooth-macOS.zip): Mac Apple Silicon, macOS 13+.
+- [conduit-companion-0.3.3.apk](https://github.com/ogolknev/conduit/releases/download/v0.3.3/conduit-companion-0.3.3.apk): Android 8+, обновление с сохранением прежнего ключа подписи.
+- [Релиз 0.3.3](https://github.com/ogolknev/conduit/releases/tag/v0.3.3): обе сборки, исходники и SHA-256.
 - Внутри Mac-приложения есть APK и ZIP с APK для отправки на телефон.
 
 ## Исправления 0.2.1–0.2.2 на Mac

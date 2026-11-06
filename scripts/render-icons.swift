@@ -12,7 +12,11 @@ for points in [16, 32, 128, 256, 512] {
         NSGraphicsContext.saveGraphicsState()
         NSGraphicsContext.current = NSGraphicsContext(bitmapImageRep: bitmap)
         let context = NSGraphicsContext.current!.cgContext
-        context.scaleBy(x: Double(size) / 24, y: Double(size) / 24)
+        // macOS legacy icon keyline: 824 px artwork inside a 1024 px canvas.
+        let unit=Double(size)*824/1024/22
+        let padding=Double(size)*100/1024-unit
+        context.translateBy(x:padding,y:padding)
+        context.scaleBy(x:unit,y:unit)
         NSColor(srgbRed: 32.0/255, green: 32.0/255, blue: 32.0/255, alpha: 1).setFill()
         NSBezierPath(roundedRect: NSRect(x: 1, y: 1, width: 22, height: 22), xRadius: 5, yRadius: 5).fill()
         NSColor(srgbRed: 1, green: 1, blue: 1, alpha: 1).setStroke()

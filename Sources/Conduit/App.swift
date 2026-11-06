@@ -47,9 +47,11 @@ private var appVersion: String { Bundle.main.object(forInfoDictionaryKey: "CFBun
         }
         if args.contains("--smoke-test") {
             let resources = Bundle.main.resourceURL!
-            let names = ["platform-tools/adb", "scrcpy-server-v5.0.1", "conduit-companion.apk", "Conduit.icns"]
+            let names = ["platform-tools/adb", "scrcpy-server-v5.0.1", "conduit-companion.apk", "AppIcon.icns"]
             guard names.allSatisfy({ FileManager.default.fileExists(atPath: resources.appendingPathComponent($0).path) }),
                   let server = try? Data(contentsOf: resources.appendingPathComponent("scrcpy-server-v5.0.1")) else { exit(1) }
+            guard Bundle.main.object(forInfoDictionaryKey: "CFBundleIconFile") as? String == "AppIcon.icns",
+                  let icon = NSImage(contentsOf: resources.appendingPathComponent("AppIcon.icns")), icon.isValid else { exit(6) }
             let hash = SHA256.hash(data: server).map { String(format: "%02x", $0) }.joined()
             guard hash == "764eb6f79811d5211fe9df341120882ba9994c7a61b897d7bf3fb662e53bc536" else { exit(2) }
             print("Conduit \(appVersion): bundled ADB, companion APK and pinned scrcpy server verified")

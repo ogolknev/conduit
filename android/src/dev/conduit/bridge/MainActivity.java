@@ -100,14 +100,20 @@ public final class MainActivity extends Activity {
         if (selectedPage != 2) { page.addView(brand); gap(page, 32); }
         if (selectedPage == 0) overviewPage(); else if (selectedPage == 1) filesPage(); else settingsPage();
         View divider = new View(this); divider.setBackgroundColor(line); shell.addView(divider, new LinearLayout.LayoutParams(-1, dp(1)));
-        LinearLayout nav = row(); nav.setPadding(dp(12), dp(7), dp(12), dp(7)); nav.setBackgroundColor(surface);
+        LinearLayout nav = row(); nav.setBaselineAligned(false); nav.setPadding(dp(12), dp(7), dp(12), dp(7)); nav.setBackgroundColor(surface);
         String[] titles = {"Устройства", "Файлы", "Настройки"}, icons = {"home", "folder", "settings"};
         for (int i = 0; i < titles.length; i++) {
             final int index = i; LinearLayout item = column(); item.setGravity(Gravity.CENTER); item.setPadding(dp(8), dp(9), dp(8), dp(9));
             if (selectedPage == i) item.setBackground(shape(soft, 7, false));
             int color = selectedPage == i ? accent : muted;
             item.addView(new IconView(icons[i], ink), new LinearLayout.LayoutParams(dp(23), dp(23))); gap(item, 5);
-            item.addView(label(titles[i], 11, selectedPage == i, color));
+            TextView caption=label(titles[i],11,false,color);
+            caption.setTypeface(Typeface.create("sans-serif-medium",Typeface.NORMAL));
+            caption.setSingleLine(true); caption.setEllipsize(android.text.TextUtils.TruncateAt.END);
+            caption.setGravity(Gravity.CENTER); caption.setTextAlignment(View.TEXT_ALIGNMENT_CENTER); caption.setLineSpacing(0,1);
+            android.graphics.Paint.FontMetricsInt metrics=caption.getPaint().getFontMetricsInt();
+            int captionHeight=Math.max(dp(18),metrics.bottom-metrics.top);
+            item.addView(caption,new LinearLayout.LayoutParams(-1,captionHeight));
             item.setContentDescription(titles[i]); item.setImportantForAccessibility(View.IMPORTANT_FOR_ACCESSIBILITY_YES);
             item.setSelected(selectedPage == i); item.setOnClickListener(v -> { selectedPage = index; buildScreen(); });
             nav.addView(item, new LinearLayout.LayoutParams(0, -2, 1));

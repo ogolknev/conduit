@@ -9,7 +9,6 @@ final class AppDelegate: NSObject, NSApplicationDelegate, UNUserNotificationCent
 
     func applicationDidFinishLaunching(_ notification: Notification) {
         NSApp.setActivationPolicy(.regular)
-        if let url=Bundle.main.url(forResource:"Conduit",withExtension:"icns"), let icon=NSImage(contentsOf:url) { NSApp.applicationIconImage=icon }
         let center = UNUserNotificationCenter.current()
         center.delegate = self
         let reply = UNTextInputNotificationAction(identifier: "REPLY", title: "Ответить", options: [], textInputButtonTitle: "Отправить", textInputPlaceholder: "Сообщение")

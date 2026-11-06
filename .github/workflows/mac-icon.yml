@@ -1,0 +1,19 @@
+name: Compile macOS icon
+on:
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  icon:
+    runs-on: macos-26
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+      - name: Compile app icon with Xcode
+        run: python3 scripts/build-mac-icon.py --scratch "$RUNNER_TEMP/conduit-icon" --output "$RUNNER_TEMP/conduit-icon-artifact"
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: conduit-mac-icon
+          path: ${{ runner.temp }}/conduit-icon-artifact
+          if-no-files-found: error
+          retention-days: 7
