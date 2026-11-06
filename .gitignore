@@ -1,0 +1,35 @@
+# Build tools, generated files, and local scratch data
+/work/
+/.build/
+/.swiftpm/
+/build/
+/dist/
+/outputs/
+__pycache__/
+*.py[cod]
+.DS_Store
+
+# Local configuration and credentials
+.env
+.env.*
+!.env.example
+local.properties
+*.p12
+*.pfx
+*.jks
+*.keystore
+*.key
+*.pem
+
+# Device diagnostics and packaged applications
+*.log
+*.class
+*.dex
+*.jar
+*.aar
+*.apk
+*.apk.idsig
+*.app/
+*.zip
+*.dmg
+*.dSYM/
