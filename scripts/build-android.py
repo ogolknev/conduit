@@ -44,6 +44,10 @@ aligned = scratch / 'aligned.apk'
 with zipfile.ZipFile(unsigned, 'a', zipfile.ZIP_DEFLATED) as z:
     for file in dex.glob('*.dex'): z.write(file, file.name)
     z.write(args.server, 'assets/scrcpy-server-v5.0.1', compress_type=zipfile.ZIP_STORED)
+    for name in ['LICENSE', 'THIRD_PARTY_NOTICES.md']:
+        z.write(project / name, 'assets/' + name)
+    for name in ['scrcpy-APACHE-2.0.txt', 'shizuku-MIT.txt']:
+        z.write(project / 'licenses' / name, 'assets/licenses/' + name)
 aligned = scratch / 'aligned.apk'
 run(tools / 'zipalign', '-f', '-p', '4', unsigned, aligned)
 key = scratch / 'development.p12'

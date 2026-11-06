@@ -1,7 +1,7 @@
 # Conduit interface
 
-Mac and Android use a neutral interface with three sections: **Устройства**, **Файлы**,
-and **Настройки**. The device screen shows connection state and synchronization;
+Mac and Android use a neutral interface with three sections: **Devices**, **Files**,
+and **Settings**. The device screen shows connection state and synchronization;
 setup instructions, permissions, and diagnostics belong in settings or dialogs.
 
 | Token | Light | Dark |
@@ -22,11 +22,11 @@ minimum button and switch touch targets and respects system bar insets and text 
 All navigation and feature icons use a 24-unit grid with a uniform visible
 1.5-point / dp outline. Scale the geometry uniformly, center it in its bounds, and
 keep stroke width constant; do not stretch width and height independently.
-`LineIcon.swift` and Android's `IconView` implement the same outline style.
+[`LineIcon.swift`](../Sources/Conduit/LineIcon.swift) and Android's `IconView` implement the same outline style.
 
-The application mark is defined in [brand.json](brand.json). It has two equal,
+The application mark is defined in [brand.json](../design/brand.json). It has two equal,
 symmetrically placed device outlines, a centered connection, and a 1.25-unit stroke.
-`scripts/generate-brand.py` generates the Swift and Java drawing code, Android
+[`scripts/generate-brand.py`](../scripts/generate-brand.py) generates the Swift and Java drawing code, Android
 vectors, SVG, and Icon Composer description. Both platform builds run `--check`
 and reject edited or stale generated files. The macOS ICNS renderer reads the same
 JSON directly. The menu bar uses a template version of this mark, not a system link symbol.
@@ -36,8 +36,8 @@ the glyph occupies about 60% of the visible icon width, matching the Mac tile.
 The menu bar glyph has a 16-point visible width in an 18-point canvas; system
 notification glyphs use the platform's monochrome keyline.
 
-Both English and Russian copy describes state and action directly: “Нет соединения”, “Подключено”,
-“Буфер обмена”, “Выбрать файлы”. Avoid slogans, rhetorical questions, and
+English and Russian copy describes state and action directly: “Disconnected”, “Connected”,
+“Clipboard”, “Choose files”. Avoid slogans, rhetorical questions, and
 decorative instructions. Errors retain actionable detail.
 
 The macOS CLI renders the real SwiftUI views without starting a connection:
@@ -49,12 +49,12 @@ Conduit.app/Contents/MacOS/Conduit --render-preview settings.png --preview-setti
 ```
 
 Preview connection data is simulated. Current localized previews and native Xiaomi 15 captures
-are in `docs/images/`; both READMEs choose language-specific images and follow GitHub's theme.
+are in [`docs/images/`](images/); both READMEs choose language-specific images and follow GitHub's theme.
 Use `--language en` or `--language ru` with the preview renderer. User-facing strings are
-maintained in `localization/strings.json` and generated for both native platforms.
+maintained in [`localization/strings.json`](../localization/strings.json) and generated for both native platforms.
 
 
-## States and permissions in 0.3.2
+## States and permissions
 
 Use accent colors only for state: green for granted / connected, amber for required
 attention, red for errors, blue for an active operation, gray for inactive state.

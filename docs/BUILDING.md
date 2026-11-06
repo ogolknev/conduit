@@ -61,7 +61,7 @@ python3 scripts/generate-localizations.py --check
 dist/Conduit.app/Contents/MacOS/Conduit --smoke-test
 ```
 
-The smoke test checks bundle resources, the server digest and native English/Russian catalogs, including formatted strings. Device checks and their limits are recorded in [VALIDATION.md](../VALIDATION.md).
+The smoke test checks bundle resources, the server digest and native English/Russian catalogs, including formatted strings. Device checks and their limits are recorded in [VALIDATION.md](VALIDATION.md).
 
 ## Translations
 
@@ -92,3 +92,7 @@ python3 scripts/build-mac-icon.py --scratch work/icon --output design/mac-icon
 ```
 
 The second command needs full Xcode. Alternatively, run the [Compile macOS icon workflow](../.github/workflows/mac-icon.yml) and copy both `Assets.car` and `manifest.json` from its artifact into `design/mac-icon/`. The build verifies source and catalog hashes.
+
+## License files
+
+Both builds include the project MIT license and the notices for their bundled dependencies. The Mac app stores them in `Contents/Resources/`; the APK stores them under `assets/`.

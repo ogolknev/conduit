@@ -28,8 +28,9 @@ for name in ['adb', 'NOTICE.txt', 'source.properties']:
 shutil.copy2(args.server, resources / 'scrcpy-server-v5.0.1')
 shutil.copy2(args.apk, resources / 'conduit-companion.apk')
 with zipfile.ZipFile(resources / 'conduit-companion.zip', 'w', zipfile.ZIP_DEFLATED) as z: z.write(args.apk, 'conduit-companion.apk')
-if (project / 'THIRD_PARTY_NOTICES.md').exists(): shutil.copy2(project / 'THIRD_PARTY_NOTICES.md', resources)
-if (project / 'licenses').is_dir(): shutil.copytree(project / 'licenses', resources / 'licenses', dirs_exist_ok=True)
+for name in ['LICENSE', 'THIRD_PARTY_NOTICES.md']:
+    shutil.copy2(project / name, resources / name)
+shutil.copytree(project / 'licenses', resources / 'licenses', dirs_exist_ok=True)
 icons = scratch / 'Conduit.iconset'
 if icons.exists(): shutil.rmtree(icons)
 subprocess.run(['swift', str(project / 'scripts/render-icons.swift'), str(icons)], check=True, env=env)

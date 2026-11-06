@@ -71,11 +71,15 @@ Without Shizuku, use **Settings → Send clipboard** on the phone.
 
 ## Notes
 
-- This is a prototype, tested on Xiaomi 15 / Android 16 and Apple Silicon / macOS 26.6.2. See [validation notes](VALIDATION.md) for the tested scope.
+- This is a prototype, tested on Xiaomi 15 / Android 16 and Apple Silicon / macOS 26.6.2. See [validation notes](docs/VALIDATION.md) for the tested scope.
 - Clipboard sync supports text only and keeps no history. Android-to-Mac reading may pause while the phone is locked.
 - Bluetooth is slower than Wi-Fi. Received files go to `~/Downloads/Conduit` on Mac and `Download/Conduit` on Android 10+.
 - Open both apps after a restart. Connection reports are available in **Settings → Diagnostics**; clipboard and notification content is excluded.
 
 ## Development
 
-[Build instructions](docs/BUILDING.md) · [Interface and icons](design/README.md) · [Release history](https://github.com/ogolknev/conduit/releases) · [Third-party notices](THIRD_PARTY_NOTICES.md)
+[Build, design and validation](docs/README.md) · [Release history](https://github.com/ogolknev/conduit/releases)
+
+## License
+
+[MIT](LICENSE). You may use, modify and redistribute Conduit, including commercially, while preserving the copyright and license notice. Third-party components retain their [own licenses](THIRD_PARTY_NOTICES.md).
