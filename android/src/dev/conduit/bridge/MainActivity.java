@@ -1,5 +1,7 @@
 package dev.conduit.bridge;
 
+import static dev.conduit.bridge.I18n.t;
+
 import android.Manifest;
 import android.app.*;
 import android.bluetooth.*;
@@ -23,7 +25,7 @@ public final class MainActivity extends Activity {
     private Button bluetoothButton, pairButton;
     private SettingsRow backgroundRow, notificationPermissionRow, applicationsRow, manualClipboardRow, connectionControlRow, authorizationRow;
     private TextView settingsConnectionState;
-    private SettingsRow appearanceRow;
+    private SettingsRow appearanceRow, languageRow;
     private MinimalSwitch autoClipboard;
     private LinearLayout page;
     private int selectedPage;
@@ -46,6 +48,7 @@ public final class MainActivity extends Activity {
     };
 
     @Override protected void attachBaseContext(Context base) {
+        base=I18n.wrap(base);
         String appearance=base.getSharedPreferences("settings",MODE_PRIVATE).getString("appearance","system");
         if (!"system".equals(appearance)) {
             Configuration configuration=new Configuration(base.getResources().getConfiguration());
@@ -58,6 +61,7 @@ public final class MainActivity extends Activity {
     @Override public void onCreate(Bundle state) {
         super.onCreate(state);
         if (state != null) { discoverAfterPermission = state.getBoolean("discoverAfterPermission"); selectedPage = state.getInt("page", 0); }
+        I18n.refresh(getApplicationContext());
         PhoneDiagnostics.record(this, "activity.open");
         boolean dark = (getResources().getConfiguration().uiMode & Configuration.UI_MODE_NIGHT_MASK) == Configuration.UI_MODE_NIGHT_YES;
         canvas = Color.parseColor(dark ? "#151515" : "#FFFFFF"); surface = Color.parseColor(dark ? "#1C1C1C" : "#FFFFFF");
@@ -79,7 +83,7 @@ public final class MainActivity extends Activity {
         connection = access = clipboardState = heroTitle = stateBadge = null;
         bluetoothButton = pairButton = null; autoClipboard = null;
         backgroundRow = notificationPermissionRow = applicationsRow = manualClipboardRow = connectionControlRow = authorizationRow = null;
-        settingsConnectionState = null; appearanceRow = null;
+        settingsConnectionState = null; appearanceRow = languageRow = null;
         bluetoothPermissionRow = ownNotificationsRow = shizukuPermissionRow = null;
         LinearLayout shell = column(); shell.setBackgroundColor(canvas);
         shell.setOnApplyWindowInsetsListener((view, insets) -> {
@@ -101,7 +105,7 @@ public final class MainActivity extends Activity {
         if (selectedPage == 0) overviewPage(); else if (selectedPage == 1) filesPage(); else settingsPage();
         View divider = new View(this); divider.setBackgroundColor(line); shell.addView(divider, new LinearLayout.LayoutParams(-1, dp(1)));
         LinearLayout nav = row(); nav.setBaselineAligned(false); nav.setPadding(dp(12), dp(7), dp(12), dp(7)); nav.setBackgroundColor(surface);
-        String[] titles = {"Устройства", "Файлы", "Настройки"}, icons = {"home", "folder", "settings"};
+        String[] titles = {t("Устройства"), t("Файлы"), t("Настройки")}, icons = {"home", "folder", "settings"};
         for (int i = 0; i < titles.length; i++) {
             final int index = i; LinearLayout item = column(); item.setGravity(Gravity.CENTER); item.setPadding(dp(8), dp(9), dp(8), dp(9));
             if (selectedPage == i) item.setBackground(shape(soft, 7, false));
@@ -124,7 +128,7 @@ public final class MainActivity extends Activity {
     private void overviewPage() {
         stateBadge = label("", 12, true, accent); stateBadge.setPadding(0, dp(2), 0, dp(2));
         page.addView(stateBadge, new LinearLayout.LayoutParams(-2, -2)); gap(page, 20);
-        heroTitle = label("Устройства", 28, true, ink); heroTitle.setLetterSpacing(-0.035f); page.addView(heroTitle); gap(page, 10);
+        heroTitle = label(t("Устройства"), 28, true, ink); heroTitle.setLetterSpacing(-0.035f); page.addView(heroTitle); gap(page, 10);
         gap(page, 18);
         LinearLayout hero = card();
         LinearLayout device = row(); device.addView(iconTile("laptop", 44), new LinearLayout.LayoutParams(dp(44), dp(54)));
@@ -132,22 +136,22 @@ public final class MainActivity extends Activity {
         deviceText.addView(label("Mac", 20, true, ink)); gap(deviceText, 6);
         connection = label("", 13, false, muted); deviceText.addView(connection); device.addView(deviceText, deviceParams); hero.addView(device);
         gap(hero, 22);
-        bluetoothButton = button(hero, "Включить соединение", () -> {
-            if (BridgeService.client != null) new AlertDialog.Builder(this).setTitle("Отключиться от Mac?").setMessage("Буфер, уведомления и передача файлов будут приостановлены.").setNegativeButton("Отмена", null).setPositiveButton("Отключить", (d, w) -> disconnect()).show();
+        bluetoothButton = button(hero, t("Включить соединение"), () -> {
+            if (BridgeService.client != null) new AlertDialog.Builder(this).setTitle(t("Отключиться от Mac?")).setMessage(t("Буфер, уведомления и передача файлов будут приостановлены.")).setNegativeButton(t("Отмена"), null).setPositiveButton(t("Отключить"), (d, w) -> disconnect()).show();
             else if (BridgeService.instance == null || !BridgeService.instance.isBluetoothListening()) beginBluetooth(false);
             else showConnectionHelp();
         }, true);
-        pairButton = textButton(hero, "Добавить Mac", () -> beginBluetooth(true));
+        pairButton = textButton(hero, t("Добавить Mac"), () -> beginBluetooth(true));
         page.addView(hero); gap(page, 20);
         LinearLayout features = card(); features.setPadding(dp(18), dp(4), dp(18), dp(4));
-        feature(features, "clipboard", "Буфер обмена", "Передача текста", true);
+        feature(features, "clipboard", t("Буфер обмена"), t("Передача текста"), true);
         rule(features);
-        feature(features, "bell", "Уведомления", "Передача уведомлений на Mac", false);
+        feature(features, "bell", t("Уведомления"), t("Передача уведомлений на Mac"), false);
         page.addView(features); gap(page, 24);
         LinearLayout quick = row();
-        LinearLayout caption = column(); caption.addView(label("Передача файлов", 14, true, ink)); gap(caption, 5); caption.addView(label("Файлы между Mac и Android", 12, false, muted));
+        LinearLayout caption = column(); caption.addView(label(t("Передача файлов"), 14, true, ink)); gap(caption, 5); caption.addView(label(t("Файлы между Mac и Android"), 12, false, muted));
         quick.addView(caption, new LinearLayout.LayoutParams(0, -2, 1));
-        Button send = smallButton("Отправить", () -> { selectedPage = 1; buildScreen(); }); quick.addView(send); page.addView(quick);
+        Button send = smallButton(t("Отправить"), () -> { selectedPage = 1; buildScreen(); }); quick.addView(send); page.addView(quick);
     }
 
     private void feature(LinearLayout parent, String icon, String title, String subtitle, boolean clipboard) {
@@ -161,32 +165,32 @@ public final class MainActivity extends Activity {
         IconView chevron = new IconView("chevron", muted); feature.addView(chevron, new LinearLayout.LayoutParams(dp(18), dp(18)));
         feature.setBackground(pressBackground(Color.TRANSPARENT, soft));
         feature.setOnClickListener(v -> { selectedPage = 2; buildScreen(); });
-        feature.setContentDescription(title + ", открыть настройки"); parent.addView(feature);
+        feature.setContentDescription(title + t(", открыть настройки")); parent.addView(feature);
     }
 
     private void filesPage() {
-        heading("Файлы");
+        heading(t("Файлы"));
         LinearLayout drop = card(); drop.setGravity(Gravity.CENTER_HORIZONTAL); drop.setPadding(dp(24), dp(34), dp(24), dp(30));
         drop.addView(iconTile("upload", 48), new LinearLayout.LayoutParams(dp(48), dp(48))); gap(drop, 24);
-        TextView title = label("Отправить файлы", 20, true, ink); title.setGravity(Gravity.CENTER); drop.addView(title); gap(drop, 10);
-        TextView hint = label("Фото, документы и другие файлы", 14, false, muted); hint.setGravity(Gravity.CENTER); drop.addView(hint); gap(drop, 26);
-        button(drop, "Выбрать файлы", this::chooseFiles, true); page.addView(drop); gap(page, 24);
+        TextView title = label(t("Отправить файлы"), 20, true, ink); title.setGravity(Gravity.CENTER); drop.addView(title); gap(drop, 10);
+        TextView hint = label(t("Фото, документы и другие файлы"), 14, false, muted); hint.setGravity(Gravity.CENTER); drop.addView(hint); gap(drop, 26);
+        button(drop, t("Выбрать файлы"), this::chooseFiles, true); page.addView(drop); gap(page, 24);
         LinearLayout help = card();
-        help.addView(label("Отправка из приложений", 16, true, ink)); gap(help, 10);
-        help.addView(label("Файл → Поделиться → Conduit. При отсутствии соединения файл сохраняется в очереди.", 14, false, muted));
+        help.addView(label(t("Отправка из приложений"), 16, true, ink)); gap(help, 10);
+        help.addView(label(t("Файл → Поделиться → Conduit. При отсутствии соединения файл сохраняется в очереди."), 14, false, muted));
         page.addView(help); gap(page, 20);
-        page.addView(label("По Bluetooth — до 100 МБ на файл. Очередь — до 32 файлов, суммарно 1 ГБ.", 12, false, muted));
+        page.addView(label(t("По Bluetooth — до 100 МБ на файл. Очередь — до 32 файлов, суммарно 1 ГБ."), 12, false, muted));
     }
 
     private void settingsPage() {
-        heading("Настройки");
-        section("СОЕДИНЕНИЕ"); LinearLayout connect = settingsCard();
+        heading(t("Настройки"));
+        section(t("СОЕДИНЕНИЕ")); LinearLayout connect = settingsCard();
         settingsConnectionState = label("", 13, false, muted); settingsConnectionState.setPadding(0,dp(14),0,dp(14)); connect.addView(settingsConnectionState);
         rowDivider(connect);
-        authorizationRow = new SettingsRow(connect, "Добавить Mac", "", () -> beginBluetooth(true), "chevron");
+        authorizationRow = new SettingsRow(connect, t("Добавить Mac"), "", () -> beginBluetooth(true), "chevron");
         new SettingsRow(connect, "Bluetooth", "", () -> startActivity(new Intent(Settings.ACTION_BLUETOOTH_SETTINGS)), "chevron");
-        bluetoothPermissionRow = new SettingsRow(connect,"Доступ Bluetooth","",this::openApplicationSettings,"chevron");
-        backgroundRow = new SettingsRow(connect, "Работа в фоне", "", this::requestBackground, "chevron");
+        bluetoothPermissionRow = new SettingsRow(connect,t("Доступ Bluetooth"),"",this::openApplicationSettings,"chevron");
+        backgroundRow = new SettingsRow(connect, t("Работа в фоне"), "", this::requestBackground, "chevron");
         rowDivider(connect);
         connectionControlRow = new SettingsRow(connect, "", "", () -> {
             BridgeService current=BridgeService.instance;
@@ -195,135 +199,145 @@ public final class MainActivity extends Activity {
         }, "");
         page.addView(connect); gap(page, 24);
 
-        section("БУФЕР ОБМЕНА"); LinearLayout clip = settingsCard();
-        autoClipboard = switchRow(clip, "Автоматическая отправка", getSharedPreferences("settings", MODE_PRIVATE).getBoolean("autoClipboard", false));
+        section(t("БУФЕР ОБМЕНА")); LinearLayout clip = settingsCard();
+        autoClipboard = switchRow(clip, t("Автоматическая отправка"), getSharedPreferences("settings", MODE_PRIVATE).getBoolean("autoClipboard", false));
         autoClipboard.setOnCheckedChangeListener((v, enabled) -> setAutoClipboard(enabled));
         clipboardState = label("", 12, false, muted); clip.addView(clipboardState); gap(clip,12);
         rowDivider(clip);
-        manualClipboardRow = new SettingsRow(clip, "Отправить буфер", "", this::sendClipboard, "send");
-        shizukuPermissionRow=new SettingsRow(clip,"Доступ Shizuku","",this::configureShizuku,"chevron");
-        new SettingsRow(clip, "О Shizuku", "", this::showShizukuHelp, "chevron");
+        manualClipboardRow = new SettingsRow(clip, t("Отправить буфер"), "", this::sendClipboard, "send");
+        shizukuPermissionRow=new SettingsRow(clip,t("Доступ Shizuku"),"",this::configureShizuku,"chevron");
+        new SettingsRow(clip, t("О Shizuku"), "", this::showShizukuHelp, "chevron");
         page.addView(clip); gap(page, 24);
 
-        section("УВЕДОМЛЕНИЯ"); LinearLayout notifications = settingsCard();
+        section(t("УВЕДОМЛЕНИЯ")); LinearLayout notifications = settingsCard();
         SharedPreferences prefs = getSharedPreferences("settings", MODE_PRIVATE);
-        MinimalSwitch forwarding = switchRow(notifications, "Передавать на Mac", prefs.getBoolean("forward", true));
+        MinimalSwitch forwarding = switchRow(notifications, t("Передавать на Mac"), prefs.getBoolean("forward", true));
         forwarding.setOnCheckedChangeListener((v, enabled) -> { prefs.edit().putBoolean("forward", enabled).apply(); refreshState(); });
         rowDivider(notifications);
-        notificationPermissionRow = new SettingsRow(notifications, "Чтение уведомлений", "", this::openNotificationAccessSettings, "chevron");
-        ownNotificationsRow=new SettingsRow(notifications,"Уведомления Conduit","",this::configureOwnNotifications,"chevron");
-        applicationsRow = new SettingsRow(notifications, "Приложения", "", this::chooseApps, "chevron");
+        notificationPermissionRow = new SettingsRow(notifications, t("Чтение уведомлений"), "", this::openNotificationAccessSettings, "chevron");
+        ownNotificationsRow=new SettingsRow(notifications,t("Уведомления Conduit"),"",this::configureOwnNotifications,"chevron");
+        applicationsRow = new SettingsRow(notifications, t("Приложения"), "", this::chooseApps, "chevron");
         page.addView(notifications); gap(page,24);
 
-        section("ДИАГНОСТИКА"); LinearLayout diagnostics = settingsCard();
-        new SettingsRow(diagnostics,"Скопировать отчёт","",this::copyDiagnostics,"copy");
-        new SettingsRow(diagnostics,"Автоперенос журнала","Настраивается на Mac",() -> new AlertDialog.Builder(this).setTitle("Автоперенос журнала").setMessage("На Mac: Conduit → Настройки → Диагностика. Журнал передаётся при подключении и раз в минуту. Текст буфера, уведомления и коды исключены из отчёта.").setPositiveButton("Закрыть",null).show(),"chevron");
+        section(t("ДИАГНОСТИКА")); LinearLayout diagnostics = settingsCard();
+        new SettingsRow(diagnostics,t("Скопировать отчёт"),"",this::copyDiagnostics,"copy");
+        new SettingsRow(diagnostics,t("Автоперенос журнала"),t("Настраивается на Mac"),() -> new AlertDialog.Builder(this).setTitle(t("Автоперенос журнала")).setMessage(t("На Mac: Conduit → Настройки → Диагностика. Журнал передаётся при подключении и раз в минуту. Текст буфера, уведомления и коды исключены из отчёта.")).setPositiveButton(t("Закрыть"),null).show(),"chevron");
         page.addView(diagnostics); gap(page,24);
 
-        section("ИНТЕРФЕЙС"); LinearLayout appearance=settingsCard();
-        appearanceRow=new SettingsRow(appearance,"Оформление","",this::chooseAppearance,"chevron");
+        section(t("ИНТЕРФЕЙС")); LinearLayout appearance=settingsCard();
+        appearanceRow=new SettingsRow(appearance,t("Оформление"),"",this::chooseAppearance,"chevron");
+        languageRow=new SettingsRow(appearance,t("Язык"),"",this::chooseLanguage,"chevron");
         page.addView(appearance); gap(page,24);
         LinearLayout trust = settingsCard();
-        new SettingsRow(trust,"Забыть разрешённые Mac","",this::forgetMacs,""); page.addView(trust); gap(page,20);
+        new SettingsRow(trust,t("Забыть разрешённые Mac"),"",this::forgetMacs,""); page.addView(trust); gap(page,20);
         String version=""; try { version=getPackageManager().getPackageInfo(getPackageName(),0).versionName; } catch(PackageManager.NameNotFoundException ignored) {}
         page.addView(label("Conduit " + version,12,false,muted));
     }
+    private void chooseLanguage() {
+        String[] values={"system","en","ru"}, labels={t("Системный"),"English","Русский"};
+        String current=I18n.selection(this); int selected="en".equals(current)?1:"ru".equals(current)?2:0;
+        new AlertDialog.Builder(this).setTitle(t("Язык")).setSingleChoiceItems(labels,selected,(dialog,which)-> {
+            dialog.dismiss(); I18n.select(this,values[which]);
+            if (Build.VERSION.SDK_INT<33) recreate();
+        }).setNegativeButton(t("Отмена"),null).show();
+    }
     private void chooseAppearance() {
-        String[] values={"system","light","dark"}, labels={"Системное","Светлое","Тёмное"};
+        String[] values={"system","light","dark"}, labels={t("Системное"),t("Светлое"),t("Тёмное")};
         String current=getSharedPreferences("settings",MODE_PRIVATE).getString("appearance","system");
         int selected="light".equals(current)?1:"dark".equals(current)?2:0;
-        new AlertDialog.Builder(this).setTitle("Оформление").setSingleChoiceItems(labels,selected,(dialog,which)-> {
+        new AlertDialog.Builder(this).setTitle(t("Оформление")).setSingleChoiceItems(labels,selected,(dialog,which)-> {
             getSharedPreferences("settings",MODE_PRIVATE).edit().putString("appearance",values[which]).apply(); dialog.dismiss(); recreate();
-        }).setNegativeButton("Отмена",null).show();
+        }).setNegativeButton(t("Отмена"),null).show();
     }
     private void showShizukuHelp() {
-        new AlertDialog.Builder(this).setTitle("Автоматическая отправка").setMessage("Для чтения буфера в фоне требуется запущенный Shizuku и разрешение Conduit. После перезагрузки Android Shizuku необходимо запустить повторно.\n\nПри полной блокировке Android чтение приостанавливается до разблокировки.").setPositiveButton("Закрыть",null).show();
+        new AlertDialog.Builder(this).setTitle(t("Автоматическая отправка")).setMessage(t("Для чтения буфера в фоне требуется запущенный Shizuku и разрешение Conduit. После перезагрузки Android Shizuku необходимо запустить повторно.\n\nПри полной блокировке Android чтение приостанавливается до разблокировки.")).setPositiveButton(t("Закрыть"),null).show();
     }
     private void confirmDisconnect() {
-        new AlertDialog.Builder(this).setTitle("Отключить соединение?").setMessage("Передача буфера, уведомлений и файлов будет приостановлена.").setNegativeButton("Отмена",null).setPositiveButton("Отключить",(d,w)->disconnect()).show();
+        new AlertDialog.Builder(this).setTitle(t("Отключить соединение?")).setMessage(t("Передача буфера, уведомлений и файлов будет приостановлена.")).setNegativeButton(t("Отмена"),null).setPositiveButton(t("Отключить"),(d,w)->disconnect()).show();
     }
     private void refreshState() {
         PhoneNotifications.ensureConnected(this);
+        if(languageRow!=null) { String selected=I18n.selection(this); languageRow.setStatus("en".equals(selected)?"English":"ru".equals(selected)?"Русский":t("Системный")); }
         BridgeService.Endpoint peer = BridgeService.client;
         boolean connected = peer != null;
         BridgeService serviceState=BridgeService.instance;
         boolean running = serviceState != null;
         boolean failed = !connected && !bluetoothBusy && running && getSharedPreferences("settings",MODE_PRIVATE).getBoolean("bluetoothWanted",false) && !serviceState.isBluetoothListening();
-        if (heroTitle != null) heroTitle.setText(connected ? "Устройства" : "Устройства");
-        if (stateBadge != null) { stateBadge.setText(connected ? "Подключено" : failed ? "Ошибка соединения" : running ? "Ожидание Mac" : "Нет соединения"); stateBadge.setTextColor(connected ? success : failed ? error : bluetoothBusy ? info : running ? warning : muted); }
-        if (connection != null) connection.setText(connected ? (peer.isBluetooth() ? "Подключён по Bluetooth" : "Подключён через отладку") : bluetoothBusy || failed ? BluetoothLink.status : running ? "Ожидание подключения" : "Соединение отключено");
-        if (bluetoothButton != null) { bluetoothButton.setText(bluetoothBusy ? "Подключение…" : connected ? "Отключить Mac" : failed ? "Повторить запуск" : running ? "Подключить Mac" : "Включить соединение"); bluetoothButton.setEnabled(!bluetoothBusy); }
+        if (heroTitle != null) heroTitle.setText(connected ? t("Устройства") : t("Устройства"));
+        if (stateBadge != null) { stateBadge.setText(connected ? t("Подключено") : failed ? t("Ошибка соединения") : running ? t("Ожидание Mac") : t("Нет соединения")); stateBadge.setTextColor(connected ? success : failed ? error : bluetoothBusy ? info : running ? warning : muted); }
+        if (connection != null) connection.setText(connected ? (peer.isBluetooth() ? t("Подключён по Bluetooth") : t("Подключён через отладку")) : bluetoothBusy || failed ? t(BluetoothLink.status) : running ? t("Ожидание подключения") : t("Соединение отключено"));
+        if (bluetoothButton != null) { bluetoothButton.setText(bluetoothBusy ? t("Подключение…") : connected ? t("Отключить Mac") : failed ? t("Повторить запуск") : running ? t("Подключить Mac") : t("Включить соединение")); bluetoothButton.setEnabled(!bluetoothBusy); }
         if(bluetoothButton!=null && !Objects.equals(bluetoothButton.getTag(),connected)) {
             bluetoothButton.setTag(connected); bluetoothButton.setBackground(pressBackground(connected?soft:accent,connected?line:muted));
             bluetoothButton.setTextColor(new ColorStateList(new int[][]{new int[]{-android.R.attr.state_enabled},new int[]{}},new int[]{muted,connected?ink:canvas}));
         }
         if (pairButton != null) { pairButton.setVisibility(running && !connected ? View.VISIBLE : View.GONE); pairButton.setEnabled(!bluetoothBusy); }
-        if (settingsConnectionState != null) settingsConnectionState.setText(bluetoothBusy || failed ? BluetoothLink.status : connected ? (peer.isBluetooth() ? "Mac подключён по Bluetooth" : "Mac подключён через отладку") : running ? "Ожидание подключения Mac" : "Соединение отключено");
+        if (settingsConnectionState != null) settingsConnectionState.setText(bluetoothBusy || failed ? t(BluetoothLink.status) : connected ? (peer.isBluetooth() ? t("Mac подключён по Bluetooth") : t("Mac подключён через отладку")) : running ? t("Ожидание подключения Mac") : t("Соединение отключено"));
         if (settingsConnectionState != null) settingsConnectionState.setTextColor(connected?success:failed?error:bluetoothBusy?info:running?warning:muted);
-        if (bluetoothPermissionRow != null) { boolean allowed=missingBluetoothPermissions(false).length==0; bluetoothPermissionRow.setStatus(allowed?"Разрешён":"Не разрешён",allowed?success:warning); }
+        if (bluetoothPermissionRow != null) { boolean allowed=missingBluetoothPermissions(false).length==0; bluetoothPermissionRow.setStatus(allowed?t("Разрешён"):t("Не разрешён"),allowed?success:warning); }
         if (ownNotificationsRow != null) {
             NotificationManager nm=getSystemService(NotificationManager.class); NotificationChannel channel=nm.getNotificationChannel("connection");
             boolean allowed=nm.areNotificationsEnabled(), channelEnabled=channel==null || channel.getImportance()!=NotificationManager.IMPORTANCE_NONE;
-            ownNotificationsRow.setStatus(!allowed?"Отключены":!channelEnabled?"Канал отключён":"Разрешены",allowed && channelEnabled?success:warning);
+            ownNotificationsRow.setStatus(!allowed?t("Отключены"):!channelEnabled?t("Канал отключён"):t("Разрешены"),allowed && channelEnabled?success:warning);
         }
         if (shizukuPermissionRow != null) {
             boolean alive=false,granted=false; try { alive=Shizuku.pingBinder(); granted=alive && Shizuku.checkSelfPermission()==PackageManager.PERMISSION_GRANTED; } catch(RuntimeException ignored) {}
-            shizukuPermissionRow.setStatus(!alive?"Не запущен":granted?"Разрешён":"Не разрешён",granted?success:warning);
+            shizukuPermissionRow.setStatus(!alive?t("Не запущен"):granted?t("Разрешён"):t("Не разрешён"),granted?success:warning);
         }
         if (authorizationRow != null) {
             authorizationRow.setEnabled(!bluetoothBusy);
             int trusted = getSharedPreferences("bluetooth-trust", MODE_PRIVATE).getAll().size();
-            authorizationRow.setStatus(trusted == 0 ? "Нет устройств" : "Сохранено: " + trusted);
+            authorizationRow.setStatus(trusted == 0 ? t("Нет устройств") : t("Сохранено: ") + trusted);
         }
-        if (connectionControlRow != null) { connectionControlRow.setTitle(bluetoothBusy ? "Запуск соединения…" : failed ? "Повторить запуск" : running ? "Отключить соединение" : "Включить соединение"); connectionControlRow.setEnabled(!bluetoothBusy); }
+        if (connectionControlRow != null) { connectionControlRow.setTitle(bluetoothBusy ? t("Запуск соединения…") : failed ? t("Повторить запуск") : running ? t("Отключить соединение") : t("Включить соединение")); connectionControlRow.setEnabled(!bluetoothBusy); }
         if (manualClipboardRow != null) {
             boolean canSend=connected && BridgeService.remoteClipboardEnabled;
             manualClipboardRow.setEnabled(canSend);
-            manualClipboardRow.setDetail(!connected ? "Нет соединения с Mac" : !BridgeService.remoteClipboardEnabled ? "Буфер отключён на Mac" : "");
+            manualClipboardRow.setDetail(!connected ? t("Нет соединения с Mac") : !BridgeService.remoteClipboardEnabled ? t("Буфер отключён на Mac") : "");
         }
         if (notificationPermissionRow != null) {
             boolean access=PhoneNotifications.hasAccess(this);
-            notificationPermissionRow.setStatus(access?"Разрешено":"Не разрешено",access?success:warning);
-            notificationPermissionRow.setDetail(access && !PhoneNotifications.isConnected()?"Служба переподключается":"",warning);
+            notificationPermissionRow.setStatus(access?t("Разрешено"):t("Не разрешено"),access?success:warning);
+            notificationPermissionRow.setDetail(access && !PhoneNotifications.isConnected()?t("Служба переподключается"):"",warning);
         }
         if (applicationsRow != null) {
             int excluded=getSharedPreferences("settings",MODE_PRIVATE).getStringSet("blocked",Collections.emptySet()).size();
-            applicationsRow.setStatus(excluded==0 ? "Все" : "Исключения: " + excluded);
+            applicationsRow.setStatus(excluded==0 ? t("Все") : t("Исключения: ") + excluded);
         }
         if (appearanceRow != null) {
             String appearance=getSharedPreferences("settings",MODE_PRIVATE).getString("appearance","system");
-            appearanceRow.setStatus("dark".equals(appearance)?"Тёмное":"light".equals(appearance)?"Светлое":"Системное");
+            appearanceRow.setStatus("dark".equals(appearance)?t("Тёмное"):"light".equals(appearance)?t("Светлое"):t("Системное"));
         }
         if (backgroundRow != null) {
             PowerManager power=getSystemService(PowerManager.class);
             boolean unrestricted=power!=null && power.isIgnoringBatteryOptimizations(getPackageName());
-            backgroundRow.setStatus(unrestricted ? "Разрешена" : "Ограничена",unrestricted?success:warning);
-            backgroundRow.setDetail(unrestricted ? "" : "Требуется для связи с выключенным экраном");
+            backgroundRow.setStatus(unrestricted ? t("Разрешена") : t("Ограничена"),unrestricted?success:warning);
+            backgroundRow.setDetail(unrestricted ? "" : t("Требуется для связи с выключенным экраном"));
         }
-        if (pairing != null) { String code = BluetoothLink.PAIRING.display(); pairing.setText(code.isEmpty() ? "Код не активен" : code.substring(0, 4) + "  " + code.substring(4)); }
+        if (pairing != null) { String code = BluetoothLink.PAIRING.display(); pairing.setText(code.isEmpty() ? t("Код не активен") : code.substring(0, 4) + "  " + code.substring(4)); }
         if (clipboardState != null) {
             boolean enabled = getSharedPreferences("settings", MODE_PRIVATE).getBoolean("autoClipboard", false);
             BridgeService service=BridgeService.instance;
-            clipboardState.setText(!enabled ? (selectedPage==2 ? "Для чтения в фоне требуется Shizuku" : "Автоматическая отправка отключена") : !connected ? "Ожидание соединения с Mac" : service!=null && service.clipboard!=null && service.clipboard.isReady() ? "Shizuku подключён" : ClipboardRelay.status);
+            clipboardState.setText(!enabled ? (selectedPage==2 ? t("Для чтения в фоне требуется Shizuku") : t("Автоматическая отправка отключена")) : !connected ? t("Ожидание соединения с Mac") : service!=null && service.clipboard!=null && service.clipboard.isReady() ? t("Shizuku подключён") : t(ClipboardRelay.status));
         }
-        if (clipboardState != null) clipboardState.setTextColor(clipboardState.getText().toString().equals("Shizuku подключён")?success:clipboardState.getText().toString().contains("Не удалось")?error:muted);
+        if (clipboardState != null) clipboardState.setTextColor(clipboardState.getText().toString().equals(t("Shizuku подключён"))?success:clipboardState.getText().toString().contains(t("Не удалось"))?error:muted);
         if (access != null) {
             boolean forwarding=getSharedPreferences("settings",MODE_PRIVATE).getBoolean("forward",true), granted=PhoneNotifications.hasAccess(this);
-            access.setText(!forwarding?"Отправка приостановлена":!granted?"Требуется разрешение Android":!PhoneNotifications.isConnected()?"Служба уведомлений переподключается":"Передача уведомлений включена");
+            access.setText(!forwarding?t("Отправка приостановлена"):!granted?t("Требуется разрешение Android"):!PhoneNotifications.isConnected()?t("Служба уведомлений переподключается"):t("Передача уведомлений включена"));
             access.setTextColor(!forwarding?muted:granted && PhoneNotifications.isConnected()?success:warning);
         }
     }
 
     private void showConnectionHelp() {
-        new AlertDialog.Builder(this).setTitle("Телефон готов к подключению").setMessage("В Conduit на Mac выберите телефон и нажмите «Подключить». Для первой авторизации требуется код.")
-            .setNegativeButton("Понятно", null).setPositiveButton("Получить код", (d,w) -> beginBluetooth(true)).show();
+        new AlertDialog.Builder(this).setTitle(t("Телефон готов к подключению")).setMessage(t("В Conduit на Mac выберите телефон и нажмите «Подключить». Для первой авторизации требуется код."))
+            .setNegativeButton(t("Понятно"), null).setPositiveButton(t("Получить код"), (d,w) -> beginBluetooth(true)).show();
     }
     private void showPairingCode() {
         LinearLayout content = column(); content.setPadding(dp(26), dp(12), dp(26), dp(12));
-        content.addView(label("В Conduit на Mac выберите телефон и введите код:", 15, false, muted)); gap(content, 24);
+        content.addView(label(t("В Conduit на Mac выберите телефон и введите код:"), 15, false, muted)); gap(content, 24);
         pairing = label("", 32, true, accent); pairing.setTypeface(Typeface.MONOSPACE, Typeface.BOLD); pairing.setGravity(Gravity.CENTER); content.addView(pairing); gap(content, 18);
-        content.addView(label("Код действует 2 минуты. Устройства должны быть сопряжены в настройках Bluetooth.", 13, false, muted));
-        AlertDialog dialog = new AlertDialog.Builder(this).setTitle("Связать Mac").setView(content).setPositiveButton("Готово", null).setNeutralButton("Новый код", null).create();
+        content.addView(label(t("Код действует 2 минуты. Устройства должны быть сопряжены в настройках Bluetooth."), 13, false, muted));
+        AlertDialog dialog = new AlertDialog.Builder(this).setTitle(t("Связать Mac")).setView(content).setPositiveButton(t("Готово"), null).setNeutralButton(t("Новый код"), null).create();
         dialog.setOnDismissListener(d -> pairing = null); dialog.setOnShowListener(d -> dialog.getButton(AlertDialog.BUTTON_NEUTRAL).setOnClickListener(v -> { BluetoothLink.PAIRING.open(); refreshState(); }));
         dialog.show(); refreshState();
     }
@@ -369,20 +383,20 @@ public final class MainActivity extends Activity {
         } catch (RuntimeException failure) { PhoneDiagnostics.record(this, "power.settings.failed", failure); }
     }
     private void copyDiagnostics() {
-        ClipData clip = ClipData.newPlainText("Conduit — диагностика", PhoneDiagnostics.report(this));
+        ClipData clip = ClipData.newPlainText(t("Conduit — диагностика"), PhoneDiagnostics.report(this));
         PersistableBundle extras = new PersistableBundle(); extras.putBoolean("android.content.extra.IS_SENSITIVE", true); clip.getDescription().setExtras(extras);
-        getSystemService(ClipboardManager.class).setPrimaryClip(clip); Toast.makeText(this, "Диагностика скопирована", Toast.LENGTH_SHORT).show();
+        getSystemService(ClipboardManager.class).setPrimaryClip(clip); Toast.makeText(this, t("Диагностика скопирована"), Toast.LENGTH_SHORT).show();
     }
     private void sendClipboard() {
-        if (BridgeService.client == null || !BridgeService.remoteClipboardEnabled) { Toast.makeText(this, "Требуется соединение с Mac и включённый буфер обмена", Toast.LENGTH_LONG).show(); return; }
+        if (BridgeService.client == null || !BridgeService.remoteClipboardEnabled) { Toast.makeText(this, t("Требуется соединение с Mac и включённый буфер обмена"), Toast.LENGTH_LONG).show(); return; }
         try { ClipData clip = getSystemService(ClipboardManager.class).getPrimaryClip(); if (clip != null && clip.getItemCount() > 0) { CharSequence value = clip.getItemAt(0).coerceToText(this); if (value != null) BridgeService.sendClipboard(value.toString()); } }
-        catch (RuntimeException failure) { Toast.makeText(this, "Не удалось прочитать буфер", Toast.LENGTH_LONG).show(); }
+        catch (RuntimeException failure) { Toast.makeText(this, t("Не удалось прочитать буфер"), Toast.LENGTH_LONG).show(); }
     }
     private void setAutoClipboard(boolean enabled) {
         getSharedPreferences("settings", MODE_PRIVATE).edit().putBoolean("autoClipboard", enabled).apply();
         if (!enabled) { if (BridgeService.instance != null && BridgeService.instance.clipboard != null) BridgeService.instance.clipboard.stop(); refreshState(); return; }
         try {
-            if (!Shizuku.pingBinder()) { Toast.makeText(this, "Для автоматической отправки требуется запущенный Shizuku", Toast.LENGTH_LONG).show(); autoClipboard.setChecked(false); return; }
+            if (!Shizuku.pingBinder()) { Toast.makeText(this, t("Для автоматической отправки требуется запущенный Shizuku"), Toast.LENGTH_LONG).show(); autoClipboard.setChecked(false); return; }
             if (Shizuku.checkSelfPermission() != PackageManager.PERMISSION_GRANTED) Shizuku.requestPermission(55);
             else if (BridgeService.instance != null && BridgeService.instance.clipboard != null) BridgeService.instance.clipboard.startIfWanted();
         } catch (RuntimeException failure) { autoClipboard.setChecked(false); }
@@ -390,10 +404,10 @@ public final class MainActivity extends Activity {
     }
     private void disconnect() {
         getSharedPreferences("settings", MODE_PRIVATE).edit().putBoolean("bluetoothWanted", false).apply();
-        startAttempt++; finishBluetoothStart(); stopService(new Intent(this, BridgeService.class)); BluetoothLink.status = "Bluetooth выключен в Conduit"; refreshState();
+        startAttempt++; finishBluetoothStart(); stopService(new Intent(this, BridgeService.class)); BluetoothLink.status = t("Bluetooth выключен в Conduit"); refreshState();
     }
     private void forgetMacs() {
-        new AlertDialog.Builder(this).setTitle("Забыть разрешённые Mac?").setMessage("Для следующего подключения потребуется новый код Conduit.").setNegativeButton("Отмена", null).setPositiveButton("Забыть", (dialog, which) -> {
+        new AlertDialog.Builder(this).setTitle(t("Забыть разрешённые Mac?")).setMessage(t("Для следующего подключения потребуется новый код Conduit.")).setNegativeButton(t("Отмена"), null).setPositiveButton(t("Забыть"), (dialog, which) -> {
             getSharedPreferences("bluetooth-trust", MODE_PRIVATE).edit().clear().commit(); BluetoothLink.PAIRING.close();
             BridgeService.Endpoint peer = BridgeService.client; if (peer != null && peer.isBluetooth()) { BridgeService.deactivate(peer); peer.close(); } refreshState();
         }).show();
@@ -427,10 +441,10 @@ public final class MainActivity extends Activity {
     private void bluetoothFailure(String message, boolean settings) {
         finishBluetoothStart(); BluetoothLink.status = message; refreshState();
         if (isFinishing() || isDestroyed()) return;
-        AlertDialog.Builder dialog = new AlertDialog.Builder(this).setTitle("Соединение не запущено").setMessage(message);
-        if (settings) dialog.setPositiveButton("Настройки приложения", (d, w) -> startActivity(new Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS, Uri.parse("package:" + getPackageName()))))
-            .setNegativeButton("Закрыть", null);
-        else dialog.setPositiveButton("Понятно", null);
+        AlertDialog.Builder dialog = new AlertDialog.Builder(this).setTitle(t("Соединение не запущено")).setMessage(message);
+        if (settings) dialog.setPositiveButton(t("Настройки приложения"), (d, w) -> startActivity(new Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS, Uri.parse("package:" + getPackageName()))))
+            .setNegativeButton(t("Закрыть"), null);
+        else dialog.setPositiveButton(t("Понятно"), null);
         dialog.show();
     }
     private void startBluetooth(boolean discoverable) {
@@ -438,48 +452,48 @@ public final class MainActivity extends Activity {
         try {
             String[] missing = missingBluetoothPermissions(discoverable);
             if (missing.length != 0) {
-                setBluetoothProgress("Разреши доступ к устройствам поблизости…");
+                setBluetoothProgress(t("Разреши доступ к устройствам поблизости…"));
                 PhoneDiagnostics.record(this, "permission.request"); requestPermissions(missing, 40); return;
             }
             BluetoothManager manager = getSystemService(BluetoothManager.class);
             BluetoothAdapter adapter = manager == null ? null : manager.getAdapter();
-            if (adapter == null) { bluetoothFailure("На телефоне недоступен Bluetooth", false); return; }
+            if (adapter == null) { bluetoothFailure(t("На телефоне недоступен Bluetooth"), false); return; }
             if (!adapter.isEnabled()) {
-                setBluetoothProgress("Ожидаю включения Bluetooth…");
+                setBluetoothProgress(t("Ожидаю включения Bluetooth…"));
                 startActivityForResult(new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE), 41); return;
             }
-            setBluetoothProgress("Запускаю Bluetooth-соединение Conduit…");
+            setBluetoothProgress(t("Запускаю Bluetooth-соединение Conduit…"));
             final int attempt = ++startAttempt;
             startupTimeout = () -> {
                 if (attempt != startAttempt || !bluetoothBusy) return;
                 PhoneDiagnostics.record(this, "service.start.timeout");
-                bluetoothFailure("Служба Conduit не ответила за 12 секунд. Нажми «Скопировать диагностику соединения» и пришли результат.", false);
+                bluetoothFailure(t("Служба Conduit не ответила за 12 секунд. Нажми «Скопировать диагностику соединения» и пришли результат."), false);
             };
             handler.postDelayed(startupTimeout, 12000);
             ResultReceiver receiver = new ResultReceiver(handler) {
                 @Override protected void onReceiveResult(int result, Bundle data) {
                     if (attempt != startAttempt || isDestroyed()) return;
                     finishBluetoothStart();
-                    String message = data == null ? "Не удалось запустить соединение" : data.getString("message", "Не удалось запустить соединение");
+                    String message = data == null ? t("Не удалось запустить соединение") : data.getString("message", t("Не удалось запустить соединение"));
                     if (result != 1) { bluetoothFailure(message, false); return; }
                     refreshState();
-                    Toast.makeText(MainActivity.this, "Bluetooth-соединение Conduit включено", Toast.LENGTH_LONG).show();
+                    Toast.makeText(MainActivity.this, t("Bluetooth-соединение Conduit включено"), Toast.LENGTH_LONG).show();
                     if (discoverable) {
                         showPairingCode();
                         try { startActivityForResult(new Intent(BluetoothAdapter.ACTION_REQUEST_DISCOVERABLE).putExtra(BluetoothAdapter.EXTRA_DISCOVERABLE_DURATION, 120), 42); }
                         catch (RuntimeException e) {
                             PhoneDiagnostics.record(MainActivity.this, "discoverable.failed", e);
-                            new AlertDialog.Builder(MainActivity.this).setTitle("Соединение включено").setMessage("Не удалось открыть обнаружение. Если Mac уже сопряжён с телефоном, можно подключаться по коду Conduit.").setPositiveButton("Понятно", null).show();
+                            new AlertDialog.Builder(MainActivity.this).setTitle(t("Соединение включено")).setMessage(t("Не удалось открыть обнаружение. Если Mac уже сопряжён с телефоном, можно подключаться по коду Conduit.")).setPositiveButton(t("Понятно"), null).show();
                         }
                     }
                 }
             };
             PhoneDiagnostics.record(this, "service.start.request");
             ComponentName component = startForegroundService(new Intent(this, BridgeService.class).setAction("BLUETOOTH_START").putExtra("startupReceiver", receiver));
-            if (component == null) bluetoothFailure("Android не нашёл службу Conduit. Переустанови обновление приложения.", false);
+            if (component == null) bluetoothFailure(t("Android не нашёл службу Conduit. Переустанови обновление приложения."), false);
         } catch (RuntimeException e) {
             PhoneDiagnostics.record(this, "start.failed", e);
-            bluetoothFailure("Android не разрешил запустить соединение (" + e.getClass().getSimpleName() + "). Скопируй диагностику соединения.", e instanceof SecurityException);
+            bluetoothFailure(t("Android не разрешил запустить соединение (") + e.getClass().getSimpleName() + t("). Скопируй диагностику соединения."), e instanceof SecurityException);
         }
     }
     @Override public void onRequestPermissionsResult(int request, String[] permissions, int[] grants) {
@@ -488,7 +502,7 @@ public final class MainActivity extends Activity {
         if (request == 40) {
             if (missingBluetoothPermissions(discoverAfterPermission).length != 0) {
                 PhoneDiagnostics.record(this, grants.length == 0 ? "permission.cancelled" : "permission.denied");
-                bluetoothFailure("Разреши Conduit доступ к устройствам поблизости в настройках приложения, затем нажми «Включить Bluetooth-соединение» снова.", true);
+                bluetoothFailure(t("Разреши Conduit доступ к устройствам поблизости в настройках приложения, затем нажми «Включить Bluetooth-соединение» снова."), true);
             } else { PhoneDiagnostics.record(this, "permission.granted"); startBluetooth(discoverAfterPermission); }
         }
     }
@@ -505,7 +519,7 @@ public final class MainActivity extends Activity {
         if (Intent.ACTION_SEND.equals(intent.getAction())) {
             Uri uri = intent.getParcelableExtra(Intent.EXTRA_STREAM);
             if (uri != null && "content".equals(uri.getScheme())) SharedFiles.share(this, uri);
-            else Toast.makeText(this, "Выбери файл или фото. Для текста используй общий буфер.", Toast.LENGTH_LONG).show();
+            else Toast.makeText(this, t("Выбери файл или фото. Для текста используй общий буфер."), Toast.LENGTH_LONG).show();
         } else if (Intent.ACTION_SEND_MULTIPLE.equals(intent.getAction())) {
             ArrayList<Uri> uris = intent.getParcelableArrayListExtra(Intent.EXTRA_STREAM);
             if (uris != null) for (Uri uri : uris) if ("content".equals(uri.getScheme())) SharedFiles.share(this, uri);
@@ -516,7 +530,7 @@ public final class MainActivity extends Activity {
         super.onActivityResult(request, result, data);
         if (request == 41) {
             if (result == RESULT_OK) startBluetooth(discoverAfterPermission);
-            else { PhoneDiagnostics.record(this, "bluetooth.enable.cancelled"); bluetoothFailure("Bluetooth остался выключенным. Включи его в настройках телефона и повтори.", false); }
+            else { PhoneDiagnostics.record(this, "bluetooth.enable.cancelled"); bluetoothFailure(t("Bluetooth остался выключенным. Включи его в настройках телефона и повтори."), false); }
             return;
         }
         if (request == 20 && result == RESULT_OK && data != null) {
@@ -534,11 +548,11 @@ public final class MainActivity extends Activity {
         Set<String> blocked = new HashSet<>(prefs.getStringSet("blocked", Collections.emptySet()));
         String[] labels = new String[apps.size()]; boolean[] checked = new boolean[apps.size()];
         for (int i = 0; i < apps.size(); i++) { labels[i] = apps.get(i).getValue(); checked[i] = !blocked.contains(apps.get(i).getKey()); }
-        new AlertDialog.Builder(this).setTitle("Показывать на Mac")
+        new AlertDialog.Builder(this).setTitle(t("Показывать на Mac"))
             .setMultiChoiceItems(labels, checked, (dialog, which, enabled) -> {
                 String pkg = apps.get(which).getKey(); if (enabled) blocked.remove(pkg); else blocked.add(pkg);
-            }).setPositiveButton("Сохранить", (dialog, which) -> prefs.edit().putStringSet("blocked", blocked).apply())
-            .setNegativeButton("Отмена", null).show();
+            }).setPositiveButton(t("Сохранить"), (dialog, which) -> prefs.edit().putStringSet("blocked", blocked).apply())
+            .setNegativeButton(t("Отмена"), null).show();
     }
     private LinearLayout column() { LinearLayout v = new LinearLayout(this); v.setOrientation(LinearLayout.VERTICAL); return v; }
     private LinearLayout row() { LinearLayout v = new LinearLayout(this); v.setOrientation(LinearLayout.HORIZONTAL); v.setGravity(Gravity.CENTER_VERTICAL); return v; }

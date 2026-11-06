@@ -15,7 +15,7 @@ extension ConduitModel {
         let app = URL(fileURLWithPath: "/System/Applications/Utilities/Bluetooth File Exchange.app")
         guard FileManager.default.fileExists(atPath: app.path) else { NSWorkspace.shared.activateFileViewerSelecting([apk]); return }
         NSWorkspace.shared.open([apk], withApplicationAt: app, configuration: NSWorkspace.OpenConfiguration()) { [weak self] _, error in
-            if error != nil { Task { @MainActor in self?.log("Не удалось открыть передачу Bluetooth. APK доступен внутри сборки и отдельно в чате.") } }
+            if error != nil { Task { @MainActor in self?.log(L("Не удалось открыть передачу Bluetooth. APK доступен внутри сборки и отдельно в чате.")) } }
         }
     }
     func refreshBluetoothPhones() {
@@ -26,8 +26,8 @@ extension ConduitModel {
         if transport == .bluetooth { bluetooth?.sendJSON(event) } else { bridge?.sendJSON(event) }
     }
     func reportConnectionError(_ message: String, alert: Bool) {
-        connectionError = message
-        status = "Подключение не выполнено"
+        connectionError = L(message)
+        status = L("Подключение не выполнено")
         ConnectionDiagnostics.record("connection.failed", message)
         log(message)
         if alert { showConnectionError = true }
@@ -38,17 +38,17 @@ extension ConduitModel {
         board.clearContents(); board.setString(text, forType: .string)
         board.setData(Data(), forType: NSPasteboard.PasteboardType("org.nspasteboard.TransientType"))
         pasteboardChange = board.changeCount
-        log("Диагностика скопирована")
+        log(L("Диагностика скопирована"))
     }
     func cancelConnection() async {
         connectionAttempt = nil; shouldReconnect = false
         UserDefaults.standard.set(false, forKey: "bluetoothConnectionWanted")
-        await cleanup(); busy = false; connectionStage = ""; status = "Подключение отменено"
+        await cleanup(); busy = false; connectionStage = ""; status = L("Подключение отменено")
         ConnectionDiagnostics.record("connection.cancelled")
     }
     func connectBluetooth(automatic: Bool = false) async {
         guard !busy else {
-            if !automatic { reportConnectionError("Подключение уже выполняется. Подожди или нажми «Отменить».", alert: true) }
+            if !automatic { reportConnectionError(L("Подключение уже выполняется. Подожди или нажми «Отменить»."), alert: true) }
             return
         }
         refreshBluetoothPhones()
@@ -56,17 +56,17 @@ extension ConduitModel {
         let code = bluetoothCode.trimmingCharacters(in: .whitespacesAndNewlines)
         if let problem = BluetoothPreflight.problem(permission: ConnectionDiagnostics.permission, poweredOn: ConnectionDiagnostics.poweredOn,
                 selection: bluetoothAddress, knownDevices: bluetoothPhones.map(\.id), remembered: savedToken != nil, code: code) {
-            if !automatic { reportConnectionError(problem, alert: true) }
+            if !automatic { reportConnectionError(L(problem), alert: true) }
             return
         }
         guard let phone = bluetoothPhones.first(where: { $0.id == bluetoothAddress }) else {
-            if !automatic { reportConnectionError("Список устройств изменился. Выбери телефон снова.", alert: true) }
+            if !automatic { reportConnectionError(L("Список устройств изменился. Выбери телефон снова."), alert: true) }
             return
         }
         let attempt = UUID(); connectionAttempt = attempt
         busy = true
         if !automatic { connectionError = nil; showConnectionError = false }
-        connectionSeconds = 0; connectionStage = "Подготовка"
+        connectionSeconds = 0; connectionStage = L("Подготовка")
         let clock = Task { [weak self] in
             while !Task.isCancelled {
                 do { try await Task.sleep(nanoseconds: 1_000_000_000) } catch { return }
@@ -81,7 +81,7 @@ extension ConduitModel {
         await cleanup()
         guard connectionAttempt == attempt else { return }
         let id = UUID(); sessionID = id
-        status = "Соединяюсь по Bluetooth…"; bluetoothSetupError = nil; bluetoothAuthenticationFailed = false
+        status = L("Соединяюсь по Bluetooth…"); bluetoothSetupError = nil; bluetoothAuthenticationFailed = false
         bluetoothDecoder = JSONLineDecoder()
         let channel = BluetoothChannel(); bluetooth = channel
         channel.onProgress = { [weak self] stage in
@@ -98,7 +98,7 @@ extension ConduitModel {
             let mayRefresh = reconnectPolicy.allowServiceRefresh(automatic: automatic, at: ProcessInfo.processInfo.systemUptime)
             try await channel.connect(phone, allowServiceRefresh: mayRefresh)
             guard sessionID == id, connectionAttempt == attempt else { return }
-            connectionStage = "Проверяю код Conduit на телефоне…"; status = connectionStage
+            connectionStage = L("Проверяю код Conduit на телефоне…"); status = connectionStage
             ConnectionDiagnostics.record("application.auth", savedToken == nil ? "new-pair" : "remembered-pair")
             channel.sendJSON(["type":"hello", "protocol":2, "client":BluetoothTrust.clientID,
                 "name":Host.current().localizedName ?? "Mac", "token":savedToken ?? "", "code":code])
@@ -107,15 +107,15 @@ extension ConduitModel {
                 if companionReady || bluetoothSetupError != nil { break }
                 try await Task.sleep(nanoseconds: 100_000_000)
             }
-            guard companionReady else { throw AppError(bluetoothSetupError ?? "Телефон открыл Bluetooth-канал, но Conduit не ответил за 10 секунд. Проверь, что на телефоне установлен APK 0.2.3 или новее и включено соединение.") }
+            guard companionReady else { throw AppError(bluetoothSetupError ?? L("Телефон открыл Bluetooth-канал, но Conduit не ответил за 10 секунд. Проверь, что на телефоне установлен APK 0.2.3 или новее и включено соединение.")) }
             connected = true; bluetoothCode = ""; connectionHeartbeat.reset(); reconnectPolicy.succeeded(); connectionError = nil
             UserDefaults.standard.set(phone.id, forKey: "lastBluetoothPhone")
             pasteboardChange = NSPasteboard.general.changeCount
-            connectionStage = "Готово"; status = "Bluetooth · " + phone.name
+            connectionStage = L("Готово"); status = "Bluetooth · " + phone.name
             sendBridge(["type":"preferences", "clipboard":clipboardEnabled])
             ConnectionDiagnostics.record("connection.ready")
             if autoDiagnostics { requestAndroidDiagnostics() }
-            log("Bluetooth подключён. Уведомления и файлы готовы.")
+            log(L("Bluetooth подключён. Уведомления и файлы готовы."))
         } catch {
             guard sessionID == id, connectionAttempt == attempt else { return }
             reconnectPolicy.failed(at: ProcessInfo.processInfo.systemUptime)
@@ -128,14 +128,14 @@ extension ConduitModel {
     }
     func forgetBluetoothPhone() async {
         await disconnect(); BluetoothTrust.forget(bluetoothAddress)
-        status = "Связь Conduit удалена. Получи новый код на телефоне."
+        status = L("Связь Conduit удалена. Получи новый код на телефоне.")
     }
     func bluetoothLost(_ reason: String) {
         guard !busy else { return }
         busy = true
         reconnectPolicy.failed(at: ProcessInfo.processInfo.systemUptime)
         Task {
-            await cleanup(); connectionError = reason; ConnectionDiagnostics.record("connection.lost", reason); status = reason + ". Ожидаю телефон…"; busy = false
+            await cleanup(); connectionError = reason; ConnectionDiagnostics.record("connection.lost", reason); status = reason + L(". Ожидаю телефон…"); busy = false
         }
     }
     func receiveBluetooth(_ bytes: Data, session id: UUID) {
@@ -144,7 +144,7 @@ extension ConduitModel {
             for event in try bluetoothDecoder.append(bytes) {
                 let type = event["type"] as? String ?? ""
                 if !companionReady {
-                    if type == "authError" { bluetoothAuthenticationFailed = true; ConnectionDiagnostics.record("application.auth.rejected"); bluetoothSetupError = "Код не принят. На телефоне нажми «Связать новый Mac» и введи новый код."; continue }
+                    if type == "authError" { bluetoothAuthenticationFailed = true; ConnectionDiagnostics.record("application.auth.rejected"); bluetoothSetupError = L("Код не принят. На телефоне нажми «Связать новый Mac» и введи новый код."); continue }
                     guard type == "ready", event["protocol"] as? Int == 2 else { throw ProtocolError.malformed }
                     if let token = event["token"] as? String {
                         guard token.utf8.count == 64, token.allSatisfy({ $0.isHexDigit && $0.isASCII }) else { throw ProtocolError.malformed }
@@ -156,7 +156,7 @@ extension ConduitModel {
                 if ["fileReady","fileAck","fileDone","fileInfo","fileData","fileError"].contains(type),
                    let key = event["id"] as? String, let pending = bluetoothReplies.removeValue(forKey: key) {
                     pending.timeout.cancel()
-                    if type == "fileError" { pending.continuation.resume(throwing: AppError(event["message"] as? String ?? "Ошибка передачи файла")) }
+                    if type == "fileError" { pending.continuation.resume(throwing: AppError(event["message"] as? String ?? L("Ошибка передачи файла"))) }
                     else { pending.continuation.resume(returning: event) }
                     continue
                 }
@@ -167,13 +167,13 @@ extension ConduitModel {
                     bluetoothClipboardAuto = event["clipboardAuto"] as? Bool == true
                     bluetoothDeviceLocked = event["deviceLocked"] as? Bool == true
                     ConnectionDiagnostics.record("peer.state", "clipboardAuto=\(bluetoothClipboardAuto)")
-                    companionStatus = notificationAccess ? "Уведомления подключены по Bluetooth" : "Разреши уведомления в Conduit на телефоне"
+                    companionStatus = notificationAccess ? L("Уведомления подключены по Bluetooth") : L("Разреши уведомления в Conduit на телефоне")
                 case "pong":
                     if let locked = event["deviceLocked"] as? Bool { bluetoothDeviceLocked = locked }
                     ConnectionDiagnostics.record("heartbeat.pong")
                 case "diagnostics":
                     do { try receiveAndroidDiagnostics(event) }
-                    catch { androidDiagnosticsPending = false; androidDiagnosticsStatus = "Не удалось сохранить журнал телефона"; ConnectionDiagnostics.record("android.diagnostics.invalid") }
+                    catch { androidDiagnosticsPending = false; androidDiagnosticsStatus = L("Не удалось сохранить журнал телефона"); ConnectionDiagnostics.record("android.diagnostics.invalid") }
                 case "clipboard":
                     ConnectionDiagnostics.record("clipboard.from.phone")
                     if clipboardEnabled, connected, let text = event["text"] as? String, text.utf8.count <= ScrcpyDecoder.maxTextBytes {
@@ -189,30 +189,30 @@ extension ConduitModel {
                         ConnectionDiagnostics.record("clipboard.skipped.mac")
                     }
                 case "notification":
-                    if notificationsEnabled { Task { do { try await PhoneNotifications.show(event) } catch { log("Проверь разрешение уведомлений macOS") } } }
+                    if notificationsEnabled { Task { do { try await PhoneNotifications.show(event) } catch { log(L("Проверь разрешение уведомлений macOS")) } } }
                 case "removed": if let key = event["key"] as? String { PhoneNotifications.remove(key) }
                 case "file": Task { await receiveBluetoothFile(event) }
-                case "result": if event["ok"] as? Bool == false { log(event["message"] as? String ?? "Действие не выполнено") }
+                case "result": if event["ok"] as? Bool == false { log(L(event["message"] as? String ?? L("Действие не выполнено"))) }
                 default: break
                 }
             }
         } catch {
-            bluetoothSetupError = (error as? AppError)?.message ?? "Ответ телефона не соответствует протоколу Conduit. Проверь версию Android-приложения."
+            bluetoothSetupError = (error as? AppError)?.message ?? L("Ответ телефона не соответствует протоколу Conduit. Проверь версию Android-приложения.")
             ConnectionDiagnostics.record("application.response.invalid")
             bluetooth?.cancel()
-            if !busy { bluetoothLost("Ошибка Bluetooth-канала") }
+            if !busy { bluetoothLost(L("Ошибка Bluetooth-канала")) }
         }
     }
 
     func bluetoothRequest(_ event: [String: Any]) async throws -> [String: Any] {
-        guard transport == .bluetooth, connected, bluetooth != nil, let id = event["id"] as? String, bluetoothReplies[id] == nil else { throw AppError("Нет соединения с телефоном") }
+        guard transport == .bluetooth, connected, bluetooth != nil, let id = event["id"] as? String, bluetoothReplies[id] == nil else { throw AppError(L("Нет соединения с телефоном")) }
         let ticket = UUID()
         return try await withCheckedThrowingContinuation { continuation in
             let timeout = Task { [weak self] in
                 try? await Task.sleep(nanoseconds: 60_000_000_000)
                 guard let self, self.bluetoothReplies[id]?.token == ticket else { return }
                 let pending = self.bluetoothReplies.removeValue(forKey: id)
-                pending?.continuation.resume(throwing: AppError("Телефон не подтвердил передачу. Подключись и повтори."))
+                pending?.continuation.resume(throwing: AppError(L("Телефон не подтвердил передачу. Подключись и повтори.")))
             }
             bluetoothReplies[id] = PendingBluetoothReply(token: ticket, continuation: continuation, timeout: timeout)
             sendBridge(event)
@@ -225,8 +225,8 @@ extension ConduitModel {
             let id = UUID().uuidString.lowercased()
             do {
                 let values = try url.resourceValues(forKeys: [.isRegularFileKey, .fileSizeKey])
-                guard values.isRegularFile == true, let size = values.fileSize, size <= BluetoothFilePolicy.maxSize else { throw AppError("По Bluetooth поддерживаются файлы до 100 МБ. Папку можно отправить ZIP.") }
-                transferProgress = "Проверяю файл…"
+                guard values.isRegularFile == true, let size = values.fileSize, size <= BluetoothFilePolicy.maxSize else { throw AppError(L("По Bluetooth поддерживаются файлы до 100 МБ. Папку можно отправить ZIP.")) }
+                transferProgress = L("Проверяю файл…")
                 let hash = try await Task.detached { try BluetoothFilePolicy.sha256(url) }.value
                 let reply = try await bluetoothRequest(["type":"fileBegin", "id":id, "name":FilePolicy.safeName(url.lastPathComponent), "size":size, "sha256":hash])
                 guard reply["type"] as? String == "fileReady" else { throw ProtocolError.malformed }
@@ -240,7 +240,7 @@ extension ConduitModel {
                 }
                 let done = try await bluetoothRequest(["type":"fileEnd", "id":id])
                 guard done["type"] as? String == "fileDone" else { throw ProtocolError.malformed }
-                log("Отправлен по Bluetooth: " + url.lastPathComponent)
+                log(L("Отправлен по Bluetooth: ") + url.lastPathComponent)
             } catch { sendBridge(["type":"fileAbort", "id":id]); log(error.localizedDescription) }
         }
     }
@@ -274,7 +274,7 @@ extension ConduitModel {
             try FileManager.default.moveItem(at: receiver.url, to: folder.appendingPathComponent(UUID().uuidString.prefix(8) + "_" + name))
             receivedFiles.append(id); if receivedFiles.count > 256 { receivedFiles.removeFirst(receivedFiles.count - 256) }
             UserDefaults.standard.set(receivedFiles, forKey: "receivedFiles")
-            sendBridge(["type":"fileReceived", "name":id]); log("Получен по Bluetooth: " + name)
-        } catch { sendBridge(["type":"fileAbort", "id":id]); log("Файл не получен: " + error.localizedDescription) }
+            sendBridge(["type":"fileReceived", "name":id]); log(L("Получен по Bluetooth: ") + name)
+        } catch { sendBridge(["type":"fileAbort", "id":id]); log(L("Файл не получен: ") + error.localizedDescription) }
     }
 }

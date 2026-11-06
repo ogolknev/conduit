@@ -9,6 +9,7 @@ private var appVersion: String { Bundle.main.object(forInfoDictionaryKey: "CFBun
 @main enum EntryPoint {
     @MainActor static func main() {
         let args = CommandLine.arguments
+        AppLocalization.configure(arguments: args)
         if args.contains("--permission-status") || args.contains("--notification-check") || args.contains("--clear-notification-test") {
             NSApplication.shared.setActivationPolicy(.prohibited)
             Task {
@@ -51,7 +52,7 @@ private var appVersion: String { Bundle.main.object(forInfoDictionaryKey: "CFBun
         }
         if args.contains("--smoke-test") {
             let resources = Bundle.main.resourceURL!
-            let names = ["platform-tools/adb", "scrcpy-server-v5.0.1", "conduit-companion.apk", "AppIcon.icns", "Assets.car"]
+            let names = ["platform-tools/adb", "scrcpy-server-v5.0.1", "conduit-companion.apk", "AppIcon.icns", "Assets.car", "en.lproj/Localizable.strings", "ru.lproj/Localizable.strings"]
             guard names.allSatisfy({ FileManager.default.fileExists(atPath: resources.appendingPathComponent($0).path) }),
                   let server = try? Data(contentsOf: resources.appendingPathComponent("scrcpy-server-v5.0.1")) else { exit(1) }
             guard Bundle.main.object(forInfoDictionaryKey: "CFBundleIconFile") as? String == "AppIcon",
@@ -59,18 +60,19 @@ private var appVersion: String { Bundle.main.object(forInfoDictionaryKey: "CFBun
                   let icon = NSImage(contentsOf: resources.appendingPathComponent("AppIcon.icns")), icon.isValid else { exit(6) }
             let hash = SHA256.hash(data: server).map { String(format: "%02x", $0) }.joined()
             guard hash == "764eb6f79811d5211fe9df341120882ba9994c7a61b897d7bf3fb662e53bc536" else { exit(2) }
-            print("Conduit \(appVersion): bundled ADB, companion APK and pinned scrcpy server verified")
+            guard AppLocalization.validateBundle() else { exit(7) }
+            print("Conduit \(appVersion): resources, server and both languages verified")
             return
         }
         if let index = args.firstIndex(of: "--render-preview"), args.count > index + 1 {
             let app = NSApplication.shared; app.setActivationPolicy(.prohibited)
             let model = ConduitModel(startMonitoring: false)
-            if args.contains("--preview-error") { model.connectionError = "Телефон сопряжён с Mac, но служба Conduit не найдена. На телефоне установи APK 0.2.3 или новее и нажми «Включить Bluetooth-соединение»." }
+            if args.contains("--preview-error") { model.connectionError = L("Телефон сопряжён с Mac, но служба Conduit не найдена. На телефоне установи APK 0.2.3 или новее и нажми «Включить Bluetooth-соединение».") }
             app.appearance = NSAppearance(named: args.contains("--preview-dark") ? .darkAqua : .aqua)
             if args.contains("--preview-connected") {
                 model.connected = true; model.companionReady = true; model.status = "Bluetooth · Xiaomi 15"
                 model.bluetoothClipboardAuto = true; model.notificationAccess = true; model.notificationListenerConnected = true
-                model.companionStatus = "Уведомления подключены"; model.macNotificationPermission = .allowed; model.macBluetoothPermission = .allowed
+                model.companionStatus = L("Уведомления подключены"); model.macNotificationPermission = .allowed; model.macBluetoothPermission = .allowed
             }
             if args.contains("--preview-permission-denied") { model.macNotificationPermission = .denied }
             if args.contains("--preview-permission-needed") { model.macNotificationPermission = .notAsked }
@@ -91,26 +93,29 @@ private var appVersion: String { Bundle.main.object(forInfoDictionaryKey: "CFBun
 }
 
 struct ConduitApp: App {
+    @AppStorage("language") private var language = "system"
     @NSApplicationDelegateAdaptor(AppDelegate.self) private var delegate
     @StateObject private var model = ConduitModel()
 
     var body: some Scene {
         WindowGroup("Conduit", id: "main") {
             MainView(model: model).frame(minWidth: 860, minHeight: 640)
-                .alert("Не удалось подключиться", isPresented: $model.showConnectionError) {
-                    Button("Скопировать диагностику") { model.copyConnectionDiagnostics() }
-                    Button("Понятно", role: .cancel) { }
-                } message: { Text(model.connectionError ?? "Причина неизвестна. Скопируй диагностику.") }
+                .environment(\.locale, Locale(identifier: AppLocalization.resolvedLanguage(language)))
+                .onChange(of: language) { _ in model.refreshLocalizedPresentation(); AppDelegate.configureCategories() }
+                .alert(L("Не удалось подключиться"), isPresented: $model.showConnectionError) {
+                    Button(L("Скопировать диагностику")) { model.copyConnectionDiagnostics() }
+                    Button(L("Понятно"), role: .cancel) { }
+                } message: { Text(L(model.connectionError ?? L("Причина неизвестна. Скопируй диагностику."))) }
         }
         .defaultSize(width: 980, height: 760)
         .windowStyle(.hiddenTitleBar)
         .commands {
             CommandGroup(replacing: .appTermination) {
-                Button("Завершить Conduit") { Task { await model.disconnect(); NSApp.terminate(nil) } }.keyboardShortcut("q")
+                Button(L("Завершить Conduit")) { Task { await model.disconnect(); NSApp.terminate(nil) } }.keyboardShortcut("q")
             }
         }
         MenuBarExtra {
-            MenuView(model: model)
+            MenuView(model: model).environment(\.locale, Locale(identifier: AppLocalization.resolvedLanguage(language)))
         } label: {
             Image(nsImage: BrandMark.menuBarImage).renderingMode(.template).help("Conduit · " + model.status)
         }
@@ -118,20 +123,21 @@ struct ConduitApp: App {
 }
 
 private struct MenuView: View {
+    @AppStorage("language") private var language = "system"
     @ObservedObject var model: ConduitModel
     @Environment(\.openWindow) private var openWindow
     var body: some View {
-        Text("Conduit").font(.headline)
-        Text(model.status)
+        Text("Conduit").font(.headline).id(language)
+        Text(L(model.status))
         Divider()
-        Toggle("Общий буфер обмена", isOn: $model.clipboardEnabled)
-        Toggle("Уведомления телефона", isOn: $model.notificationsEnabled)
-        Button("Отправить файлы…") { Task { await model.chooseFiles() } }.disabled(!model.connected || model.transferBusy)
-        Button("Открыть входящие") { openInbox() }
+        Toggle(L("Общий буфер обмена"), isOn: $model.clipboardEnabled)
+        Toggle(L("Уведомления телефона"), isOn: $model.notificationsEnabled)
+        Button(L("Отправить файлы…")) { Task { await model.chooseFiles() } }.disabled(!model.connected || model.transferBusy)
+        Button(L("Открыть входящие")) { openInbox() }
         Divider()
-        Button("Открыть Conduit") { openWindow(id: "main"); NSApp.activate(ignoringOtherApps: true) }
-        Button("Отключиться") { Task { await model.disconnect() } }.disabled(!model.connected || model.busy)
-        Button("Завершить") { Task { await model.disconnect(); NSApp.terminate(nil) } }
+        Button(L("Открыть Conduit")) { openWindow(id: "main"); NSApp.activate(ignoringOtherApps: true) }
+        Button(L("Отключиться")) { Task { await model.disconnect() } }.disabled(!model.connected || model.busy)
+        Button(L("Завершить")) { Task { await model.disconnect(); NSApp.terminate(nil) } }
     }
 }
 

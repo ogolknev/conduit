@@ -10,6 +10,7 @@ p.add_argument('--output', required=True)
 args = p.parse_args()
 project = pathlib.Path(__file__).resolve().parents[1]
 subprocess.run([sys.executable, str(project / "scripts/generate-brand.py"), "--check"], check=True)
+subprocess.run([sys.executable, str(project / "scripts/generate-localizations.py"), "--check"], check=True)
 scratch = pathlib.Path(args.scratch).resolve(); scratch.mkdir(parents=True, exist_ok=True)
 cache = scratch / 'module-cache'; cache.mkdir(exist_ok=True)
 env = dict(os.environ, CLANG_MODULE_CACHE_PATH=str(cache), SWIFTPM_MODULECACHE_OVERRIDE=str(cache))
@@ -46,10 +47,12 @@ shutil.copy2(icon_catalog / 'Assets.car', resources / 'Assets.car')
 (resources / 'Conduit.icns').unlink(missing_ok=True)
 with (app / 'Contents/Info.plist').open('wb') as f:
     plistlib.dump({'CFBundleName':'Conduit', 'CFBundleDisplayName':'Conduit', 'CFBundleExecutable':'Conduit',
-        'CFBundleIdentifier':'dev.conduit.mac', 'CFBundlePackageType':'APPL', 'CFBundleShortVersionString':'0.3.4',
-        'CFBundleVersion':'15', 'CFBundleIconFile':'AppIcon', 'CFBundleIconName':'AppIcon',
-        'CFBundleInfoDictionaryVersion':'6.0', 'CFBundleSupportedPlatforms':['MacOSX'], 'CFBundleDevelopmentRegion':'ru', 'CFBundleSignature':'????', 'LSMinimumSystemVersion':'13.0', 'NSHighResolutionCapable':True,
-        'NSPrincipalClass':'NSApplication', 'NSBluetoothAlwaysUsageDescription':'Conduit соединяет Mac и Android для передачи буфера, уведомлений и файлов по Bluetooth.'}, f)
+        'CFBundleIdentifier':'dev.conduit.mac', 'CFBundlePackageType':'APPL', 'CFBundleShortVersionString':'0.4.0',
+        'CFBundleVersion':'16', 'CFBundleIconFile':'AppIcon', 'CFBundleIconName':'AppIcon',
+        'CFBundleInfoDictionaryVersion':'6.0', 'CFBundleSupportedPlatforms':['MacOSX'], 'CFBundleDevelopmentRegion':'en', 'CFBundleLocalizations':['en','ru'], 'CFBundleSignature':'????', 'LSMinimumSystemVersion':'13.0', 'NSHighResolutionCapable':True,
+        'NSPrincipalClass':'NSApplication', 'NSBluetoothAlwaysUsageDescription':'Conduit connects this Mac to Android for clipboard, notifications and files over Bluetooth.'}, f)
+for language in ['en', 'ru']:
+    shutil.copytree(project / 'localization' / (language + '.lproj'), resources / (language + '.lproj'), dirs_exist_ok=True)
 (app / 'Contents/PkgInfo').write_bytes(b'APPL????')
 subprocess.run(['/usr/bin/codesign', '--force', '--deep', '--sign', '-', str(app)], check=True)
 print('Built:', app)

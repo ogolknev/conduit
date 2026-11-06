@@ -16,8 +16,8 @@ import ConduitCore
     @Published var macBluetoothPermission = BluetoothPermission.unknown
     @Published var notificationListenerConnected = false
     @Published var notificationAccess = false
-    @Published var status = "Подключи телефон, чтобы начать"
-    @Published var companionStatus = "Нужен Android-компаньон"
+    @Published var status = L("Подключи телефон, чтобы начать")
+    @Published var companionStatus = L("Нужен Android-компаньон")
     @Published var clipboardEnabled = true { didSet { pasteboardChange = NSPasteboard.general.changeCount; if connected { sendBridge(["type":"preferences", "clipboard":clipboardEnabled]) } } }
     @Published var notificationsEnabled = true
     @Published var events: [String] = []
@@ -39,7 +39,7 @@ import ConduitCore
         didSet { UserDefaults.standard.set(autoDiagnostics,forKey:"autoDiagnostics"); if autoDiagnostics { requestAndroidDiagnostics() } }
     }
     @Published var androidDiagnosticsPending = false
-    @Published var androidDiagnosticsStatus = "Журнал телефона ещё не получен"
+    @Published var androidDiagnosticsStatus = L("Журнал телефона ещё не получен")
     var androidDiagnosticsRequest = UUID()
     @Published var transferProgress = ""
     @Published var connectionError: String?
@@ -89,7 +89,7 @@ import ConduitCore
 
     init(startMonitoring: Bool = true) {
         adb = ADB.locate().map(ADB.init)
-        if adb == nil { status = "ADB не найден. Используй готовую сборку приложения." }
+        if adb == nil { status = L("ADB не найден. Используй готовую сборку приложения.") }
         guard startMonitoring else { return }
         ConnectionDiagnostics.record("launch", "version=\(Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String ?? "dev") permission=\(ConnectionDiagnostics.permission.rawValue)")
         AppDelegate.onAction = { [weak self] action in
@@ -105,10 +105,10 @@ import ConduitCore
                 switch self.connectionHeartbeat.tick(at: ProcessInfo.processInfo.systemUptime) {
                 case .timedOut:
                     ConnectionDiagnostics.record("heartbeat.timeout")
-                    if self.transport == .bluetooth { self.bluetooth?.cancel(); self.bluetoothLost("Телефон не ответил"); return }
+                    if self.transport == .bluetooth { self.bluetooth?.cancel(); self.bluetoothLost(L("Телефон не ответил")); return }
                     self.bridge?.cancel(); self.bridge = nil
                     self.companionReady = false
-                    self.companionStatus = "Компаньон отключился. Нажми «Подключить»."
+                    self.companionStatus = L("Компаньон отключился. Нажми «Подключить».")
                 case .ping, .resumedPing:
                     ConnectionDiagnostics.record("heartbeat.ping")
                     self.sendBridge(["type": "ping"])
@@ -148,7 +148,7 @@ import ConduitCore
     private func updateSynchronizationActivity() {
         if connected && synchronizationActivity == nil {
             synchronizationActivity = ProcessInfo.processInfo.beginActivity(options: .userInitiatedAllowingIdleSystemSleep,
-                reason: "Синхронизация Conduit с подключённым телефоном")
+                reason: L("Синхронизация Conduit с подключённым телефоном"))
         } else if !connected, let activity = synchronizationActivity {
             ProcessInfo.processInfo.endActivity(activity); synchronizationActivity = nil
         }
@@ -172,9 +172,9 @@ import ConduitCore
         await cleanup()
         let id = UUID(); sessionID = id
         let serial = selectedSerial; sessionSerial = serial
-        status = "Открываю соединение…"
+        status = L("Открываю соединение…")
         do {
-            guard let server = resource("scrcpy-server-v5.0.1") else { throw AppError("В сборке отсутствует сервер буфера обмена.") }
+            guard let server = resource("scrcpy-server-v5.0.1") else { throw AppError(L("В сборке отсутствует сервер буфера обмена.")) }
             _ = try await adb.run(["push", server.path, "/data/local/tmp/conduit-scrcpy.jar"], serial: serial, timeout: 30)
             guard sessionID == id else { return }
             let scid = String(format: "%08x", UInt32.random(in: 1...0x7fff_ffff))
@@ -213,12 +213,12 @@ import ConduitCore
                 if !process.isRunning { break }
                 try await Task.sleep(nanoseconds: 200_000_000)
             }
-            guard established else { throw AppError("Сервис буфера не запустился. Разблокируй телефон и проверь разрешение отладки.") }
+            guard established else { throw AppError(L("Сервис буфера не запустился. Разблокируй телефон и проверь разрешение отладки.")) }
             guard sessionID == id else { return }
             connected = true
             pasteboardChange = NSPasteboard.general.changeCount
-            status = "Подключено · " + (devices.first(where: { $0.serial == serial })?.name ?? "Android")
-            log("Телефон подключён. Синхронизируются новые копирования текста.")
+            status = L("Подключено · ") + (devices.first(where: { $0.serial == serial })?.name ?? "Android")
+            log(L("Телефон подключён. Синхронизируются новые копирования текста."))
             if companionWanted { await startCompanion(install: false) }
         } catch {
             guard sessionID == id else { return }
@@ -232,7 +232,7 @@ import ConduitCore
         busy = true; shouldReconnect = false
         if transport == .bluetooth { UserDefaults.standard.set(false, forKey: "bluetoothConnectionWanted") }
         await cleanup()
-        status = "Отключено"
+        status = L("Отключено")
         busy = false
     }
 
@@ -241,12 +241,12 @@ import ConduitCore
         bluetooth?.cancel(); bluetooth = nil; bluetoothClipboardAuto = false; bluetoothDeviceLocked = false
         androidDiagnosticsPending = false; androidDiagnosticsRequest = UUID()
         let replies = bluetoothReplies; bluetoothReplies.removeAll()
-        for reply in replies.values { reply.timeout.cancel(); reply.continuation.resume(throwing: AppError("Соединение закрыто")) }
+        for reply in replies.values { reply.timeout.cancel(); reply.continuation.resume(throwing: AppError(L("Соединение закрыто"))) }
         controlAttemptID = UUID(); bridgeAttemptID = UUID()
         control?.cancel(); bridge?.cancel(); control = nil; bridge = nil
         serverProcess?.terminate(); serverProcess = nil
         connected = false; companionReady = false; bridgeAuthenticated = false; connectionHeartbeat.reset()
-        companionStatus = "Нужен Android-компаньон"
+        companionStatus = L("Нужен Android-компаньон")
         let ports = forwardedPorts; forwardedPorts = []
         let serial = sessionSerial; sessionSerial = nil
         if let adb, let serial {
@@ -258,7 +258,7 @@ import ConduitCore
         guard sessionID == id else { return }
         var payload = bytes
         if !receivedHandshake {
-            guard payload.first == 0 else { controlClosed("Некорректное начало канала", session: id); return }
+            guard payload.first == 0 else { controlClosed(L("Некорректное начало канала"), session: id); return }
             receivedHandshake = true; payload.removeFirst()
         }
         do {
@@ -271,7 +271,7 @@ import ConduitCore
                     pasteboardChange = board.changeCount
                 }
             }
-        } catch { controlClosed("Ошибка протокола буфера обмена", session: id) }
+        } catch { controlClosed(L("Ошибка протокола буфера обмена"), session: id) }
     }
 
     func controlClosed(_ reason: String, session id: UUID) {
@@ -281,7 +281,7 @@ import ConduitCore
         Task {
             busy = true
             await cleanup()
-            status = "Связь потеряна. Ожидаю телефон…"
+            status = L("Связь потеряна. Ожидаю телефон…")
             busy = false
         }
     }
@@ -303,7 +303,7 @@ import ConduitCore
             } else { control?.send(try ScrcpyEncoder.clipboard(text, sequence: sequence)) }
             didReportClipboardSize = false
         } catch {
-            if !didReportClipboardSize { log("Текст больше 256 КБ. Отправь его файлом."); didReportClipboardSize = true }
+            if !didReportClipboardSize { log(L("Текст больше 256 КБ. Отправь его файлом.")); didReportClipboardSize = true }
         }
     }
 
@@ -314,12 +314,12 @@ import ConduitCore
         companionWanted = true
         do {
             if install {
-                companionStatus = "Устанавливаю приложение на телефон…"
-                guard let apk = resource("conduit-companion.apk") else { throw AppError("В сборке отсутствует Android APK.") }
+                companionStatus = L("Устанавливаю приложение на телефон…")
+                guard let apk = resource("conduit-companion.apk") else { throw AppError(L("В сборке отсутствует Android APK.")) }
                 _ = try await adb.run(["install", "-r", apk.path], serial: serial, timeout: 90)
             }
             guard sessionID == id else { return }
-            companionStatus = "Соединяюсь с компаньоном…"
+            companionStatus = L("Соединяюсь с компаньоном…")
             bridgeToken = UUID().uuidString.replacingOccurrences(of: "-", with: "") + UUID().uuidString.replacingOccurrences(of: "-", with: "")
             _ = try await adb.run(["shell", "am", "start-foreground-service", "-n", "dev.conduit.bridge/.BridgeService", "--es", "token", bridgeToken], serial: serial)
             if install { _ = try await adb.run(["shell", "am", "start", "-n", "dev.conduit.bridge/.MainActivity"], serial: serial) }
@@ -337,7 +337,7 @@ import ConduitCore
             channel.onClose = { [weak self] _ in Task { @MainActor in
                 guard let self, self.sessionID == id, self.bridgeAttemptID == attempt else { return }
                 self.companionReady = false; self.bridgeAuthenticated = false
-                self.companionStatus = "Компаньон отключился. Нажми «Подключить»."
+                self.companionStatus = L("Компаньон отключился. Нажми «Подключить».")
             } }
             try await Task.sleep(nanoseconds: 400_000_000)
             try await channel.connect()
@@ -346,7 +346,7 @@ import ConduitCore
                 if bridgeAuthenticated { break }
                 try await Task.sleep(nanoseconds: 100_000_000)
             }
-            guard bridgeAuthenticated else { throw AppError("Компаньон не подтвердил соединение. Открой его на телефоне и повтори.") }
+            guard bridgeAuthenticated else { throw AppError(L("Компаньон не подтвердил соединение. Открой его на телефоне и повтори.")) }
         } catch { if sessionID == id { companionStatus = error.localizedDescription; companionReady = false } }
     }
 
@@ -363,23 +363,23 @@ import ConduitCore
                 case "ready", "status":
                     notificationAccess = event["notificationAccess"] as? Bool == true
                     notificationListenerConnected = event["notificationListenerConnected"] as? Bool ?? notificationAccess
-                    companionStatus = notificationAccess ? "Уведомления подключены" : "Разреши доступ к уведомлениям на телефоне"
+                    companionStatus = notificationAccess ? L("Уведомления подключены") : L("Разреши доступ к уведомлениям на телефоне")
                 case "pong": connectionHeartbeat.acknowledge(); ConnectionDiagnostics.record("heartbeat.pong")
                 case "notification":
                     guard notificationsEnabled, event["snapshot"] as? Bool != true else { continue }
-                    Task { do { try await PhoneNotifications.show(event) } catch { log("macOS не показала уведомление. Проверь разрешения приложения.") } }
+                    Task { do { try await PhoneNotifications.show(event) } catch { log(L("macOS не показала уведомление. Проверь разрешения приложения.")) } }
                 case "removed":
                     if let key = event["key"] as? String { PhoneNotifications.remove(key) }
                 case "file":
                     Task { await receiveFile(event) }
                 case "result":
-                    if event["ok"] as? Bool == false { log(event["message"] as? String ?? "Действие не выполнено на телефоне") }
+                    if event["ok"] as? Bool == false { log(L(event["message"] as? String ?? L("Действие не выполнено на телефоне"))) }
                 default: break
                 }
             }
         } catch {
             bridge?.cancel(); companionReady = false
-            companionStatus = "Ошибка канала уведомлений"
+            companionStatus = L("Ошибка канала уведомлений")
         }
     }
 
@@ -391,7 +391,7 @@ import ConduitCore
         guard macNotificationPermission == .notAsked else { openMacNotificationSettings(); return }
         do {
             _ = try await UNUserNotificationCenter.current().requestAuthorization(options: [.alert, .sound, .badge])
-        } catch { log("Не удалось запросить доступ к уведомлениям macOS") }
+        } catch { log(L("Не удалось запросить доступ к уведомлениям macOS")) }
         await refreshSystemPermissions()
     }
 
@@ -414,13 +414,13 @@ import ConduitCore
             for url in urls {
                 let file = url.standardizedFileURL
                 let values = try file.resourceValues(forKeys: [.isRegularFileKey])
-                guard values.isRegularFile == true else { log("Папки пока не поддерживаются. Можно отправить ZIP."); continue }
+                guard values.isRegularFile == true else { log(L("Папки пока не поддерживаются. Можно отправить ZIP.")); continue }
                 let destination = "/sdcard/Download/Conduit/" + UUID().uuidString.prefix(8) + "_" + FilePolicy.safeName(file.lastPathComponent)
-                log("Передаю: " + file.lastPathComponent)
+                log(L("Передаю: ") + file.lastPathComponent)
                 _ = try await adb.run(["push", file.path, destination], serial: serial, timeout: 3600)
-                log("На телефоне: Download/Conduit/" + destination.components(separatedBy: "/").last!)
+                log(L("На телефоне: Download/Conduit/") + destination.components(separatedBy: "/").last!)
             }
-        } catch { log("Передача не завершена: " + error.localizedDescription) }
+        } catch { log(L("Передача не завершена: ") + error.localizedDescription) }
     }
 
     func receiveFile(_ event: [String: Any]) async {
@@ -443,37 +443,37 @@ import ConduitCore
             let partial = stage.appendingPathComponent("payload")
             _ = try await adb.run(["pull", path, partial.path], serial: serial, timeout: 3600)
             let actual = try partial.resourceValues(forKeys: [.fileSizeKey]).fileSize
-            guard actual.map(Int64.init) == size.int64Value else { throw AppError("Размер полученного файла не совпал.") }
+            guard actual.map(Int64.init) == size.int64Value else { throw AppError(L("Размер полученного файла не совпал.")) }
             let destination = folder.appendingPathComponent(UUID().uuidString.prefix(8) + "_" + name)
             try FileManager.default.moveItem(at: partial, to: destination)
             receivedFiles.append(key)
             if receivedFiles.count > 256 { receivedFiles.removeFirst(receivedFiles.count - 256) }
             UserDefaults.standard.set(receivedFiles, forKey: "receivedFiles")
             sendBridge(["type": "fileReceived", "name": key])
-            log("Получен: " + name)
-        } catch { log("Не удалось получить файл: " + error.localizedDescription) }
+            log(L("Получен: ") + name)
+        } catch { log(L("Не удалось получить файл: ") + error.localizedDescription) }
     }
 
     func pairWireless() async {
         guard let adb, validAddress(pairingAddress), pairingCode.count == 6, pairingCode.allSatisfy(\.isNumber) else {
-            wirelessResult = "Введи адрес сопряжения IP:порт и шестизначный код с телефона."; return
+            wirelessResult = L("Введи адрес сопряжения IP:порт и шестизначный код с телефона."); return
         }
         do {
             let result = try await adb.run(["pair", pairingAddress, pairingCode], timeout: 30)
             guard result.contains("Successfully paired") else { throw AppError(result) }
             pairingCode = ""
-            wirelessResult = "Сопряжение выполнено. Теперь введи адрес подключения."
+            wirelessResult = L("Сопряжение выполнено. Теперь введи адрес подключения.")
         } catch { wirelessResult = error.localizedDescription }
     }
 
     func connectWireless() async {
-        guard let adb, validAddress(wirelessAddress) else { wirelessResult = "Нужен адрес IP:порт с экрана беспроводной отладки."; return }
+        guard let adb, validAddress(wirelessAddress) else { wirelessResult = L("Нужен адрес IP:порт с экрана беспроводной отладки."); return }
         do {
             let result = try await adb.run(["connect", wirelessAddress], timeout: 20)
             guard result.contains("connected to") else { throw AppError(result) }
             selectedSerial = wirelessAddress
             await refreshDevices()
-            wirelessResult = "Телефон найден. Можно подключаться."
+            wirelessResult = L("Телефон найден. Можно подключаться.")
         } catch { wirelessResult = error.localizedDescription }
     }
 

@@ -39,8 +39,8 @@ import ConduitCore
     }
     static func report() -> String {
         let version = Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String ?? "development"
-        let lines = (try? String(contentsOf: url, encoding: .utf8))?.split(separator: "\n").suffix(160).joined(separator: "\n") ?? "Нет записей"
-        let android = (try? String(contentsOf:androidDirectory.appendingPathComponent("android-latest.log"),encoding:.utf8)) ?? "Журнал Android ещё не получен"
+        let lines = (try? String(contentsOf: url, encoding: .utf8))?.split(separator: "\n").suffix(160).joined(separator: "\n") ?? L("Нет записей")
+        let android = (try? String(contentsOf:androidDirectory.appendingPathComponent("android-latest.log"),encoding:.utf8)) ?? L("Журнал Android ещё не получен")
         return "Conduit \(version)\nBluetooth permission: \(permission.rawValue)\nBluetooth power: \(poweredOn.map(String.init) ?? "unknown")\n\n--- Mac ---\n\(lines)\n\n--- Last Android report ---\n\(android)"
     }
 }

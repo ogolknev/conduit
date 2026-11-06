@@ -1,5 +1,7 @@
 package dev.conduit.bridge;
 
+import static dev.conduit.bridge.I18n.t;
+
 import android.os.*;
 import android.net.*;
 import java.io.*;
@@ -90,7 +92,7 @@ public final class ClipboardUserService extends Binder {
         } catch (Exception e) {
             failure = DiagnosticText.failure(e);
             if (code == 1) { phase = "failed"; stop(); }
-            reply.writeException(new IllegalStateException(code == 4 ? "Не удалось прочитать текущий буфер" : "Не удалось запустить привилегированный буфер")); return true;
+            reply.writeException(new IllegalStateException(code == 4 ? t("Не удалось прочитать текущий буфер") : t("Не удалось запустить привилегированный буфер"))); return true;
         }
         return super.onTransact(code, data, reply, flags);
     }

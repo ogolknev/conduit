@@ -36,7 +36,7 @@ the glyph occupies about 60% of the visible icon width, matching the Mac tile.
 The menu bar glyph has a 16-point visible width in an 18-point canvas; system
 notification glyphs use the platform's monochrome keyline.
 
-Copy describes state and action directly: “Нет соединения”, “Подключено”,
+Both English and Russian copy describes state and action directly: “Нет соединения”, “Подключено”,
 “Буфер обмена”, “Выбрать файлы”. Avoid slogans, rhetorical questions, and
 decorative instructions. Errors retain actionable detail.
 
@@ -48,7 +48,10 @@ Conduit.app/Contents/MacOS/Conduit --render-preview dark.png --preview-connected
 Conduit.app/Contents/MacOS/Conduit --render-preview settings.png --preview-settings --preview-compact
 ```
 
-Preview connection data is simulated. Android 0.3.2 was additionally reviewed on a physical Xiaomi 15 in both themes; screenshots from the phone remain local and are not included in this public source repository.
+Preview connection data is simulated. Current localized previews and native Xiaomi 15 captures
+are in `docs/images/`; both READMEs choose language-specific images and follow GitHub's theme.
+Use `--language en` or `--language ru` with the preview renderer. User-facing strings are
+maintained in `localization/strings.json` and generated for both native platforms.
 
 
 ## States and permissions in 0.3.2

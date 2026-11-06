@@ -15,6 +15,7 @@ p.add_argument('--server', required=True)
 args = p.parse_args()
 project = pathlib.Path(__file__).resolve().parents[1]
 subprocess.run([sys.executable, str(project / "scripts/generate-brand.py"), "--check"], check=True)
+subprocess.run([sys.executable, str(project / "scripts/generate-localizations.py"), "--check"], check=True)
 scratch = pathlib.Path(args.scratch).resolve(); scratch.mkdir(parents=True, exist_ok=True)
 jdk, sdk, tools = map(lambda s: pathlib.Path(s).resolve(), [args.jdk, args.platform, args.build_tools])
 output = pathlib.Path(args.output).resolve(); output.parent.mkdir(parents=True, exist_ok=True)

@@ -1,5 +1,7 @@
 package dev.conduit.bridge;
 
+import static dev.conduit.bridge.I18n.t;
+
 import android.app.*;
 import android.content.*;
 import android.os.*;
@@ -105,7 +107,7 @@ public final class PhoneNotifications extends NotificationListenerService {
     }
     static void reply(String key, String text) {
         PhoneNotifications service = instance;
-        if (service == null) { BridgeService.result(false, "Нет доступа к уведомлениям на телефоне"); return; }
+        if (service == null) { BridgeService.result(false, t("Нет доступа к уведомлениям на телефоне")); return; }
         if (text.isEmpty() || text.length() > 4096) return;
         new Handler(Looper.getMainLooper()).post(() -> {
             try {
@@ -121,8 +123,8 @@ public final class PhoneNotifications extends NotificationListenerService {
                 Intent fill = new Intent();
                 RemoteInput.addResultsToIntent(action.getRemoteInputs(), fill, values);
                 action.actionIntent.send(service, 0, fill);
-                BridgeService.result(true, "Ответ отправлен");
-            } catch (Exception e) { BridgeService.result(false, "Уведомление больше не принимает ответ"); }
+                BridgeService.result(true, t("Ответ отправлен"));
+            } catch (Exception e) { BridgeService.result(false, t("Уведомление больше не принимает ответ")); }
         });
     }
     static void dismiss(String key) {

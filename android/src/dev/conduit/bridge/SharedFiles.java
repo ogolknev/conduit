@@ -1,5 +1,7 @@
 package dev.conduit.bridge;
 
+import static dev.conduit.bridge.I18n.t;
+
 import android.content.*;
 import android.database.Cursor;
 import android.net.Uri;
@@ -21,10 +23,10 @@ final class SharedFiles {
             try {
                 File outbox = new File(app.getExternalFilesDir(null), "outbox");
                 File index = new File(app.getFilesDir(), "shares");
-                if ((!outbox.isDirectory() && !outbox.mkdirs()) || (!index.isDirectory() && !index.mkdirs())) throw new IOException("Хранилище недоступно");
+                if ((!outbox.isDirectory() && !outbox.mkdirs()) || (!index.isDirectory() && !index.mkdirs())) throw new IOException(t("Хранилище недоступно"));
                 long used = 0; File[] existing = outbox.listFiles();
                 if (existing != null) {
-                    if (existing.length >= 32) throw new IOException("В очереди уже 32 файла. Сначала подключи Mac.");
+                    if (existing.length >= 32) throw new IOException(t("В очереди уже 32 файла. Сначала подключи Mac."));
                     for (File file : existing) used += file.length();
                 }
                 String name = "file";
@@ -37,21 +39,21 @@ final class SharedFiles {
                 payload = new File(outbox, id + ".bin"); metadata = new File(index, id + ".bin.json");
                 long size = 0;
                 try (InputStream input = app.getContentResolver().openInputStream(uri); OutputStream output = new FileOutputStream(payload)) {
-                    if (input == null) throw new IOException("Не удалось открыть файл");
+                    if (input == null) throw new IOException(t("Не удалось открыть файл"));
                     byte[] buffer = new byte[65536]; int read;
                     while ((read = input.read(buffer)) != -1) {
                         size += read;
-                        if (size > MAX || size + used > MAX) throw new IOException("Для очереди доступен 1 ГБ. Сначала передай остальные файлы.");
+                        if (size > MAX || size + used > MAX) throw new IOException(t("Для очереди доступен 1 ГБ. Сначала передай остальные файлы."));
                         output.write(buffer, 0, read);
                     }
                 }
                 JSONObject event = BridgeService.object("type", "file", "path", payload.getAbsolutePath(), "name", name, "size", size);
                 try (OutputStream output = new FileOutputStream(metadata)) { output.write(event.toString().getBytes(StandardCharsets.UTF_8)); }
                 BridgeService.emit(event);
-                toast(app, BridgeService.client == null ? "Файл в очереди. Подключи Conduit на Mac." : "Передаю файл на Mac");
+                toast(app, BridgeService.client == null ? t("Файл в очереди. Подключи Conduit на Mac.") : t("Передаю файл на Mac"));
             } catch (Exception e) {
                 if (payload != null) payload.delete(); if (metadata != null) metadata.delete();
-                toast(app, e.getMessage() == null ? "Не удалось отправить файл" : e.getMessage());
+                toast(app, e.getMessage() == null ? t("Не удалось отправить файл") : e.getMessage());
             }
         });
     }

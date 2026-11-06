@@ -1,5 +1,7 @@
 package dev.conduit.bridge;
 
+import static dev.conduit.bridge.I18n.t;
+
 import android.app.*;
 import android.content.*;
 import android.content.pm.PackageManager;
@@ -27,13 +29,13 @@ final class ClipboardRelay {
     private volatile boolean disposed;
     private volatile String helperState = "not queried";
     private IBinder binder;
-    static volatile String status = "Автобуфер выключен";
+    static volatile String status = t("Автобуфер выключен");
     private final AtomicLong sequence = new AtomicLong();
     private final Shizuku.OnBinderReceivedListener received = this::binderReceived;
     private final Shizuku.OnBinderDeadListener dead = this::binderDead;
     private ServiceConnection serviceConnection;
     private void binderReceived() { PhoneDiagnostics.record(context, "shizuku.binder.received"); startIfWanted(); }
-    private void binderDead() { PhoneDiagnostics.record(context, "shizuku.binder.dead"); stopWithStatus("Shizuku остановлен. Запусти его снова."); }
+    private void binderDead() { PhoneDiagnostics.record(context, "shizuku.binder.dead"); stopWithStatus(t("Shizuku остановлен. Запусти его снова.")); }
     private ServiceConnection newConnection(final int version) { return new ServiceConnection() {
         @Override public void onServiceConnected(ComponentName name, IBinder service) {
             main.post(() -> {
@@ -46,7 +48,7 @@ final class ClipboardRelay {
         @Override public void onServiceDisconnected(ComponentName name) {
             if (version != generation) return;
             PhoneDiagnostics.record(context, "clipboard.service.disconnected");
-            stopWithStatus("Сервис Shizuku отключился. Включи автобуфер снова.");
+            stopWithStatus(t("Сервис Shizuku отключился. Включи автобуфер снова."));
         }
     }; }
     ClipboardRelay(BridgeService context) {
@@ -81,28 +83,28 @@ final class ClipboardRelay {
         main.post(() -> {
             if (disposed) return;
             if (!wanted()) {
-                if (context.getSharedPreferences("settings", 0).getBoolean("autoClipboard", false)) status = "Автобуфер ожидает подключения Mac";
+                if (context.getSharedPreferences("settings", 0).getBoolean("autoClipboard", false)) status = t("Автобуфер ожидает подключения Mac");
                 return;
             }
             if (ready || starting) return;
             try {
                 if (!Shizuku.pingBinder() || Shizuku.checkSelfPermission() != PackageManager.PERMISSION_GRANTED) {
-                    status = "Запусти Shizuku и разреши Conduit"; PhoneDiagnostics.record(context, "clipboard.permission.missing"); return;
+                    status = t("Запусти Shizuku и разреши Conduit"); PhoneDiagnostics.record(context, "clipboard.permission.missing"); return;
                 }
-                final int version = ++generation; starting = true; status = "Подключаю автобуфер…";
+                final int version = ++generation; starting = true; status = t("Подключаю автобуфер…");
                 final ServiceConnection target = newConnection(version); serviceConnection = target;
                 PhoneDiagnostics.record(context, "clipboard.bind.request");
                 rpc.execute(() -> {
                     try { Shizuku.bindUserService(args, target); }
-                    catch (RuntimeException failure) { PhoneDiagnostics.record(context, "clipboard.bind.failed", failure); main.post(() -> { if (generation == version) stopWithStatus("Не удалось подключить Shizuku. Скопируй диагностику."); }); }
+                    catch (RuntimeException failure) { PhoneDiagnostics.record(context, "clipboard.bind.failed", failure); main.post(() -> { if (generation == version) stopWithStatus(t("Не удалось подключить Shizuku. Скопируй диагностику.")); }); }
                 });
                 main.postDelayed(() -> {
                     if (generation == version && starting && !ready) {
-                        PhoneDiagnostics.record(context, "clipboard.start.timeout"); stopWithStatus("Shizuku не подготовил автобуфер за 15 секунд. Скопируй диагностику.");
+                        PhoneDiagnostics.record(context, "clipboard.start.timeout"); stopWithStatus(t("Shizuku не подготовил автобуфер за 15 секунд. Скопируй диагностику."));
                     }
                 }, 15000);
             } catch (RuntimeException failure) {
-                PhoneDiagnostics.record(context, "clipboard.start.failed", failure); starting = false; status = "Не удалось подключить Shizuku";
+                PhoneDiagnostics.record(context, "clipboard.start.failed", failure); starting = false; status = t("Не удалось подключить Shizuku");
             }
         });
     }
@@ -142,7 +144,7 @@ final class ClipboardRelay {
             if (input.readUnsignedByte() != 0) throw new IOException("Invalid handshake");
             output = outgoing; ready = true;
             PhoneDiagnostics.record(context, "clipboard.pipe.ready");
-            status = "Автобуфер через Shizuku подключён"; BridgeService.emit(BridgeService.status("status"));
+            status = t("Автобуфер через Shizuku подключён"); BridgeService.emit(BridgeService.status("status"));
             refreshHelperDiagnostics();
             // A queued request runs after scrcpy's controller has installed its clipboard listener.
             // It also recovers a copy made while the relay or Bluetooth connection was starting.
@@ -157,7 +159,7 @@ final class ClipboardRelay {
                 else throw new IOException("Unexpected message");
             }
         } catch (Exception failure) {
-            if (generation == version) { PhoneDiagnostics.record(context, "clipboard.reader.failed", failure); status = "Автобуфер прервался. Включи его снова или скопируй диагностику."; }
+            if (generation == version) { PhoneDiagnostics.record(context, "clipboard.reader.failed", failure); status = t("Автобуфер прервался. Включи его снова или скопируй диагностику."); }
         } finally {
             for (ParcelFileDescriptor[] pipe : pipes) if (pipe != null) for (ParcelFileDescriptor end : pipe) try { end.close(); } catch (IOException ignored) {}
             if (input != null) try { input.close(); } catch (IOException ignored) {}
@@ -191,12 +193,12 @@ final class ClipboardRelay {
         Runnable timeout = () -> {
             if (generation == version && pending.getAndSet(false)) {
                 PhoneDiagnostics.record(context, "clipboard.command.timeout");
-                stopWithStatus("Запись в Shizuku зависла. Включи автобуфер снова; Bluetooth остаётся активным.");
+                stopWithStatus(t("Запись в Shizuku зависла. Включи автобуфер снова; Bluetooth остаётся активным."));
             }
         };
         main.postDelayed(timeout, 10000);
         try { operation.run(); }
-        catch (IOException failure) { if (generation == version) { PhoneDiagnostics.record(context, "clipboard.command.failed", failure); stopWithStatus("Shizuku не принял буфер. Включи автобуфер снова."); } }
+        catch (IOException failure) { if (generation == version) { PhoneDiagnostics.record(context, "clipboard.command.failed", failure); stopWithStatus(t("Shizuku не принял буфер. Включи автобуфер снова.")); } }
         finally { pending.set(false); main.removeCallbacks(timeout); }
     }
     void setText(String text) {
@@ -223,13 +225,13 @@ final class ClipboardRelay {
                     });
                 } else main.post(() -> {
                     try { context.getSystemService(ClipboardManager.class).setPrimaryClip(ClipData.newPlainText("Conduit", value)); PhoneDiagnostics.record(context, "clipboard.fallback.applied"); }
-                    catch (RuntimeException failure) { PhoneDiagnostics.record(context, "clipboard.fallback.failed", failure); BridgeService.result(false, "Телефон не разрешил обновить буфер"); }
+                    catch (RuntimeException failure) { PhoneDiagnostics.record(context, "clipboard.fallback.failed", failure); BridgeService.result(false, t("Телефон не разрешил обновить буфер")); }
                 });
             }
         } finally { writing.set(false); if (!disposed && latestText.get() != null && writing.compareAndSet(false, true)) scheduleText(); }
     }
     void stop() {
-        stopWithStatus(context.getSharedPreferences("settings", 0).getBoolean("autoClipboard", false) ? "Автобуфер ожидает подключения Mac" : "Автобуфер выключен");
+        stopWithStatus(context.getSharedPreferences("settings", 0).getBoolean("autoClipboard", false) ? t("Автобуфер ожидает подключения Mac") : t("Автобуфер выключен"));
     }
     private void stopWithStatus(String reason) {
         main.post(() -> {

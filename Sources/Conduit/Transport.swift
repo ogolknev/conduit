@@ -4,7 +4,7 @@ import ConduitCore
 
 struct AppError: LocalizedError {
     let message: String
-    var errorDescription: String? { message }
+    var errorDescription: String? { L(message) }
     init(_ message: String) { self.message = message }
 }
 
@@ -30,14 +30,14 @@ struct ADB {
             }
             return result.output
         } catch CommandError.timedOut {
-            throw AppError("Телефон не ответил вовремя. Проверь подключение.")
+            throw AppError(L("Телефон не ответил вовремя. Проверь подключение."))
         }
     }
 
     func forward(socket: String, serial: String) async throws -> UInt16 {
         let answer = try await run(["forward", "tcp:0", "localabstract:" + socket], serial: serial)
         guard let port = UInt16(answer.trimmingCharacters(in: .whitespacesAndNewlines)), port > 0 else {
-            throw AppError("Не удалось открыть канал к телефону.")
+            throw AppError(L("Не удалось открыть канал к телефону."))
         }
         return port
     }
@@ -66,13 +66,13 @@ final class LocalChannel: @unchecked Sendable {
                         self.pendingConnect?.resume(); self.pendingConnect = nil
                         self.receive()
                     case .failed(let error): self.finish(error.localizedDescription)
-                    case .cancelled: self.finish("Канал закрыт")
+                    case .cancelled: self.finish(L("Канал закрыт"))
                     default: break
                     }
                 }
                 self.connection.start(queue: self.queue)
                 self.queue.asyncAfter(deadline: .now() + 5) {
-                    if self.pendingConnect != nil { self.finish("Не удалось подключиться к сервису телефона.") }
+                    if self.pendingConnect != nil { self.finish(L("Не удалось подключиться к сервису телефона.")) }
                 }
             }
         }
@@ -90,13 +90,13 @@ final class LocalChannel: @unchecked Sendable {
         data.append(10)
         send(data)
     }
-    func cancel() { queue.async { self.finish("Канал закрыт", notify: false) } }
+    func cancel() { queue.async { self.finish(L("Канал закрыт"), notify: false) } }
     private func receive() {
         connection.receive(minimumIncompleteLength: 1, maximumLength: 65536) { [weak self] data, _, complete, error in
             guard let self, !self.closed else { return }
             if let data, !data.isEmpty { self.onData?(data) }
             if let error { self.finish(error.localizedDescription) }
-            else if complete { self.finish("Телефон отключился") }
+            else if complete { self.finish(L("Телефон отключился")) }
             else { self.receive() }
         }
     }

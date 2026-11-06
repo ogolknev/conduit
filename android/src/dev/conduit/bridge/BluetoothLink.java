@@ -1,5 +1,7 @@
 package dev.conduit.bridge;
 
+import static dev.conduit.bridge.I18n.t;
+
 import android.bluetooth.*;
 import android.content.*;
 import android.os.*;
@@ -14,7 +16,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 final class BluetoothLink {
     static final UUID SERVICE = UUID.fromString("831e2350-1d98-4ed9-8bd1-65cda12a5ad0");
     static final PairingCode PAIRING = new PairingCode(SystemClock::elapsedRealtime, new SecureRandom());
-    static volatile String status = "Bluetooth выключен в Conduit";
+    static volatile String status = t("Bluetooth выключен в Conduit");
     private final BridgeService context;
     private volatile boolean running;
     private volatile int generation;
@@ -28,12 +30,12 @@ final class BluetoothLink {
         StartResult(boolean ready, String message) { this.ready = ready; this.message = message; }
     }
     private static String readyMessage() {
-        return BridgeService.client != null && BridgeService.client.isBluetooth() ? "Mac подключён по Bluetooth" : "Bluetooth готов. Выбери телефон в Conduit на Mac.";
+        return BridgeService.client != null && BridgeService.client.isBluetooth() ? t("Mac подключён по Bluetooth") : t("Bluetooth готов. Выбери телефон в Conduit на Mac.");
     }
     StartResult start() {
         final int version;
         synchronized (this) {
-            if (closed) return new StartResult(false, "Соединение остановлено. Нажми «Включить» снова.");
+            if (closed) return new StartResult(false, t("Соединение остановлено. Нажми «Включить» снова."));
             if (running && server != null) { status = readyMessage(); return new StartResult(true, status); }
             version = ++generation;
         }
@@ -41,22 +43,22 @@ final class BluetoothLink {
         try {
             BluetoothManager manager = context.getSystemService(BluetoothManager.class);
             BluetoothAdapter adapter = manager == null ? null : manager.getAdapter();
-            if (adapter == null || !adapter.isEnabled()) return failedStart(version, "Включи Bluetooth на телефоне", "listener.adapter.off", null);
+            if (adapter == null || !adapter.isEnabled()) return failedStart(version, t("Включи Bluetooth на телефоне"), "listener.adapter.off", null);
             // Secure RFCOMM mandates link authentication and encryption.
             PhoneDiagnostics.record(context, "listener.open");
             listener = adapter.listenUsingRfcommWithServiceRecord("Conduit", SERVICE);
             final BluetoothServerSocket socket = listener;
             synchronized (this) {
-                if (closed || generation != version) { listener.close(); return new StartResult(false, "Соединение остановлено"); }
+                if (closed || generation != version) { listener.close(); return new StartResult(false, t("Соединение остановлено")); }
                 server = listener; running = true; status = readyMessage();
                 new Thread(() -> listen(socket, version), "Conduit-bt-listener").start();
             }
             PhoneDiagnostics.record(context, "listener.ready");
             return new StartResult(true, status);
         } catch (SecurityException e) {
-            close(listener); return failedStart(version, "Разреши Conduit доступ к устройствам поблизости в настройках приложения.", "listener.permission.failed", e);
+            close(listener); return failedStart(version, t("Разреши Conduit доступ к устройствам поблизости в настройках приложения."), "listener.permission.failed", e);
         } catch (IOException | RuntimeException e) {
-            close(listener); return failedStart(version, "Не удалось запустить Bluetooth-сервис (" + e.getClass().getSimpleName() + "). Скопируй диагностику соединения.", "listener.open.failed", e);
+            close(listener); return failedStart(version, t("Не удалось запустить Bluetooth-сервис (") + e.getClass().getSimpleName() + t("). Скопируй диагностику соединения."), "listener.open.failed", e);
         }
     }
     private synchronized StartResult failedStart(int version, String message, String stage, Throwable failure) {
@@ -75,7 +77,7 @@ final class BluetoothLink {
         } catch (IOException | RuntimeException e) {
             synchronized (this) {
                 if (current(version)) {
-                    status = "Bluetooth отключился (" + e.getClass().getSimpleName() + "). Нажми «Включить» снова.";
+                    status = t("Bluetooth отключился (") + e.getClass().getSimpleName() + t("). Нажми «Включить» снова.");
                     PhoneDiagnostics.record(context, "listener.accept.failed", e);
                 }
             }
@@ -118,7 +120,7 @@ final class BluetoothLink {
             if (waiting.getAndSet(false)) handshakes.release(); timer.removeCallbacks(timeout);
             synchronized (this) {
                 if (!current(version)) return;
-                BridgeService.activate(peer); status = "Mac подключён по Bluetooth";
+                BridgeService.activate(peer); status = t("Mac подключён по Bluetooth");
             }
             PhoneDiagnostics.record(context, "peer.ready");
             SharedFiles.sendPending(context);
@@ -133,7 +135,7 @@ final class BluetoothLink {
             timer.removeCallbacks(timeout);
             if (peer != null) { BridgeService.deactivate(peer); peer.close(); }
             try { socket.close(); } catch (IOException ignored) {}
-            synchronized (this) { if (current(version) && BridgeService.client == null) status = "Ожидаю Mac по Bluetooth"; }
+            synchronized (this) { if (current(version) && BridgeService.client == null) status = t("Ожидаю Mac по Bluetooth"); }
         }
     }
     static boolean validUUID(String value) {
@@ -141,7 +143,7 @@ final class BluetoothLink {
     }
     void stop() {
         BluetoothServerSocket previous;
-        synchronized (this) { closed = true; generation++; running = false; previous = server; server = null; status = "Bluetooth выключен в Conduit"; }
+        synchronized (this) { closed = true; generation++; running = false; previous = server; server = null; status = t("Bluetooth выключен в Conduit"); }
         close(previous);
         BridgeService.Endpoint current = BridgeService.client;
         if (current != null && current.isBluetooth()) { BridgeService.deactivate(current); current.close(); }

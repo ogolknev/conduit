@@ -1,5 +1,7 @@
 package dev.conduit.bridge;
 
+import static dev.conduit.bridge.I18n.t;
+
 import android.app.*;
 import android.content.*;
 import android.net.*;
@@ -44,19 +46,19 @@ public final class BridgeService extends Service {
         if (power != null) { connectionWakeLock = power.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, "Conduit:Bluetooth"); connectionWakeLock.setReferenceCounted(false); }
         try {
             NotificationManager nm = getSystemService(NotificationManager.class);
-            nm.createNotificationChannel(new NotificationChannel("connection", "Соединение с Mac", NotificationManager.IMPORTANCE_LOW));
+            nm.createNotificationChannel(new NotificationChannel("connection", t("Соединение с Mac"), NotificationManager.IMPORTANCE_LOW));
             startForeground(1, connectionNotification());
             PhoneDiagnostics.record(this, "service.foreground.ready");
             PhoneNotifications.ensureConnected(this);
         } catch (RuntimeException e) {
             PhoneDiagnostics.record(this, "service.foreground.failed", e);
-            foregroundFailure = "Android не разрешил фоновую службу Conduit (" + e.getClass().getSimpleName() + "). Скопируй диагностику соединения.";
+            foregroundFailure = t("Android не разрешил фоновую службу Conduit (") + e.getClass().getSimpleName() + t("). Скопируй диагностику соединения.");
             BluetoothLink.status = foregroundFailure; return;
         }
         // Optional clipboard/ADB components must not prevent the Bluetooth listener from starting.
         try { clipboard = new ClipboardRelay(this); }
         catch (RuntimeException | LinkageError e) {
-            ClipboardRelay.status = "Не удалось запустить модуль Shizuku";
+            ClipboardRelay.status = t("Не удалось запустить модуль Shizuku");
             PhoneDiagnostics.record(this, "clipboard.init.failed", e);
         }
         running = true;
@@ -81,6 +83,12 @@ public final class BridgeService extends Service {
         }, "Conduit-accept").start();
     }
 
+    @Override public void onConfigurationChanged(android.content.res.Configuration configuration) {
+        super.onConfigurationChanged(configuration); I18n.refresh(getApplicationContext());
+        NotificationManager manager=getSystemService(NotificationManager.class);
+        manager.createNotificationChannel(new NotificationChannel("connection",t("Соединение с Mac"),NotificationManager.IMPORTANCE_LOW));
+        if (running) manager.notify(1,connectionNotification());
+    }
     @Override public int onStartCommand(Intent intent, int flags, int startId) {
         if (intent != null && "STOP".equals(intent.getAction())) {
             getSharedPreferences("settings", MODE_PRIVATE).edit().putBoolean("bluetoothWanted", false).apply(); stopSelf(); return START_NOT_STICKY;
@@ -113,7 +121,7 @@ public final class BridgeService extends Service {
     boolean hasConnectionWakeLock() { return connectionWakeLock != null && connectionWakeLock.isHeld(); }
     private Notification connectionNotification() {
         Endpoint peer=client;
-        String text=peer==null?"Ожидание Mac":peer.isBluetooth()?"Mac подключён · Bluetooth":"Mac подключён · Отладка";
+        String text=peer==null?t("Ожидание Mac"):peer.isBluetooth()?t("Mac подключён · Bluetooth"):t("Mac подключён · Отладка");
         PendingIntent open=PendingIntent.getActivity(this,0,new Intent(this,MainActivity.class),PendingIntent.FLAG_IMMUTABLE);
         return new Notification.Builder(this,"connection").setSmallIcon(R.drawable.ic_notification).setContentTitle("Conduit").setContentText(text)
             .setContentIntent(open).setOngoing(true).setOnlyAlertOnce(true).setShowWhen(false).build();
@@ -226,7 +234,7 @@ public final class BridgeService extends Service {
                 if (service.clipboard != null) service.clipboard.setText(text);
                 else new Handler(Looper.getMainLooper()).post(() -> {
                     try { service.getSystemService(ClipboardManager.class).setPrimaryClip(ClipData.newPlainText("Conduit", text)); }
-                    catch (RuntimeException e) { result(false, "Телефон не разрешил обновить буфер"); }
+                    catch (RuntimeException e) { result(false, t("Телефон не разрешил обновить буфер")); }
                 });
             }
         } else if (endpoint instanceof BluetoothLink.Peer && type.startsWith("file")) ((BluetoothLink.Peer)endpoint).files.handle(message);

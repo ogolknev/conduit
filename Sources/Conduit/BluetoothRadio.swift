@@ -13,13 +13,13 @@ import CoreBluetooth
         for _ in 0..<100 {
             switch manager?.state {
             case .poweredOn: return
-            case .poweredOff: throw AppError("Bluetooth на Mac выключен. Включи его в настройках Bluetooth.")
-            case .unauthorized: throw AppError("Разреши Conduit доступ к Bluetooth в настройках конфиденциальности macOS.")
-            case .unsupported: throw AppError("macOS не предоставила приложению Bluetooth-адаптер.")
+            case .poweredOff: throw AppError(L("Bluetooth на Mac выключен. Включи его в настройках Bluetooth."))
+            case .unauthorized: throw AppError(L("Разреши Conduit доступ к Bluetooth в настройках конфиденциальности macOS."))
+            case .unsupported: throw AppError(L("macOS не предоставила приложению Bluetooth-адаптер."))
             default: try await Task.sleep(nanoseconds: 100_000_000)
             }
         }
-        throw AppError("Bluetooth-адаптер не подготовился за 10 секунд. Закрой и снова открой Conduit.")
+        throw AppError(L("Bluetooth-адаптер не подготовился за 10 секунд. Закрой и снова открой Conduit."))
     }
     nonisolated func centralManagerDidUpdateState(_ central: CBCentralManager) { }
 }

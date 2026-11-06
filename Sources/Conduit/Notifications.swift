@@ -17,12 +17,16 @@ final class AppDelegate: NSObject, NSApplicationDelegate, UNUserNotificationCent
                 guard settings.authorizationStatus == .authorized || settings.authorizationStatus == .provisional else { return }
                 let content = UNMutableNotificationContent()
                 content.title = "Conduit"; content.subtitle = "Conduit UI test"
-                content.body = "Проверка значка из каталога Xcode"
+                content.body = L("Проверка значка из каталога Xcode")
                 do { try await center.add(UNNotificationRequest(identifier: "conduit.ui.icon.test", content: content, trigger: nil)) }
                 catch { ConnectionDiagnostics.record("notification.test.failed", String(describing: type(of: error))) }
             }
         }
-        let reply = UNTextInputNotificationAction(identifier: "REPLY", title: "Ответить", options: [], textInputButtonTitle: "Отправить", textInputPlaceholder: "Сообщение")
+        Self.configureCategories()
+    }
+    static func configureCategories() {
+        let center = UNUserNotificationCenter.current()
+        let reply = UNTextInputNotificationAction(identifier: "REPLY", title: L("Ответить"), options: [], textInputButtonTitle: L("Отправить"), textInputPlaceholder: L("Сообщение"))
         center.setNotificationCategories([
             UNNotificationCategory(identifier: "PHONE_REPLY", actions: [reply], intentIdentifiers: [], options: [.customDismissAction]),
             UNNotificationCategory(identifier: "PHONE", actions: [], intentIdentifiers: [], options: [.customDismissAction])
@@ -50,7 +54,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, UNUserNotificationCent
     static func show(_ event: [String: Any]) async throws {
         guard let key = event["key"] as? String else { return }
         let content = UNMutableNotificationContent()
-        content.title = String((event["app"] as? String ?? "Телефон").prefix(128))
+        content.title = String((event["app"] as? String ?? L("Телефон")).prefix(128))
         content.subtitle = String((event["title"] as? String ?? "").prefix(256))
         content.body = String((event["body"] as? String ?? "").prefix(4096))
         content.userInfo = ["phoneKey": key]

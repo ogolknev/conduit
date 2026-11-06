@@ -1,0 +1,1626 @@
+{
+  "Запрашиваю журнал телефона…": {
+    "en": "Requesting phone log…",
+    "ru": "Запрашиваю журнал телефона…"
+  },
+  "Телефон не ответил. Для журнала нужен APK 0.2.6 или новее.": {
+    "en": "The phone did not respond. Update the Android companion to retrieve its log.",
+    "ru": "Телефон не ответил. Для журнала нужен APK 0.2.6 или новее."
+  },
+  "Журнал телефона обновлён · ": {
+    "en": "Phone log updated · ",
+    "ru": "Журнал телефона обновлён · "
+  },
+  "Телефон сопряжён с Mac, но служба Conduit не найдена. На телефоне установи APK 0.2.3 или новее и нажми «Включить Bluetooth-соединение».": {
+    "en": "The phone is paired with this Mac, but Conduit was not found. Update Conduit on your phone and enable the connection.",
+    "ru": "Телефон сопряжён с Mac, но служба Conduit не найдена. На телефоне установи APK 0.2.3 или новее и нажми «Включить соединение»."
+  },
+  "Уведомления подключены": {
+    "en": "Notifications connected",
+    "ru": "Уведомления подключены"
+  },
+  "Не удалось подключиться": {
+    "en": "Unable to connect",
+    "ru": "Не удалось подключиться"
+  },
+  "Скопировать диагностику": {
+    "en": "Copy diagnostics",
+    "ru": "Скопировать диагностику"
+  },
+  "Понятно": {
+    "en": "OK",
+    "ru": "Понятно"
+  },
+  "Причина неизвестна. Скопируй диагностику.": {
+    "en": "Unknown cause. Copy the diagnostics.",
+    "ru": "Причина неизвестна. Скопируй диагностику."
+  },
+  "Завершить Conduit": {
+    "en": "Quit Conduit",
+    "ru": "Завершить Conduit"
+  },
+  "Общий буфер обмена": {
+    "en": "Shared clipboard",
+    "ru": "Общий буфер обмена"
+  },
+  "Уведомления телефона": {
+    "en": "Phone notifications",
+    "ru": "Уведомления телефона"
+  },
+  "Отправить файлы…": {
+    "en": "Send files…",
+    "ru": "Отправить файлы…"
+  },
+  "Открыть входящие": {
+    "en": "Open received files",
+    "ru": "Открыть входящие"
+  },
+  "Открыть Conduit": {
+    "en": "Open Conduit",
+    "ru": "Открыть Conduit"
+  },
+  "Отключиться": {
+    "en": "Disconnect",
+    "ru": "Отключиться"
+  },
+  "Завершить": {
+    "en": "Quit",
+    "ru": "Завершить"
+  },
+  "Попытка подключения уже закрыта. Нажми «Подключить» снова.": {
+    "en": "This connection attempt has ended. Select Connect to try again.",
+    "ru": "Попытка подключения уже закрыта. Нажми «Подключить» снова."
+  },
+  "Подготавливаю Bluetooth…": {
+    "en": "Preparing Bluetooth…",
+    "ru": "Подготавливаю Bluetooth…"
+  },
+  "Подключение отменено": {
+    "en": "Connection cancelled",
+    "ru": "Подключение отменено"
+  },
+  "Соединяю Mac с телефоном…": {
+    "en": "Connecting Mac to phone…",
+    "ru": "Соединяю Mac с телефоном…"
+  },
+  "Телефон не ответил на Bluetooth-подключение. Разблокируй его и открой Conduit.": {
+    "en": "The phone did not respond over Bluetooth. Unlock it and open Conduit.",
+    "ru": "Телефон не ответил на Bluetooth-подключение. Разблокируй его и открой Conduit."
+  },
+  "macOS не смогла подключиться к телефону по Bluetooth.": {
+    "en": "macOS was unable to connect to the phone over Bluetooth.",
+    "ru": "macOS не смогла подключиться к телефону по Bluetooth."
+  },
+  "Переподключаю телефон для обновления служб…": {
+    "en": "Reconnecting to refresh phone services…",
+    "ru": "Переподключаю телефон для обновления служб…"
+  },
+  "macOS не смогла обновить список служб. В настройках Bluetooth отключи телефон и подключи снова, затем повтори попытку в Conduit.": {
+    "en": "macOS was unable to refresh phone services. Disconnect and reconnect the phone in Bluetooth settings, then try Conduit again.",
+    "ru": "macOS не смогла обновить список служб. В настройках Bluetooth отключи телефон и подключи снова, затем повтори попытку в Conduit."
+  },
+  "Ищу Conduit на телефоне…": {
+    "en": "Looking for Conduit on the phone…",
+    "ru": "Ищу Conduit на телефоне…"
+  },
+  "Телефон не ответил на поиск Conduit за 20 секунд. Открой Conduit на телефоне, включи Bluetooth-соединение и проверь системное сопряжение.": {
+    "en": "The phone did not respond within 20 seconds. Open Conduit on your phone, enable the connection and check system Bluetooth pairing.",
+    "ru": "Телефон не ответил на поиск Conduit за 20 секунд. Открой Conduit на телефоне, включи Bluetooth-соединение и проверь системное сопряжение."
+  },
+  "macOS не смогла начать поиск Conduit на телефоне. Проверь Bluetooth и доступ Conduit в настройках конфиденциальности.": {
+    "en": "macOS was unable to search for Conduit. Check Bluetooth and allow Conduit access in Privacy & Security settings.",
+    "ru": "macOS не смогла начать поиск Conduit на телефоне. Проверь Bluetooth и доступ Conduit в настройках конфиденциальности."
+  },
+  "Не удалось подтвердить Bluetooth-соединение с сопряжённым телефоном.": {
+    "en": "Unable to verify the Bluetooth connection to the paired phone.",
+    "ru": "Не удалось подтвердить Bluetooth-соединение с сопряжённым телефоном."
+  },
+  "macOS не установила соединение с телефоном. Повтори подключение в настройках Bluetooth.": {
+    "en": "macOS did not connect to the phone. Reconnect it in Bluetooth settings.",
+    "ru": "macOS не установила соединение с телефоном. Повтори подключение в настройках Bluetooth."
+  },
+  "Телефон не ответил на поиск службы Conduit. Разблокируй его, открой Conduit и включи Bluetooth-соединение.": {
+    "en": "The phone did not respond to the service search. Unlock it, open Conduit and enable the connection.",
+    "ru": "Телефон не ответил на поиск службы Conduit. Разблокируй его, открой Conduit и включи Bluetooth-соединение."
+  },
+  "Служба Conduit не найдена после поиска. На телефоне открой Conduit 0.2.3 или новее и включи Bluetooth-соединение. При автоматическом подключении нажми «Подключить» вручную, чтобы обновить список служб.": {
+    "en": "Conduit was not found. Open the latest Conduit on your phone and enable the connection. Select Connect manually to refresh the service list.",
+    "ru": "Служба Conduit не найдена после поиска. На телефоне открой Conduit 0.2.3 или новее и включи Bluetooth-соединение. При автоматическом подключении нажми «Подключить» вручную, чтобы обновить список служб."
+  },
+  "Телефон сообщил службу Conduit без канала подключения. Выключи и снова включи соединение в Android-приложении.": {
+    "en": "The phone advertised Conduit without a connection channel. Turn the connection off and on in the Android app.",
+    "ru": "Телефон сообщил службу Conduit без канала подключения. Выключи и снова включи соединение в Android-приложении."
+  },
+  "Открываю Bluetooth-канал…": {
+    "en": "Opening Bluetooth channel…",
+    "ru": "Открываю Bluetooth-канал…"
+  },
+  "Bluetooth-канал не открылся за 15 секунд. Перезапусти Bluetooth-соединение в Conduit на телефоне.": {
+    "en": "The Bluetooth channel did not open within 15 seconds. Restart the connection in Conduit on your phone.",
+    "ru": "Bluetooth-канал не открылся за 15 секунд. Перезапусти Bluetooth-соединение в Conduit на телефоне."
+  },
+  "macOS не смогла открыть Bluetooth-канал. Проверь системное сопряжение и запущен ли Conduit на телефоне.": {
+    "en": "macOS was unable to open the Bluetooth channel. Check system pairing and that Conduit is running on your phone.",
+    "ru": "macOS не смогла открыть Bluetooth-канал. Проверь системное сопряжение и запущен ли Conduit на телефоне."
+  },
+  "Телефон отклонил Bluetooth-канал Conduit. Открой Android-приложение и включи соединение снова.": {
+    "en": "The phone rejected Conduit's Bluetooth channel. Open the Android app and enable the connection again.",
+    "ru": "Телефон отклонил Bluetooth-канал Conduit. Открой Android-приложение и включи соединение снова."
+  },
+  "macOS вернула другой Bluetooth-канал. Повтори подключение.": {
+    "en": "macOS returned a different Bluetooth channel. Try connecting again.",
+    "ru": "macOS вернула другой Bluetooth-канал. Повтори подключение."
+  },
+  "Не завершено системное сопряжение. Свяжи телефон и Mac в настройках Bluetooth.": {
+    "en": "System pairing is incomplete. Pair the phone and Mac in Bluetooth settings.",
+    "ru": "Не завершено системное сопряжение. Свяжи телефон и Mac в настройках Bluetooth."
+  },
+  "Проверяю защищённое соединение…": {
+    "en": "Verifying secure connection…",
+    "ru": "Проверяю защищённое соединение…"
+  },
+  "Телефон не подтвердил аутентификацию Bluetooth-соединения.": {
+    "en": "The phone did not confirm Bluetooth authentication.",
+    "ru": "Телефон не подтвердил аутентификацию Bluetooth-соединения."
+  },
+  "Аутентификация Bluetooth-соединения не прошла. Повтори системное сопряжение телефона и Mac.": {
+    "en": "Bluetooth authentication failed. Pair the phone and Mac again in system settings.",
+    "ru": "Аутентификация Bluetooth-соединения не прошла. Повтори системное сопряжение телефона и Mac."
+  },
+  "Телефон закрыл Bluetooth-соединение. Проверь, что Conduit на телефоне запущен.": {
+    "en": "The phone closed the Bluetooth connection. Check that Conduit is running on your phone.",
+    "ru": "Телефон закрыл Bluetooth-соединение. Проверь, что Conduit на телефоне запущен."
+  },
+  "Не удалось передать данные по Bluetooth": {
+    "en": "Unable to send data over Bluetooth",
+    "ru": "Не удалось передать данные по Bluetooth"
+  },
+  "Сообщение слишком велико для Bluetooth-канала": {
+    "en": "Message exceeds the Bluetooth channel limit",
+    "ru": "Сообщение слишком велико для Bluetooth-канала"
+  },
+  "Bluetooth-очередь переполнена. Подключись снова.": {
+    "en": "The Bluetooth queue is full. Reconnect the phone.",
+    "ru": "Bluetooth-очередь переполнена. Подключись снова."
+  },
+  "macOS не сообщила размер пакета Bluetooth. Переподключи телефон.": {
+    "en": "macOS did not report the Bluetooth packet size. Reconnect the phone.",
+    "ru": "macOS не сообщила размер пакета Bluetooth. Переподключи телефон."
+  },
+  "Ошибка отправки по Bluetooth": {
+    "en": "Bluetooth send error",
+    "ru": "Ошибка отправки по Bluetooth"
+  },
+  "Не удалось сохранить связь в Связке ключей.": {
+    "en": "Unable to save the connection in Keychain.",
+    "ru": "Не удалось сохранить связь в Связке ключей."
+  },
+  "Связка ключей не разрешила сохранить связь.": {
+    "en": "Keychain did not allow saving the connection.",
+    "ru": "Связка ключей не разрешила сохранить связь."
+  },
+  "Не удалось открыть передачу Bluetooth. APK доступен внутри сборки и отдельно в чате.": {
+    "en": "Unable to open Bluetooth File Exchange. The APK is included in the Mac app and available in the release.",
+    "ru": "Не удалось открыть передачу Bluetooth. APK доступен внутри сборки и отдельно в чате."
+  },
+  "Подключение не выполнено": {
+    "en": "Not connected",
+    "ru": "Подключение не выполнено"
+  },
+  "Диагностика скопирована": {
+    "en": "Diagnostics copied",
+    "ru": "Диагностика скопирована"
+  },
+  "Подключение уже выполняется. Подожди или нажми «Отменить».": {
+    "en": "A connection attempt is already running. Wait or select Cancel.",
+    "ru": "Подключение уже выполняется. Подожди или нажми «Отменить»."
+  },
+  "Список устройств изменился. Выбери телефон снова.": {
+    "en": "The device list has changed. Select the phone again.",
+    "ru": "Список устройств изменился. Выбери телефон снова."
+  },
+  "Подготовка": {
+    "en": "Preparing",
+    "ru": "Подготовка"
+  },
+  "Соединяюсь по Bluetooth…": {
+    "en": "Connecting over Bluetooth…",
+    "ru": "Соединяюсь по Bluetooth…"
+  },
+  "Проверяю код Conduit на телефоне…": {
+    "en": "Verifying the Conduit code on the phone…",
+    "ru": "Проверяю код Conduit на телефоне…"
+  },
+  "Телефон открыл Bluetooth-канал, но Conduit не ответил за 10 секунд. Проверь, что на телефоне установлен APK 0.2.3 или новее и включено соединение.": {
+    "en": "The Bluetooth channel opened, but Conduit did not respond within 10 seconds. Update Conduit on your phone and enable the connection.",
+    "ru": "Телефон открыл Bluetooth-канал, но Conduit не ответил за 10 секунд. Проверь, что на телефоне установлен APK 0.2.3 или новее и включено соединение."
+  },
+  "Готово": {
+    "en": "Ready",
+    "ru": "Готово"
+  },
+  "Bluetooth подключён. Уведомления и файлы готовы.": {
+    "en": "Bluetooth connected. Notifications and files are ready.",
+    "ru": "Bluetooth подключён. Уведомления и файлы готовы."
+  },
+  "Связь Conduit удалена. Получи новый код на телефоне.": {
+    "en": "Conduit authorization removed. Get a new code on your phone.",
+    "ru": "Связь Conduit удалена. Получи новый код на телефоне."
+  },
+  ". Ожидаю телефон…": {
+    "en": ". Waiting for phone…",
+    "ru": ". Ожидаю телефон…"
+  },
+  "Код не принят. На телефоне нажми «Связать новый Mac» и введи новый код.": {
+    "en": "Code rejected. Select Add Mac on your phone and enter a new code.",
+    "ru": "Код не принят. На телефоне нажми «Добавить Mac» и введи новый код."
+  },
+  "Ошибка передачи файла": {
+    "en": "File transfer error",
+    "ru": "Ошибка передачи файла"
+  },
+  "Уведомления подключены по Bluetooth": {
+    "en": "Notifications connected over Bluetooth",
+    "ru": "Уведомления подключены по Bluetooth"
+  },
+  "Разреши уведомления в Conduit на телефоне": {
+    "en": "Allow notification access in Conduit on your phone",
+    "ru": "Разреши уведомления в Conduit на телефоне"
+  },
+  "Не удалось сохранить журнал телефона": {
+    "en": "Unable to save the phone log",
+    "ru": "Не удалось сохранить журнал телефона"
+  },
+  "Проверь разрешение уведомлений macOS": {
+    "en": "Check the macOS notification permission",
+    "ru": "Проверь разрешение уведомлений macOS"
+  },
+  "Действие не выполнено": {
+    "en": "Action failed",
+    "ru": "Действие не выполнено"
+  },
+  "Ответ телефона не соответствует протоколу Conduit. Проверь версию Android-приложения.": {
+    "en": "The phone response does not match the Conduit protocol. Check the Android app version.",
+    "ru": "Ответ телефона не соответствует протоколу Conduit. Проверь версию Android-приложения."
+  },
+  "Ошибка Bluetooth-канала": {
+    "en": "Bluetooth channel error",
+    "ru": "Ошибка Bluetooth-канала"
+  },
+  "Нет соединения с телефоном": {
+    "en": "No connection to the phone",
+    "ru": "Нет соединения с телефоном"
+  },
+  "Телефон не подтвердил передачу. Подключись и повтори.": {
+    "en": "The phone did not confirm the transfer. Reconnect and try again.",
+    "ru": "Телефон не подтвердил передачу. Подключись и повтори."
+  },
+  "По Bluetooth поддерживаются файлы до 100 МБ. Папку можно отправить ZIP.": {
+    "en": "Bluetooth supports files up to 100 MB. Send folders as ZIP archives.",
+    "ru": "По Bluetooth поддерживаются файлы до 100 МБ. Папку можно отправить ZIP."
+  },
+  "Проверяю файл…": {
+    "en": "Checking file…",
+    "ru": "Проверяю файл…"
+  },
+  "Отправлен по Bluetooth: ": {
+    "en": "Sent over Bluetooth: ",
+    "ru": "Отправлен по Bluetooth: "
+  },
+  "Получен по Bluetooth: ": {
+    "en": "Received over Bluetooth: ",
+    "ru": "Получен по Bluetooth: "
+  },
+  "Файл не получен: ": {
+    "en": "File not received: ",
+    "ru": "Файл не получен: "
+  },
+  "Bluetooth на Mac выключен. Включи его в настройках Bluetooth.": {
+    "en": "Bluetooth is off on this Mac. Enable it in Bluetooth settings.",
+    "ru": "Bluetooth на Mac выключен. Включи его в настройках Bluetooth."
+  },
+  "Разреши Conduit доступ к Bluetooth в настройках конфиденциальности macOS.": {
+    "en": "Allow Conduit to use Bluetooth in macOS Privacy & Security settings.",
+    "ru": "Разреши Conduit доступ к Bluetooth в настройках конфиденциальности macOS."
+  },
+  "macOS не предоставила приложению Bluetooth-адаптер.": {
+    "en": "macOS did not provide a Bluetooth adapter to the app.",
+    "ru": "macOS не предоставила приложению Bluetooth-адаптер."
+  },
+  "Bluetooth-адаптер не подготовился за 10 секунд. Закрой и снова открой Conduit.": {
+    "en": "The Bluetooth adapter was not ready within 10 seconds. Quit and reopen Conduit.",
+    "ru": "Bluetooth-адаптер не подготовился за 10 секунд. Закрой и снова открой Conduit."
+  },
+  "Нет записей": {
+    "en": "No entries",
+    "ru": "Нет записей"
+  },
+  "Журнал Android ещё не получен": {
+    "en": "Android log not yet received",
+    "ru": "Журнал Android ещё не получен"
+  },
+  "Устройства": {
+    "en": "Devices",
+    "ru": "Устройства"
+  },
+  "Файлы": {
+    "en": "Files",
+    "ru": "Файлы"
+  },
+  "Настройки": {
+    "en": "Settings",
+    "ru": "Настройки"
+  },
+  "Подключить телефон": {
+    "en": "Connect phone",
+    "ru": "Подключить телефон"
+  },
+  "Закрыть": {
+    "en": "Close",
+    "ru": "Закрыть"
+  },
+  "Забыть связь с телефоном?": {
+    "en": "Forget this phone?",
+    "ru": "Забыть связь с телефоном?"
+  },
+  "Забыть связь": {
+    "en": "Forget connection",
+    "ru": "Забыть связь"
+  },
+  "Для следующего подключения потребуется новый код Conduit с телефона.": {
+    "en": "A new Conduit code from the phone will be required to connect again.",
+    "ru": "Для следующего подключения потребуется новый код Conduit с телефона."
+  },
+  "Локальное соединение": {
+    "en": "Local connection",
+    "ru": "Локальное соединение"
+  },
+  "Подключено · %@": {
+    "en": "Connected · %@",
+    "ru": "Подключено · %@"
+  },
+  "Подключение…": {
+    "en": "Connecting…",
+    "ru": "Подключение…"
+  },
+  "Нет соединения": {
+    "en": "Not connected",
+    "ru": "Нет соединения"
+  },
+  "Подключение": {
+    "en": "Connection",
+    "ru": "Подключение"
+  },
+  "Телефон не подключён": {
+    "en": "Phone not connected",
+    "ru": "Телефон не подключён"
+  },
+  "Подключён по %@": {
+    "en": "Connected via %@",
+    "ru": "Подключён по %@"
+  },
+  "Запустите Conduit на Android.": {
+    "en": "Open Conduit on Android.",
+    "ru": "Запустите Conduit на Android."
+  },
+  "Отключить": {
+    "en": "Disconnect",
+    "ru": "Отключить"
+  },
+  "Показать подключение": {
+    "en": "Show connection",
+    "ru": "Показать подключение"
+  },
+  "Телефон заблокирован. Буфер обновится после разблокировки.": {
+    "en": "Phone locked. Clipboard syncing will resume after unlocking.",
+    "ru": "Телефон заблокирован. Буфер обновится после разблокировки."
+  },
+  "СИНХРОНИЗАЦИЯ": {
+    "en": "SYNC",
+    "ru": "СИНХРОНИЗАЦИЯ"
+  },
+  "Буфер обмена": {
+    "en": "Clipboard",
+    "ru": "Буфер обмена"
+  },
+  "Уведомления": {
+    "en": "Notifications",
+    "ru": "Уведомления"
+  },
+  "Передача файлов": {
+    "en": "File transfer",
+    "ru": "Передача файлов"
+  },
+  "Передача между Mac и Android.": {
+    "en": "Transfer between Mac and Android.",
+    "ru": "Передача между Mac и Android."
+  },
+  "Открыть файлы": {
+    "en": "Open files",
+    "ru": "Открыть файлы"
+  },
+  "Передача отключена": {
+    "en": "Forwarding disabled",
+    "ru": "Передача отключена"
+  },
+  "Ожидание соединения": {
+    "en": "Waiting for connection",
+    "ru": "Ожидание соединения"
+  },
+  "Требуется доступ Android": {
+    "en": "Android permission required",
+    "ru": "Требуется доступ Android"
+  },
+  "Служба Android переподключается": {
+    "en": "Android service reconnecting",
+    "ru": "Служба Android переподключается"
+  },
+  "Баннеры отключены в macOS": {
+    "en": "Banners disabled in macOS",
+    "ru": "Баннеры отключены в macOS"
+  },
+  "Требуется доступ macOS": {
+    "en": "macOS permission required",
+    "ru": "Требуется доступ macOS"
+  },
+  "Уведомления Android → Mac": {
+    "en": "Android → Mac notifications",
+    "ru": "Уведомления Android → Mac"
+  },
+  "Синхронизация приостановлена": {
+    "en": "Sync paused",
+    "ru": "Синхронизация приостановлена"
+  },
+  "Mac → Android · Обратная передача требует Shizuku": {
+    "en": "Mac → Android · Shizuku required for reverse sync",
+    "ru": "Mac → Android · Обратная передача требует Shizuku"
+  },
+  "Передача текста между устройствами": {
+    "en": "Text transfer between devices",
+    "ru": "Передача текста между устройствами"
+  },
+  "Отпустите файлы для отправки": {
+    "en": "Drop files to send",
+    "ru": "Отпустите файлы для отправки"
+  },
+  "Перетащите файлы в эту область": {
+    "en": "Drag files here",
+    "ru": "Перетащите файлы в эту область"
+  },
+  "До 100 МБ на файл по Bluetooth": {
+    "en": "Up to 100 MB per file over Bluetooth",
+    "ru": "До 100 МБ на файл по Bluetooth"
+  },
+  "Для передачи требуется соединение": {
+    "en": "Connect a device to transfer files",
+    "ru": "Для передачи требуется соединение"
+  },
+  "Передача…": {
+    "en": "Transferring…",
+    "ru": "Передача…"
+  },
+  "Выбрать файлы": {
+    "en": "Choose files",
+    "ru": "Выбрать файлы"
+  },
+  "Входящие": {
+    "en": "Received files",
+    "ru": "Входящие"
+  },
+  "Загрузки / Conduit": {
+    "en": "Downloads / Conduit",
+    "ru": "Загрузки / Conduit"
+  },
+  "Открыть папку": {
+    "en": "Open folder",
+    "ru": "Открыть папку"
+  },
+  "На Android: файл → Поделиться → Conduit.": {
+    "en": "On Android: file → Share → Conduit.",
+    "ru": "На Android: файл → Поделиться → Conduit."
+  },
+  "ПОСЛЕДНИЕ СОБЫТИЯ": {
+    "en": "RECENT ACTIVITY",
+    "ru": "ПОСЛЕДНИЕ СОБЫТИЯ"
+  },
+  "СОЕДИНЕНИЕ": {
+    "en": "CONNECTION",
+    "ru": "СОЕДИНЕНИЕ"
+  },
+  "Телефон": {
+    "en": "Phone",
+    "ru": "Телефон"
+  },
+  "Настроить": {
+    "en": "Configure",
+    "ru": "Настроить"
+  },
+  "Автоматическое подключение": {
+    "en": "Automatic connection",
+    "ru": "Автоматическое подключение"
+  },
+  "Доступ Bluetooth": {
+    "en": "Bluetooth access",
+    "ru": "Доступ Bluetooth"
+  },
+  "Разрешён": {
+    "en": "Allowed",
+    "ru": "Разрешён"
+  },
+  "Не запрошен": {
+    "en": "Not requested",
+    "ru": "Не запрошен"
+  },
+  "Не разрешён": {
+    "en": "Not allowed",
+    "ru": "Не разрешён"
+  },
+  "Настройки Bluetooth": {
+    "en": "Bluetooth settings",
+    "ru": "Настройки Bluetooth"
+  },
+  "УВЕДОМЛЕНИЯ": {
+    "en": "NOTIFICATIONS",
+    "ru": "УВЕДОМЛЕНИЯ"
+  },
+  "Доступ на Android разрешён": {
+    "en": "Android access allowed",
+    "ru": "Доступ на Android разрешён"
+  },
+  "Доступ выдан, служба подключается": {
+    "en": "Access allowed, service connecting",
+    "ru": "Доступ выдан, служба подключается"
+  },
+  "Требуется разрешение на Android": {
+    "en": "Android permission required",
+    "ru": "Требуется разрешение на Android"
+  },
+  "Нет соединения с Android": {
+    "en": "No connection to Android",
+    "ru": "Нет соединения с Android"
+  },
+  "Уведомления macOS": {
+    "en": "macOS notifications",
+    "ru": "Уведомления macOS"
+  },
+  "Проверка…": {
+    "en": "Checking…",
+    "ru": "Проверка…"
+  },
+  "Установить на телефон": {
+    "en": "Install on phone",
+    "ru": "Установить на телефон"
+  },
+  "Компаньон подключён": {
+    "en": "Companion connected",
+    "ru": "Компаньон подключён"
+  },
+  "Подключить компаньон": {
+    "en": "Connect companion",
+    "ru": "Подключить компаньон"
+  },
+  "Открыть Conduit на телефоне": {
+    "en": "Open Conduit on phone",
+    "ru": "Открыть Conduit на телефоне"
+  },
+  "На Android доступ включается в Conduit → Настройки → Уведомления.": {
+    "en": "On Android: Conduit → Settings → Notifications.",
+    "ru": "На Android доступ включается в Conduit → Настройки → Уведомления."
+  },
+  "ДИАГНОСТИКА": {
+    "en": "DIAGNOSTICS",
+    "ru": "ДИАГНОСТИКА"
+  },
+  "Сохранять журнал телефона на Mac": {
+    "en": "Save phone log on Mac",
+    "ru": "Сохранять журнал телефона на Mac"
+  },
+  "После подключения и раз в минуту. Без содержимого буфера и уведомлений.": {
+    "en": "On connection and every minute. Clipboard and notification content is excluded.",
+    "ru": "После подключения и раз в минуту. Без содержимого буфера и уведомлений."
+  },
+  "Запрос…": {
+    "en": "Requesting…",
+    "ru": "Запрос…"
+  },
+  "Обновить": {
+    "en": "Refresh",
+    "ru": "Обновить"
+  },
+  "Скопировать отчёт": {
+    "en": "Copy report",
+    "ru": "Скопировать отчёт"
+  },
+  "Последние события": {
+    "en": "Recent activity",
+    "ru": "Последние события"
+  },
+  "Локальная связь. Буфер без истории.": {
+    "en": "Local connection. No clipboard history.",
+    "ru": "Локальная связь. Буфер без истории."
+  },
+  "Отправить APK": {
+    "en": "Send APK",
+    "ru": "Отправить APK"
+  },
+  "Способ связи": {
+    "en": "Connection method",
+    "ru": "Способ связи"
+  },
+  "1. Сопряжение устройств в настройках Bluetooth.\n2. На Android: Conduit → «Связать Mac».\n3. Выбор устройства и ввод кода ниже.": {
+    "en": "1. Pair devices in system Bluetooth settings.\n2. On Android: Conduit → Add Mac.\n3. Select the phone and enter its code below.",
+    "ru": "1. Сопряжение устройств в настройках Bluetooth.\n2. На Android: Conduit → «Добавить Mac».\n3. Выбор устройства и ввод кода ниже."
+  },
+  "Выбери устройство": {
+    "en": "Select a device",
+    "ru": "Выбери устройство"
+  },
+  "Обновить список устройств": {
+    "en": "Refresh device list",
+    "ru": "Обновить список устройств"
+  },
+  "Код Conduit (8 цифр)": {
+    "en": "Conduit code (8 digits)",
+    "ru": "Код Conduit (8 цифр)"
+  },
+  "Устройство авторизовано. Код не требуется.": {
+    "en": "Device authorized. No code required.",
+    "ru": "Устройство авторизовано. Код не требуется."
+  },
+  "Открыть настройки Bluetooth": {
+    "en": "Open Bluetooth settings",
+    "ru": "Открыть настройки Bluetooth"
+  },
+  "Для USB требуется отладка Android и разрешение доступа для Mac.": {
+    "en": "USB requires Android debugging and authorization for this Mac.",
+    "ru": "Для USB требуется отладка Android и разрешение доступа для Mac."
+  },
+  "Беспроводная отладка": {
+    "en": "Wireless debugging",
+    "ru": "Беспроводная отладка"
+  },
+  "Android → Для разработчиков → Беспроводная отладка. Оба устройства должны быть в одной сети.": {
+    "en": "Android → Developer options → Wireless debugging. Both devices must be on the same network.",
+    "ru": "Android → Для разработчиков → Беспроводная отладка. Оба устройства должны быть в одной сети."
+  },
+  "IP:порт сопряжения": {
+    "en": "Pairing IP:port",
+    "ru": "IP:порт сопряжения"
+  },
+  "Код": {
+    "en": "Code",
+    "ru": "Код"
+  },
+  "Связать": {
+    "en": "Pair",
+    "ru": "Связать"
+  },
+  "IP:порт подключения": {
+    "en": "Connection IP:port",
+    "ru": "IP:порт подключения"
+  },
+  "Найти": {
+    "en": "Find",
+    "ru": "Найти"
+  },
+  "Порты сопряжения и подключения разные.": {
+    "en": "Pairing and connection use different ports.",
+    "ru": "Порты сопряжения и подключения разные."
+  },
+  "Подключить": {
+    "en": "Connect",
+    "ru": "Подключить"
+  },
+  "%@ · %@ с": {
+    "en": "%@ · %@ s",
+    "ru": "%@ · %@ с"
+  },
+  "Отменить": {
+    "en": "Cancel",
+    "ru": "Отменить"
+  },
+  "Подключи телефон, чтобы начать": {
+    "en": "Connect a phone to get started",
+    "ru": "Подключи телефон, чтобы начать"
+  },
+  "Нужен Android-компаньон": {
+    "en": "Android companion required",
+    "ru": "Нужен Android-компаньон"
+  },
+  "Журнал телефона ещё не получен": {
+    "en": "Phone log not yet received",
+    "ru": "Журнал телефона ещё не получен"
+  },
+  "ADB не найден. Используй готовую сборку приложения.": {
+    "en": "ADB not found. Use the packaged Mac app.",
+    "ru": "ADB не найден. Используй готовую сборку приложения."
+  },
+  "Телефон не ответил": {
+    "en": "Phone did not respond",
+    "ru": "Телефон не ответил"
+  },
+  "Компаньон отключился. Нажми «Подключить».": {
+    "en": "Companion disconnected. Select Connect.",
+    "ru": "Компаньон отключился. Нажми «Подключить»."
+  },
+  "Синхронизация Conduit с подключённым телефоном": {
+    "en": "Conduit sync with the connected phone",
+    "ru": "Синхронизация Conduit с подключённым телефоном"
+  },
+  "Открываю соединение…": {
+    "en": "Opening connection…",
+    "ru": "Открываю соединение…"
+  },
+  "В сборке отсутствует сервер буфера обмена.": {
+    "en": "Clipboard server missing from the app bundle.",
+    "ru": "В сборке отсутствует сервер буфера обмена."
+  },
+  "Сервис буфера не запустился. Разблокируй телефон и проверь разрешение отладки.": {
+    "en": "Clipboard service did not start. Unlock the phone and check debugging authorization.",
+    "ru": "Сервис буфера не запустился. Разблокируй телефон и проверь разрешение отладки."
+  },
+  "Подключено · ": {
+    "en": "Connected · ",
+    "ru": "Подключено · "
+  },
+  "Телефон подключён. Синхронизируются новые копирования текста.": {
+    "en": "Phone connected. New clipboard changes will sync.",
+    "ru": "Телефон подключён. Синхронизируются новые копирования текста."
+  },
+  "Отключено": {
+    "en": "Disconnected",
+    "ru": "Отключено"
+  },
+  "Соединение закрыто": {
+    "en": "Connection closed",
+    "ru": "Соединение закрыто"
+  },
+  "Некорректное начало канала": {
+    "en": "Invalid channel header",
+    "ru": "Некорректное начало канала"
+  },
+  "Ошибка протокола буфера обмена": {
+    "en": "Clipboard protocol error",
+    "ru": "Ошибка протокола буфера обмена"
+  },
+  "Связь потеряна. Ожидаю телефон…": {
+    "en": "Connection lost. Waiting for phone…",
+    "ru": "Связь потеряна. Ожидаю телефон…"
+  },
+  "Текст больше 256 КБ. Отправь его файлом.": {
+    "en": "Text exceeds 256 KB. Send it as a file.",
+    "ru": "Текст больше 256 КБ. Отправь его файлом."
+  },
+  "Устанавливаю приложение на телефон…": {
+    "en": "Installing the Android app…",
+    "ru": "Устанавливаю приложение на телефон…"
+  },
+  "В сборке отсутствует Android APK.": {
+    "en": "Companion APK missing from the app bundle.",
+    "ru": "В сборке отсутствует Android APK."
+  },
+  "Соединяюсь с компаньоном…": {
+    "en": "Connecting to companion…",
+    "ru": "Соединяюсь с компаньоном…"
+  },
+  "Компаньон не подтвердил соединение. Открой его на телефоне и повтори.": {
+    "en": "The companion did not confirm the connection. Open it on your phone and try again.",
+    "ru": "Компаньон не подтвердил соединение. Открой его на телефоне и повтори."
+  },
+  "Разреши доступ к уведомлениям на телефоне": {
+    "en": "Allow notification access on your phone",
+    "ru": "Разреши доступ к уведомлениям на телефоне"
+  },
+  "macOS не показала уведомление. Проверь разрешения приложения.": {
+    "en": "macOS did not display the notification. Check app permissions.",
+    "ru": "macOS не показала уведомление. Проверь разрешения приложения."
+  },
+  "Действие не выполнено на телефоне": {
+    "en": "Action failed on the phone",
+    "ru": "Действие не выполнено на телефоне"
+  },
+  "Ошибка канала уведомлений": {
+    "en": "Notification channel error",
+    "ru": "Ошибка канала уведомлений"
+  },
+  "Не удалось запросить доступ к уведомлениям macOS": {
+    "en": "Unable to request macOS notification permission",
+    "ru": "Не удалось запросить доступ к уведомлениям macOS"
+  },
+  "Папки пока не поддерживаются. Можно отправить ZIP.": {
+    "en": "Folders are not supported yet. Send a ZIP archive.",
+    "ru": "Папки пока не поддерживаются. Можно отправить ZIP."
+  },
+  "Передаю: ": {
+    "en": "Sending: ",
+    "ru": "Передаю: "
+  },
+  "На телефоне: Download/Conduit/": {
+    "en": "On phone: Download/Conduit/",
+    "ru": "На телефоне: Download/Conduit/"
+  },
+  "Передача не завершена: ": {
+    "en": "Transfer incomplete: ",
+    "ru": "Передача не завершена: "
+  },
+  "Размер полученного файла не совпал.": {
+    "en": "Received file size does not match.",
+    "ru": "Размер полученного файла не совпал."
+  },
+  "Получен: ": {
+    "en": "Received: ",
+    "ru": "Получен: "
+  },
+  "Не удалось получить файл: ": {
+    "en": "Unable to receive file: ",
+    "ru": "Не удалось получить файл: "
+  },
+  "Введи адрес сопряжения IP:порт и шестизначный код с телефона.": {
+    "en": "Enter the pairing IP:port and six-digit code shown on your phone.",
+    "ru": "Введи адрес сопряжения IP:порт и шестизначный код с телефона."
+  },
+  "Сопряжение выполнено. Теперь введи адрес подключения.": {
+    "en": "Paired. Now enter the connection address.",
+    "ru": "Сопряжение выполнено. Теперь введи адрес подключения."
+  },
+  "Нужен адрес IP:порт с экрана беспроводной отладки.": {
+    "en": "Enter the IP:port from the wireless debugging screen.",
+    "ru": "Нужен адрес IP:порт с экрана беспроводной отладки."
+  },
+  "Телефон найден. Можно подключаться.": {
+    "en": "Phone found. Ready to connect.",
+    "ru": "Телефон найден. Можно подключаться."
+  },
+  "Проверка значка из каталога Xcode": {
+    "en": "Conduit notification icon test",
+    "ru": "Проверка значка из каталога Xcode"
+  },
+  "Ответить": {
+    "en": "Reply",
+    "ru": "Ответить"
+  },
+  "Отправить": {
+    "en": "Send",
+    "ru": "Отправить"
+  },
+  "Сообщение": {
+    "en": "Message",
+    "ru": "Сообщение"
+  },
+  "Доступ не запрошен": {
+    "en": "Permission not requested",
+    "ru": "Доступ не запрошен"
+  },
+  "Отключены в macOS": {
+    "en": "Disabled in macOS",
+    "ru": "Отключены в macOS"
+  },
+  "Разрешены": {
+    "en": "Allowed",
+    "ru": "Разрешены"
+  },
+  "Разрешены без баннеров": {
+    "en": "Allowed without banners",
+    "ru": "Разрешены без баннеров"
+  },
+  "Состояние неизвестно": {
+    "en": "Unknown status",
+    "ru": "Состояние неизвестно"
+  },
+  "Разрешить": {
+    "en": "Allow",
+    "ru": "Разрешить"
+  },
+  "Телефон не ответил вовремя. Проверь подключение.": {
+    "en": "The phone did not respond in time. Check the connection.",
+    "ru": "Телефон не ответил вовремя. Проверь подключение."
+  },
+  "Не удалось открыть канал к телефону.": {
+    "en": "Unable to open a channel to the phone.",
+    "ru": "Не удалось открыть канал к телефону."
+  },
+  "Канал закрыт": {
+    "en": "Channel closed",
+    "ru": "Канал закрыт"
+  },
+  "Не удалось подключиться к сервису телефона.": {
+    "en": "Unable to connect to the phone service.",
+    "ru": "Не удалось подключиться к сервису телефона."
+  },
+  "Телефон отключился": {
+    "en": "Phone disconnected",
+    "ru": "Телефон отключился"
+  },
+  "Conduit не разрешён доступ к Bluetooth. Открой Системные настройки → Конфиденциальность и безопасность → Bluetooth и включи Conduit.": {
+    "en": "Conduit cannot access Bluetooth. Open System Settings → Privacy & Security → Bluetooth and allow Conduit.",
+    "ru": "Conduit не разрешён доступ к Bluetooth. Открой Системные настройки → Конфиденциальность и безопасность → Bluetooth и включи Conduit."
+  },
+  "Не выбран телефон. Свяжи его с Mac в настройках Bluetooth, нажми «Обновить» и выбери в списке.": {
+    "en": "No phone selected. Pair it in Bluetooth settings, refresh the device list and select it.",
+    "ru": "Не выбран телефон. Свяжи его с Mac в настройках Bluetooth, нажми «Обновить» и выбери в списке."
+  },
+  "Выбранного телефона больше нет в списке. Нажми «Обновить» и выбери его снова.": {
+    "en": "The selected phone is no longer listed. Refresh the list and select it again.",
+    "ru": "Выбранного телефона больше нет в списке. Нажми «Обновить» и выбери его снова."
+  },
+  "Для первого подключения нужен код Conduit. На телефоне открой приложение, нажми «Связать новый Mac» и введи 8 цифр.": {
+    "en": "The first connection requires a Conduit code. Open Conduit on your phone, select Add Mac and enter the eight digits.",
+    "ru": "Для первого подключения нужен код Conduit. На телефоне открой приложение, нажми «Добавить Mac» и введи 8 цифр."
+  },
+  "Код Conduit должен содержать ровно 8 цифр. Это код из Android-приложения, а не код системного сопряжения Bluetooth.": {
+    "en": "The Conduit code must contain exactly 8 digits. Use the code from the Android app, not the system Bluetooth pairing code.",
+    "ru": "Код Conduit должен содержать ровно 8 цифр. Это код из Android-приложения, а не код системного сопряжения Bluetooth."
+  },
+  "Другая передача ещё не завершена": {
+    "en": "Another transfer is still in progress",
+    "ru": "Другая передача ещё не завершена"
+  },
+  "По Bluetooth — файлы до 100 МБ": {
+    "en": "Bluetooth file limit: 100 MB",
+    "ru": "По Bluetooth — файлы до 100 МБ"
+  },
+  "Неверный порядок частей файла": {
+    "en": "Invalid file chunk order",
+    "ru": "Неверный порядок частей файла"
+  },
+  "Часть файла слишком велика": {
+    "en": "File chunk too large",
+    "ru": "Часть файла слишком велика"
+  },
+  "Неверный размер части файла": {
+    "en": "Invalid file chunk size",
+    "ru": "Неверный размер части файла"
+  },
+  "Размер или SHA-256 файла не совпал": {
+    "en": "File size or SHA-256 does not match",
+    "ru": "Размер или SHA-256 файла не совпал"
+  },
+  "Неверный идентификатор файла": {
+    "en": "Invalid file identifier",
+    "ru": "Неверный идентификатор файла"
+  },
+  "Файл недоступен или больше 100 МБ": {
+    "en": "File unavailable or larger than 100 MB",
+    "ru": "Файл недоступен или больше 100 МБ"
+  },
+  "Неверные сведения о файле": {
+    "en": "Invalid file metadata",
+    "ru": "Неверные сведения о файле"
+  },
+  "Файл не открыт": {
+    "en": "File not open",
+    "ru": "Файл не открыт"
+  },
+  "Передача не завершена": {
+    "en": "Transfer incomplete",
+    "ru": "Передача не завершена"
+  },
+  "Не удалось сохранить файл в Загрузки": {
+    "en": "Unable to save the file to Downloads",
+    "ru": "Не удалось сохранить файл в Загрузки"
+  },
+  "Хранилище недоступно": {
+    "en": "Storage unavailable",
+    "ru": "Хранилище недоступно"
+  },
+  "Не удалось сохранить файл": {
+    "en": "Unable to save file",
+    "ru": "Не удалось сохранить файл"
+  },
+  "Bluetooth выключен в Conduit": {
+    "en": "Bluetooth disabled in Conduit",
+    "ru": "Bluetooth выключен в Conduit"
+  },
+  "Mac подключён по Bluetooth": {
+    "en": "Mac connected over Bluetooth",
+    "ru": "Mac подключён по Bluetooth"
+  },
+  "Bluetooth готов. Выбери телефон в Conduit на Mac.": {
+    "en": "Bluetooth ready. Select your phone in Conduit on Mac.",
+    "ru": "Bluetooth готов. Выбери телефон в Conduit на Mac."
+  },
+  "Соединение остановлено. Нажми «Включить» снова.": {
+    "en": "Connection stopped. Enable it again.",
+    "ru": "Соединение остановлено. Нажми «Включить» снова."
+  },
+  "Включи Bluetooth на телефоне": {
+    "en": "Enable Bluetooth on your phone",
+    "ru": "Включи Bluetooth на телефоне"
+  },
+  "Соединение остановлено": {
+    "en": "Connection stopped",
+    "ru": "Соединение остановлено"
+  },
+  "Разреши Conduit доступ к устройствам поблизости в настройках приложения.": {
+    "en": "Allow Conduit access to nearby devices in app settings.",
+    "ru": "Разреши Conduit доступ к устройствам поблизости в настройках приложения."
+  },
+  "Не удалось запустить Bluetooth-сервис (": {
+    "en": "Unable to start the Bluetooth service (",
+    "ru": "Не удалось запустить Bluetooth-сервис ("
+  },
+  "). Скопируй диагностику соединения.": {
+    "en": "). Copy the connection diagnostics.",
+    "ru": "). Скопируй диагностику соединения."
+  },
+  "Bluetooth отключился (": {
+    "en": "Bluetooth disconnected (",
+    "ru": "Bluetooth отключился ("
+  },
+  "). Нажми «Включить» снова.": {
+    "en": "). Enable the connection again.",
+    "ru": "). Нажми «Включить» снова."
+  },
+  "Ожидаю Mac по Bluetooth": {
+    "en": "Waiting for Mac over Bluetooth",
+    "ru": "Ожидаю Mac по Bluetooth"
+  },
+  "Соединение с Mac": {
+    "en": "Mac connection",
+    "ru": "Соединение с Mac"
+  },
+  "Android не разрешил фоновую службу Conduit (": {
+    "en": "Android did not allow Conduit's background service (",
+    "ru": "Android не разрешил фоновую службу Conduit ("
+  },
+  "Не удалось запустить модуль Shizuku": {
+    "en": "Unable to start the Shizuku module",
+    "ru": "Не удалось запустить модуль Shizuku"
+  },
+  "Ожидание Mac": {
+    "en": "Waiting for Mac",
+    "ru": "Ожидание Mac"
+  },
+  "Mac подключён · Bluetooth": {
+    "en": "Mac connected · Bluetooth",
+    "ru": "Mac подключён · Bluetooth"
+  },
+  "Mac подключён · Отладка": {
+    "en": "Mac connected · Debugging",
+    "ru": "Mac подключён · Отладка"
+  },
+  "Телефон не разрешил обновить буфер": {
+    "en": "The phone did not allow updating the clipboard",
+    "ru": "Телефон не разрешил обновить буфер"
+  },
+  "Автобуфер выключен": {
+    "en": "Automatic clipboard disabled",
+    "ru": "Автобуфер выключен"
+  },
+  "Shizuku остановлен. Запусти его снова.": {
+    "en": "Shizuku stopped. Start it again.",
+    "ru": "Shizuku остановлен. Запусти его снова."
+  },
+  "Сервис Shizuku отключился. Включи автобуфер снова.": {
+    "en": "Shizuku service disconnected. Enable automatic sending again.",
+    "ru": "Сервис Shizuku отключился. Включи автобуфер снова."
+  },
+  "Автобуфер ожидает подключения Mac": {
+    "en": "Automatic clipboard waiting for Mac",
+    "ru": "Автобуфер ожидает подключения Mac"
+  },
+  "Запусти Shizuku и разреши Conduit": {
+    "en": "Start Shizuku and allow Conduit access",
+    "ru": "Запусти Shizuku и разреши Conduit"
+  },
+  "Подключаю автобуфер…": {
+    "en": "Connecting automatic clipboard…",
+    "ru": "Подключаю автобуфер…"
+  },
+  "Не удалось подключить Shizuku. Скопируй диагностику.": {
+    "en": "Unable to connect to Shizuku. Copy diagnostics.",
+    "ru": "Не удалось подключить Shizuku. Скопируй диагностику."
+  },
+  "Shizuku не подготовил автобуфер за 15 секунд. Скопируй диагностику.": {
+    "en": "Shizuku was not ready within 15 seconds. Copy diagnostics.",
+    "ru": "Shizuku не подготовил автобуфер за 15 секунд. Скопируй диагностику."
+  },
+  "Не удалось подключить Shizuku": {
+    "en": "Unable to connect to Shizuku",
+    "ru": "Не удалось подключить Shizuku"
+  },
+  "Автобуфер через Shizuku подключён": {
+    "en": "Automatic clipboard connected via Shizuku",
+    "ru": "Автобуфер через Shizuku подключён"
+  },
+  "Автобуфер прервался. Включи его снова или скопируй диагностику.": {
+    "en": "Automatic clipboard interrupted. Enable it again or copy diagnostics.",
+    "ru": "Автобуфер прервался. Включи его снова или скопируй диагностику."
+  },
+  "Запись в Shizuku зависла. Включи автобуфер снова; Bluetooth остаётся активным.": {
+    "en": "Writing to Shizuku timed out. Enable automatic sending again; Bluetooth remains connected.",
+    "ru": "Запись в Shizuku зависла. Включи автобуфер снова; Bluetooth остаётся активным."
+  },
+  "Shizuku не принял буфер. Включи автобуфер снова.": {
+    "en": "Shizuku did not accept the clipboard. Enable automatic sending again.",
+    "ru": "Shizuku не принял буфер. Включи автобуфер снова."
+  },
+  "Не удалось прочитать текущий буфер": {
+    "en": "Unable to read the current clipboard",
+    "ru": "Не удалось прочитать текущий буфер"
+  },
+  "Не удалось запустить привилегированный буфер": {
+    "en": "Unable to start the privileged clipboard service",
+    "ru": "Не удалось запустить привилегированный буфер"
+  },
+  "Включить соединение": {
+    "en": "Enable connection",
+    "ru": "Включить соединение"
+  },
+  "Отключиться от Mac?": {
+    "en": "Disconnect from Mac?",
+    "ru": "Отключиться от Mac?"
+  },
+  "Буфер, уведомления и передача файлов будут приостановлены.": {
+    "en": "Clipboard sync, notifications and file transfers will pause.",
+    "ru": "Буфер, уведомления и передача файлов будут приостановлены."
+  },
+  "Отмена": {
+    "en": "Cancel",
+    "ru": "Отмена"
+  },
+  "Добавить Mac": {
+    "en": "Add Mac",
+    "ru": "Добавить Mac"
+  },
+  "Передача текста": {
+    "en": "Text transfer",
+    "ru": "Передача текста"
+  },
+  "Передача уведомлений на Mac": {
+    "en": "Forward notifications to Mac",
+    "ru": "Передача уведомлений на Mac"
+  },
+  "Файлы между Mac и Android": {
+    "en": "Files between Mac and Android",
+    "ru": "Файлы между Mac и Android"
+  },
+  ", открыть настройки": {
+    "en": ", open settings",
+    "ru": ", открыть настройки"
+  },
+  "Отправить файлы": {
+    "en": "Send files",
+    "ru": "Отправить файлы"
+  },
+  "Фото, документы и другие файлы": {
+    "en": "Photos, documents and other files",
+    "ru": "Фото, документы и другие файлы"
+  },
+  "Отправка из приложений": {
+    "en": "Send from other apps",
+    "ru": "Отправка из приложений"
+  },
+  "Файл → Поделиться → Conduit. При отсутствии соединения файл сохраняется в очереди.": {
+    "en": "File → Share → Conduit. Files are queued while disconnected.",
+    "ru": "Файл → Поделиться → Conduit. При отсутствии соединения файл сохраняется в очереди."
+  },
+  "По Bluetooth — до 100 МБ на файл. Очередь — до 32 файлов, суммарно 1 ГБ.": {
+    "en": "Bluetooth: up to 100 MB per file. Queue: up to 32 files, 1 GB total.",
+    "ru": "По Bluetooth — до 100 МБ на файл. Очередь — до 32 файлов, суммарно 1 ГБ."
+  },
+  "Работа в фоне": {
+    "en": "Background operation",
+    "ru": "Работа в фоне"
+  },
+  "БУФЕР ОБМЕНА": {
+    "en": "CLIPBOARD",
+    "ru": "БУФЕР ОБМЕНА"
+  },
+  "Автоматическая отправка": {
+    "en": "Automatic sending",
+    "ru": "Автоматическая отправка"
+  },
+  "Отправить буфер": {
+    "en": "Send clipboard",
+    "ru": "Отправить буфер"
+  },
+  "Доступ Shizuku": {
+    "en": "Shizuku access",
+    "ru": "Доступ Shizuku"
+  },
+  "О Shizuku": {
+    "en": "About Shizuku",
+    "ru": "О Shizuku"
+  },
+  "Передавать на Mac": {
+    "en": "Forward to Mac",
+    "ru": "Передавать на Mac"
+  },
+  "Чтение уведомлений": {
+    "en": "Notification access",
+    "ru": "Чтение уведомлений"
+  },
+  "Уведомления Conduit": {
+    "en": "Conduit notifications",
+    "ru": "Уведомления Conduit"
+  },
+  "Приложения": {
+    "en": "Apps",
+    "ru": "Приложения"
+  },
+  "Автоперенос журнала": {
+    "en": "Automatic log transfer",
+    "ru": "Автоперенос журнала"
+  },
+  "Настраивается на Mac": {
+    "en": "Configure on Mac",
+    "ru": "Настраивается на Mac"
+  },
+  "На Mac: Conduit → Настройки → Диагностика. Журнал передаётся при подключении и раз в минуту. Текст буфера, уведомления и коды исключены из отчёта.": {
+    "en": "On Mac: Conduit → Settings → Diagnostics. Logs transfer on connection and every minute. Clipboard content, notifications and codes are excluded.",
+    "ru": "На Mac: Conduit → Настройки → Диагностика. Журнал передаётся при подключении и раз в минуту. Текст буфера, уведомления и коды исключены из отчёта."
+  },
+  "ИНТЕРФЕЙС": {
+    "en": "INTERFACE",
+    "ru": "ИНТЕРФЕЙС"
+  },
+  "Оформление": {
+    "en": "Theme",
+    "ru": "Оформление"
+  },
+  "Забыть разрешённые Mac": {
+    "en": "Forget authorized Macs",
+    "ru": "Забыть разрешённые Mac"
+  },
+  "Системное": {
+    "en": "System",
+    "ru": "Системное"
+  },
+  "Светлое": {
+    "en": "Light",
+    "ru": "Светлое"
+  },
+  "Тёмное": {
+    "en": "Dark",
+    "ru": "Тёмное"
+  },
+  "Для чтения буфера в фоне требуется запущенный Shizuku и разрешение Conduit. После перезагрузки Android Shizuku необходимо запустить повторно.\n\nПри полной блокировке Android чтение приостанавливается до разблокировки.": {
+    "en": "Background clipboard access requires a running Shizuku service and Conduit authorization. Start Shizuku again after restarting Android.\n\nAndroid pauses clipboard access while the device is locked.",
+    "ru": "Для чтения буфера в фоне требуется запущенный Shizuku и разрешение Conduit. После перезагрузки Android Shizuku необходимо запустить повторно.\n\nПри полной блокировке Android чтение приостанавливается до разблокировки."
+  },
+  "Отключить соединение?": {
+    "en": "Disconnect?",
+    "ru": "Отключить соединение?"
+  },
+  "Передача буфера, уведомлений и файлов будет приостановлена.": {
+    "en": "Clipboard sync, notifications and file transfers will pause.",
+    "ru": "Передача буфера, уведомлений и файлов будет приостановлена."
+  },
+  "Подключено": {
+    "en": "Connected",
+    "ru": "Подключено"
+  },
+  "Ошибка соединения": {
+    "en": "Connection error",
+    "ru": "Ошибка соединения"
+  },
+  "Подключён по Bluetooth": {
+    "en": "Connected over Bluetooth",
+    "ru": "Подключён по Bluetooth"
+  },
+  "Подключён через отладку": {
+    "en": "Connected via debugging",
+    "ru": "Подключён через отладку"
+  },
+  "Ожидание подключения": {
+    "en": "Waiting for connection",
+    "ru": "Ожидание подключения"
+  },
+  "Соединение отключено": {
+    "en": "Connection disabled",
+    "ru": "Соединение отключено"
+  },
+  "Отключить Mac": {
+    "en": "Disconnect Mac",
+    "ru": "Отключить Mac"
+  },
+  "Повторить запуск": {
+    "en": "Retry startup",
+    "ru": "Повторить запуск"
+  },
+  "Подключить Mac": {
+    "en": "Connect Mac",
+    "ru": "Подключить Mac"
+  },
+  "Mac подключён через отладку": {
+    "en": "Mac connected via debugging",
+    "ru": "Mac подключён через отладку"
+  },
+  "Ожидание подключения Mac": {
+    "en": "Waiting for Mac connection",
+    "ru": "Ожидание подключения Mac"
+  },
+  "Отключены": {
+    "en": "Disabled",
+    "ru": "Отключены"
+  },
+  "Канал отключён": {
+    "en": "Channel disabled",
+    "ru": "Канал отключён"
+  },
+  "Не запущен": {
+    "en": "Not running",
+    "ru": "Не запущен"
+  },
+  "Нет устройств": {
+    "en": "No devices",
+    "ru": "Нет устройств"
+  },
+  "Сохранено: ": {
+    "en": "Saved: ",
+    "ru": "Сохранено: "
+  },
+  "Запуск соединения…": {
+    "en": "Starting connection…",
+    "ru": "Запуск соединения…"
+  },
+  "Отключить соединение": {
+    "en": "Disable connection",
+    "ru": "Отключить соединение"
+  },
+  "Нет соединения с Mac": {
+    "en": "No connection to Mac",
+    "ru": "Нет соединения с Mac"
+  },
+  "Буфер отключён на Mac": {
+    "en": "Clipboard disabled on Mac",
+    "ru": "Буфер отключён на Mac"
+  },
+  "Разрешено": {
+    "en": "Allowed",
+    "ru": "Разрешено"
+  },
+  "Не разрешено": {
+    "en": "Not allowed",
+    "ru": "Не разрешено"
+  },
+  "Служба переподключается": {
+    "en": "Service reconnecting",
+    "ru": "Служба переподключается"
+  },
+  "Все": {
+    "en": "All",
+    "ru": "Все"
+  },
+  "Исключения: ": {
+    "en": "Excluded: ",
+    "ru": "Исключения: "
+  },
+  "Разрешена": {
+    "en": "Allowed",
+    "ru": "Разрешена"
+  },
+  "Ограничена": {
+    "en": "Restricted",
+    "ru": "Ограничена"
+  },
+  "Требуется для связи с выключенным экраном": {
+    "en": "Required to stay connected with the screen off",
+    "ru": "Требуется для связи с выключенным экраном"
+  },
+  "Код не активен": {
+    "en": "No active code",
+    "ru": "Код не активен"
+  },
+  "Для чтения в фоне требуется Shizuku": {
+    "en": "Shizuku required for background access",
+    "ru": "Для чтения в фоне требуется Shizuku"
+  },
+  "Автоматическая отправка отключена": {
+    "en": "Automatic sending disabled",
+    "ru": "Автоматическая отправка отключена"
+  },
+  "Ожидание соединения с Mac": {
+    "en": "Waiting for connection to Mac",
+    "ru": "Ожидание соединения с Mac"
+  },
+  "Shizuku подключён": {
+    "en": "Shizuku connected",
+    "ru": "Shizuku подключён"
+  },
+  "Не удалось": {
+    "en": "Unable to",
+    "ru": "Не удалось"
+  },
+  "Отправка приостановлена": {
+    "en": "Forwarding paused",
+    "ru": "Отправка приостановлена"
+  },
+  "Требуется разрешение Android": {
+    "en": "Android permission required",
+    "ru": "Требуется разрешение Android"
+  },
+  "Служба уведомлений переподключается": {
+    "en": "Notification service reconnecting",
+    "ru": "Служба уведомлений переподключается"
+  },
+  "Передача уведомлений включена": {
+    "en": "Notification forwarding enabled",
+    "ru": "Передача уведомлений включена"
+  },
+  "Телефон готов к подключению": {
+    "en": "Phone ready to connect",
+    "ru": "Телефон готов к подключению"
+  },
+  "В Conduit на Mac выберите телефон и нажмите «Подключить». Для первой авторизации требуется код.": {
+    "en": "In Conduit on Mac, select your phone and choose Connect. The first connection requires a code.",
+    "ru": "В Conduit на Mac выберите телефон и нажмите «Подключить». Для первой авторизации требуется код."
+  },
+  "Получить код": {
+    "en": "Get code",
+    "ru": "Получить код"
+  },
+  "В Conduit на Mac выберите телефон и введите код:": {
+    "en": "In Conduit on Mac, select your phone and enter this code:",
+    "ru": "В Conduit на Mac выберите телефон и введите код:"
+  },
+  "Код действует 2 минуты. Устройства должны быть сопряжены в настройках Bluetooth.": {
+    "en": "Code valid for 2 minutes. Devices must be paired in system Bluetooth settings.",
+    "ru": "Код действует 2 минуты. Устройства должны быть сопряжены в настройках Bluetooth."
+  },
+  "Связать Mac": {
+    "en": "Pair Mac",
+    "ru": "Связать Mac"
+  },
+  "Новый код": {
+    "en": "New code",
+    "ru": "Новый код"
+  },
+  "Conduit — диагностика": {
+    "en": "Conduit — diagnostics",
+    "ru": "Conduit — диагностика"
+  },
+  "Требуется соединение с Mac и включённый буфер обмена": {
+    "en": "Connect to Mac and enable the shared clipboard first",
+    "ru": "Требуется соединение с Mac и включённый буфер обмена"
+  },
+  "Не удалось прочитать буфер": {
+    "en": "Unable to read clipboard",
+    "ru": "Не удалось прочитать буфер"
+  },
+  "Для автоматической отправки требуется запущенный Shizuku": {
+    "en": "Automatic sending requires Shizuku to be running",
+    "ru": "Для автоматической отправки требуется запущенный Shizuku"
+  },
+  "Забыть разрешённые Mac?": {
+    "en": "Forget authorized Macs?",
+    "ru": "Забыть разрешённые Mac?"
+  },
+  "Для следующего подключения потребуется новый код Conduit.": {
+    "en": "A new Conduit code will be required to connect again.",
+    "ru": "Для следующего подключения потребуется новый код Conduit."
+  },
+  "Забыть": {
+    "en": "Forget",
+    "ru": "Забыть"
+  },
+  "Соединение не запущено": {
+    "en": "Connection not running",
+    "ru": "Соединение не запущено"
+  },
+  "Настройки приложения": {
+    "en": "App settings",
+    "ru": "Настройки приложения"
+  },
+  "Разреши доступ к устройствам поблизости…": {
+    "en": "Allow nearby device access…",
+    "ru": "Разреши доступ к устройствам поблизости…"
+  },
+  "На телефоне недоступен Bluetooth": {
+    "en": "Bluetooth unavailable on this phone",
+    "ru": "На телефоне недоступен Bluetooth"
+  },
+  "Ожидаю включения Bluetooth…": {
+    "en": "Waiting for Bluetooth to turn on…",
+    "ru": "Ожидаю включения Bluetooth…"
+  },
+  "Запускаю Bluetooth-соединение Conduit…": {
+    "en": "Starting Conduit Bluetooth connection…",
+    "ru": "Запускаю Bluetooth-соединение Conduit…"
+  },
+  "Служба Conduit не ответила за 12 секунд. Нажми «Скопировать диагностику соединения» и пришли результат.": {
+    "en": "Conduit service did not respond within 12 seconds. Copy the connection diagnostics from Settings.",
+    "ru": "Служба Conduit не ответила за 12 секунд. Нажми «Скопировать диагностику соединения» и пришли результат."
+  },
+  "Не удалось запустить соединение": {
+    "en": "Unable to start connection",
+    "ru": "Не удалось запустить соединение"
+  },
+  "Bluetooth-соединение Conduit включено": {
+    "en": "Conduit Bluetooth connection enabled",
+    "ru": "Bluetooth-соединение Conduit включено"
+  },
+  "Соединение включено": {
+    "en": "Connection enabled",
+    "ru": "Соединение включено"
+  },
+  "Не удалось открыть обнаружение. Если Mac уже сопряжён с телефоном, можно подключаться по коду Conduit.": {
+    "en": "Unable to enable discovery. If the devices are already paired, connect using the Conduit code.",
+    "ru": "Не удалось открыть обнаружение. Если Mac уже сопряжён с телефоном, можно подключаться по коду Conduit."
+  },
+  "Android не нашёл службу Conduit. Переустанови обновление приложения.": {
+    "en": "Android could not find the Conduit service. Reinstall the app update.",
+    "ru": "Android не нашёл службу Conduit. Переустанови обновление приложения."
+  },
+  "Android не разрешил запустить соединение (": {
+    "en": "Android did not allow starting the connection (",
+    "ru": "Android не разрешил запустить соединение ("
+  },
+  "Разреши Conduit доступ к устройствам поблизости в настройках приложения, затем нажми «Включить Bluetooth-соединение» снова.": {
+    "en": "Allow Conduit access to nearby devices in app settings, then enable the connection again.",
+    "ru": "Разреши Conduit доступ к устройствам поблизости в настройках приложения, затем нажми «Включить соединение» снова."
+  },
+  "Выбери файл или фото. Для текста используй общий буфер.": {
+    "en": "Choose a file or photo. Use the shared clipboard for text.",
+    "ru": "Выбери файл или фото. Для текста используй общий буфер."
+  },
+  "Bluetooth остался выключенным. Включи его в настройках телефона и повтори.": {
+    "en": "Bluetooth is still off. Enable it in phone settings and try again.",
+    "ru": "Bluetooth остался выключенным. Включи его в настройках телефона и повтори."
+  },
+  "Показывать на Mac": {
+    "en": "Show on Mac",
+    "ru": "Показывать на Mac"
+  },
+  "Сохранить": {
+    "en": "Save",
+    "ru": "Сохранить"
+  },
+  "Нет доступа к уведомлениям на телефоне": {
+    "en": "No notification access on the phone",
+    "ru": "Нет доступа к уведомлениям на телефоне"
+  },
+  "Ответ отправлен": {
+    "en": "Reply sent",
+    "ru": "Ответ отправлен"
+  },
+  "Уведомление больше не принимает ответ": {
+    "en": "This notification no longer accepts replies",
+    "ru": "Уведомление больше не принимает ответ"
+  },
+  "В очереди уже 32 файла. Сначала подключи Mac.": {
+    "en": "The queue already contains 32 files. Connect to Mac first.",
+    "ru": "В очереди уже 32 файла. Сначала подключи Mac."
+  },
+  "Не удалось открыть файл": {
+    "en": "Unable to open file",
+    "ru": "Не удалось открыть файл"
+  },
+  "Для очереди доступен 1 ГБ. Сначала передай остальные файлы.": {
+    "en": "The queue limit is 1 GB. Transfer the queued files first.",
+    "ru": "Для очереди доступен 1 ГБ. Сначала передай остальные файлы."
+  },
+  "Файл в очереди. Подключи Conduit на Mac.": {
+    "en": "File queued. Connect Conduit on Mac.",
+    "ru": "Файл в очереди. Подключи Conduit на Mac."
+  },
+  "Передаю файл на Mac": {
+    "en": "Sending file to Mac",
+    "ru": "Передаю файл на Mac"
+  },
+  "Не удалось отправить файл": {
+    "en": "Unable to send file",
+    "ru": "Не удалось отправить файл"
+  },
+  "Язык": {
+    "en": "Language",
+    "ru": "Язык"
+  },
+  "Системный": {
+    "en": "System",
+    "ru": "Системный"
+  },
+  "ЯЗЫК": {
+    "en": "LANGUAGE",
+    "ru": "ЯЗЫК"
+  },
+  "Conduit — уведомления на Mac": {
+    "en": "Conduit — notifications on Mac",
+    "ru": "Conduit — уведомления на Mac"
+  },
+  "Русский": {
+    "en": "Русский",
+    "ru": "Русский"
+  }
+}
