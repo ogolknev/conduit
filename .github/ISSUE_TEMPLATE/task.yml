@@ -1,0 +1,22 @@
+name: Task or observed problem
+description: Track a concrete change, defect or development-workflow improvement.
+body:
+  - type: textarea
+    id: outcome
+    attributes:
+      label: Problem or outcome
+      description: What was observed, or what should the user be able to do? Include a reproduction or evidence when available. Omit private data.
+    validations:
+      required: true
+  - type: textarea
+    id: done
+    attributes:
+      label: Completion check
+      description: What observable result will show this is done?
+    validations:
+      required: true
+  - type: textarea
+    id: context
+    attributes:
+      label: Relevant context
+      description: Optional versions, affected platforms, constraints or links. Keep this short.
