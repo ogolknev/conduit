@@ -1,0 +1,46 @@
+name: Checks
+on:
+  pull_request:
+  push:
+    branches: [main]
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: checks-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  repository:
+    name: Repository
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          persist-credentials: false
+      - run: python3 scripts/check-repository.py
+      - run: python3 scripts/generate-brand.py --check
+      - run: python3 scripts/generate-localizations.py --check
+      - run: python3 -m unittest discover -s scripts/tests -v
+  swift:
+    name: Swift
+    runs-on: macos-26
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          persist-credentials: false
+      - run: python3 scripts/test.py --scratch "$RUNNER_TEMP/conduit-swift"
+  android:
+    name: Android JVM
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          persist-credentials: false
+      - uses: actions/setup-java@b843ebf9b913146b38da2eaa7aeddf76074ae1ad # v6
+        with:
+          distribution: temurin
+          java-version: '17'
+      - run: python3 scripts/test-android.py --jdk "$JAVA_HOME" --scratch "$RUNNER_TEMP/conduit-java"

@@ -52,6 +52,8 @@ The bundle includes ADB, the companion APK and the pinned scrcpy server. The bui
 ## Checks
 
 ```sh
+python3 scripts/check-repository.py
+python3 -m unittest discover -s scripts/tests -v
 python3 scripts/test.py --scratch work/tests
 python3 scripts/test-android.py \
   --jdk /path/to/jdk/Contents/Home \
@@ -96,3 +98,7 @@ The second command needs full Xcode. Alternatively, run the [Compile macOS icon 
 ## License files
 
 Both builds include the project MIT license and the notices for their bundled dependencies. The Mac app stores them in `Contents/Resources/`; the APK stores them under `assets/`.
+
+## Release packages
+
+See [RELEASING.md](RELEASING.md) for packaging verified builds, signing continuity and publication.

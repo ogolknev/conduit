@@ -1,37 +1,48 @@
 # Working on Conduit
 
-Conduit connects native Android and macOS apps. Read the [documentation index](docs/README.md)
-when orientation is needed and [build instructions](docs/BUILDING.md) for commands.
-Load only material relevant to the current task.
+Native Android and macOS apps for clipboard, notifications and files.
 
-## Continuous improvement
+## Route context by task
 
-- Notice concrete problems in the product, code, tests, documentation and AI
-  development workflow, including these instructions. Prioritize the user's task.
-- Fix a small related problem now if its cause is understood, the change is local
-  and reversible, and verification does not materially expand scope. Mention the
-  improvement in the result; avoid a chain of incidental cleanups.
-- Put larger or unrelated actionable problems in
-  [GitHub Issues](https://github.com/ogolknev/conduit/issues). Search for a duplicate
-  first; update an existing issue when appropriate.
-- Keep issues short: observed evidence or reproduction, impact, and a completion
-  check. Omit private data, identify uncertainty, and avoid researching an entire
-  solution just to file a task.
-- Record defects and meaningful friction. Skip speculative polish, routine
-  recoverable tool failures, and tasks whose upkeep exceeds their value.
-- Add a permanent rule only for a recurring or consequential non-obvious lesson.
-  State its trigger and action. Prefer improving an existing rule, script or check;
-  remove obsolete or redundant guidance when touching it.
+- [Architecture](docs/ARCHITECTURE.md): transport, lifecycle, compatibility decisions.
+- [Development](docs/DEVELOPMENT.md): tasks, plans, review and completion.
+- [Building](docs/BUILDING.md): toolchains and verification commands.
+- [Design](docs/DESIGN.md): interface and icons.
+- [Validation](docs/VALIDATION.md): observed device results and remaining limits.
+- Releases: use the project `conduit-release` skill and [release guide](docs/RELEASING.md).
 
-## Context and verification
+Read only relevant material. Start work from this repository root.
 
-- Keep this file under 400 words. Store improvement tasks in GitHub Issues, without
-  a parallel TODO or session log here. Read only issues relevant to the task.
-- Keep one source of truth for each decision or procedure. Link to it; do not copy
-  chat transcripts, historical reports or the full backlog into active context.
-- Use plans for complex work. Add skills or automation when repeated work proves
-  their value, with narrow triggers and details loaded on demand.
-- Run checks appropriate to the change. Reuse passing results unless changed code
-  or new evidence warrants another run; keep searches and tool output targeted.
-- Distinguish builds/tests from device verification. Mark unavailable hardware
-  checks as unverified; restore temporary phone settings after testing.
+## Project invariants
+
+- Keep Mac/Android wire contracts compatible. Preserve app identities and update
+  signing continuity; explain intentional compatibility changes in the task.
+- Edit translations in `localization/strings.json` and brand geometry in
+  `design/brand.json`; regenerate native resources instead of patching outputs.
+- Keep clipboard/notification content, tokens, signing keys and raw device
+  diagnostics out of tracked files. Restore temporary phone settings after testing.
+
+## Work and verify
+
+- Use a task branch. Record outcome and acceptance criteria in its issue or PR;
+  keep a short living plan there for complex changes. Avoid duplicate paperwork.
+- Run checks appropriate to the diff; see build instructions. Review the final
+  change for compatibility, state handling and regressions before merging.
+- Distinguish builds/tests from device verification; mark unavailable hardware
+  checks as unverified. Reuse passing results until changes or evidence justify reruns.
+
+## Continuous improvement and context budget
+
+- Notice problems in the product and AI development workflow, including these rules.
+  Fix small related, understood, reversible problems when verification stays within
+  scope. Mention the improvement; prioritize the user's task over cleanup chains.
+- Record larger or unrelated actionable problems in [GitHub Issues](https://github.com/ogolknev/conduit/issues).
+  Search for duplicates first. Include evidence, impact and a completion check;
+  omit private data and identify uncertainty. Do not research a whole solution to file it.
+- Skip speculative polish, routine recoverable tool failures and low-value tasks.
+- Add permanent guidance only for recurring or consequential non-obvious lessons.
+  Prefer improving existing rules, scripts or checks; remove obsolete duplication.
+- Keep this file under 400 words. Read issues and documents on demand; do not load
+  the full backlog, historical reports or chat transcripts. Keep one source of truth.
+- Add skills or automation when repeated work proves useful, with narrow triggers.
+  Keep searches and tool output targeted; avoid repeated full-file reads.
