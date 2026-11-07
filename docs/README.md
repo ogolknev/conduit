@@ -2,6 +2,7 @@
 
 [English README](../README.md) · [Русский README](../README.ru.md)
 
+- [Agent guidance and continuous improvement](../AGENTS.md)
 - [Build and run checks](BUILDING.md)
 - [Interface and icons](DESIGN.md)
 - [Validation and known test limits](VALIDATION.md)
