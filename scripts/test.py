@@ -13,6 +13,9 @@ developer = pathlib.Path(subprocess.check_output(['xcode-select', '-p'], text=Tr
 frameworks = developer / 'Library/Developer/Frameworks'
 if (frameworks / 'Testing.framework').exists():
     cmd += ['-Xswiftc', '-F', '-Xswiftc', str(frameworks), '-Xlinker', '-F', '-Xlinker', str(frameworks), '-Xlinker', '-rpath', '-Xlinker', str(frameworks)]
+    interop = frameworks.parent / 'usr/lib'
+    if (interop / 'lib_TestingInterop.dylib').exists():
+        cmd += ['-Xlinker', '-rpath', '-Xlinker', str(interop)]
     # CLT 6.2 includes Testing but omits the optional Foundation overlay's module.
     cmd += ['-Xswiftc', '-Xfrontend', '-Xswiftc', '-disable-cross-import-overlays']
 subprocess.run(cmd, env=env, check=True)

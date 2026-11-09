@@ -1622,5 +1622,93 @@
   "Русский": {
     "en": "Русский",
     "ru": "Русский"
+  },
+  "Телефон пока недоступен. Conduit повторит подключение автоматически.": {
+    "en": "The phone is currently unavailable. Conduit will reconnect automatically.",
+    "ru": "Телефон пока недоступен. Conduit повторит подключение автоматически."
+  },
+  "Conduit повторит обновление Bluetooth-служб автоматически.": {
+    "en": "Conduit will retry Bluetooth service discovery automatically.",
+    "ru": "Conduit повторит обновление Bluetooth-служб автоматически."
+  },
+  "Conduit на телефоне пока недоступен. Подключение будет повторено автоматически.": {
+    "en": "Conduit on the phone is currently unavailable. The connection will be retried automatically.",
+    "ru": "Conduit на телефоне пока недоступен. Подключение будет повторено автоматически."
+  },
+  "Восстанавливаю сохранённое соединение…": {
+    "en": "Restoring the saved connection…",
+    "ru": "Восстанавливаю сохранённое соединение…"
+  },
+  "Ожидание телефона": {
+    "en": "Waiting for phone",
+    "ru": "Ожидание телефона"
+  },
+  "Подключение восстановится автоматически, когда телефон будет доступен.": {
+    "en": "The connection will resume automatically when the phone is available.",
+    "ru": "Подключение восстановится автоматически, когда телефон будет доступен."
+  },
+  "Подключиться": {
+    "en": "Connect",
+    "ru": "Подключиться"
+  },
+  "Телефон уже авторизован. Повторное сопряжение и новый код не нужны.": {
+    "en": "This phone is already authorized. Pairing and a new code are not required.",
+    "ru": "Телефон уже авторизован. Повторное сопряжение и новый код не нужны."
+  },
+  "Bluetooth готов. Добавь телефон в Conduit на Mac.": {
+    "en": "Bluetooth is ready. Add this phone in Conduit on your Mac.",
+    "ru": "Bluetooth готов. Добавь телефон в Conduit на Mac."
+  },
+  "Ожидание Mac. Подключение восстановится автоматически.": {
+    "en": "Waiting for Mac. The connection will resume automatically.",
+    "ru": "Ожидание Mac. Подключение восстановится автоматически."
+  },
+  "Соединение прервано. Conduit повторит подключение автоматически.": {
+    "en": "Connection interrupted. Conduit will reconnect automatically.",
+    "ru": "Соединение прервано. Conduit повторит подключение автоматически."
+  },
+  "Bluetooth выключен. Соединение восстановится после включения.": {
+    "en": "Bluetooth is off. The connection will resume when it is enabled.",
+    "ru": "Bluetooth выключен. Соединение восстановится после включения."
+  },
+  "Android ограничил фоновый запуск. Открой Conduit для восстановления соединения.": {
+    "en": "Android restricted background startup. Open Conduit to restore the connection.",
+    "ru": "Android ограничил фоновый запуск. Открой Conduit для восстановления соединения."
+  },
+  "Оптимизация батареи": {
+    "ru": "Оптимизация батареи",
+    "en": "Battery optimization"
+  },
+  "Автозапуск Xiaomi": {
+    "ru": "Автозапуск Xiaomi",
+    "en": "Xiaomi autostart"
+  },
+  "Включите для Conduit один раз: восстановление после перезагрузки и обновления.": {
+    "ru": "Включите для Conduit один раз: восстановление после перезагрузки и обновления.",
+    "en": "Enable once for Conduit to restore the connection after restarts and updates."
+  },
+  "Отключена": {
+    "ru": "Отключена",
+    "en": "Disabled"
+  },
+  "Включена": {
+    "ru": "Включена",
+    "en": "Enabled"
+  },
+  "Запускать при входе": {
+    "ru": "Запускать при входе",
+    "en": "Launch at login"
+  },
+  "Требуется разрешение macOS для автозапуска": {
+    "ru": "Требуется разрешение macOS для автозапуска",
+    "en": "macOS approval is required for launch at login"
+  },
+  "Не удалось изменить автозапуск. Проверь объекты входа в настройках macOS.": {
+    "ru": "Не удалось изменить автозапуск. Проверь объекты входа в настройках macOS.",
+    "en": "Unable to change launch at login. Check Login Items in macOS settings."
+  },
+  "Настройки macOS": {
+    "ru": "Настройки macOS",
+    "en": "macOS settings"
   }
 }

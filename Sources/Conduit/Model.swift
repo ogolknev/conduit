@@ -14,6 +14,9 @@ import ConduitCore
     @Published var macNotificationPermission = MacNotificationPermission.checking
     @Published var macNotificationsRequesting = false
     @Published var macBluetoothPermission = BluetoothPermission.unknown
+    @Published var launchAtLogin = false
+    @Published var loginItemNeedsApproval = false
+    @Published var loginItemError: String?
     @Published var notificationListenerConnected = false
     @Published var notificationAccess = false
     @Published var status = L("Подключи телефон, чтобы начать")
@@ -26,7 +29,10 @@ import ConduitCore
     @Published var pairingCode = ""
     @Published var wirelessResult = ""
     @Published var autoReconnect = UserDefaults.standard.object(forKey: "autoReconnect") as? Bool ?? true {
-        didSet { UserDefaults.standard.set(autoReconnect, forKey: "autoReconnect") }
+        didSet {
+            UserDefaults.standard.set(autoReconnect, forKey: "autoReconnect")
+            if autoReconnect { shouldReconnect = true; UserDefaults.standard.set(true, forKey: "bluetoothConnectionWanted"); reconnectPolicy.retryNow() }
+        }
     }
 
     @Published var transport: ConnectionKind = .bluetooth
@@ -86,6 +92,7 @@ import ConduitCore
     var receivedFiles: [String] = UserDefaults.standard.stringArray(forKey: "receivedFiles") ?? []
     var controlAttemptID = UUID()
     var bridgeAttemptID = UUID()
+    var wakeObserver: NSObjectProtocol?
 
     init(startMonitoring: Bool = true) {
         adb = ADB.locate().map(ADB.init)
@@ -95,6 +102,13 @@ import ConduitCore
         AppDelegate.onAction = { [weak self] action in
             guard let self, self.notificationsEnabled, self.companionReady else { return }
             self.sendBridge(action)
+        }
+        wakeObserver = NSWorkspace.shared.notificationCenter.addObserver(forName: NSWorkspace.didWakeNotification, object: nil, queue: .main) { [weak self] _ in
+            Task { @MainActor in
+                guard let self else { return }
+                self.reconnectPolicy.retryNow()
+                if self.connected { self.connectionHeartbeat.reset(); self.sendBridge(["type": "ping"]) }
+            }
         }
         clipboardTimer = Timer.scheduledTimer(withTimeInterval: 0.4, repeats: true) { [weak self] _ in
             Task { @MainActor in self?.pollClipboard() }
@@ -234,6 +248,12 @@ import ConduitCore
         await cleanup()
         status = L("Отключено")
         busy = false
+    }
+
+    func prepareToQuit() async {
+        // Quitting is not the user's persistent "Disconnect" choice.
+        monitor?.cancel(); connectionAttempt = nil
+        await cleanup()
     }
 
     func cleanup() async {

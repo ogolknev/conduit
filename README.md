@@ -47,7 +47,7 @@ Clipboard, notifications and files between Android and Mac over Bluetooth. No ac
 
 Unzip the Mac app into **Applications** and install the APK on your phone. The APK is also bundled with the Mac app.
 
-The Mac build is ad hoc signed and not notarized. If macOS blocks it, see [Apple's opening instructions](https://support.apple.com/en-us/102445).
+The downloadable Mac build is not notarized. If macOS blocks it, see [Apple's opening instructions](https://support.apple.com/en-us/102445).
 
 ## Connect
 
@@ -57,7 +57,9 @@ The Mac build is ad hoc signed and not notarized. If macOS blocks it, see [Apple
 4. On Mac, select **Connect phone → Bluetooth**, choose the phone and enter that code.
 5. For notifications, enable **Settings → Notification access** on Android and allow Conduit notifications on Mac.
 
-The Conduit code is separate from the system Bluetooth pairing code. Later connections use the saved authorization.
+The Conduit code is separate from the system Bluetooth pairing code. Later connections use the saved authorization. Conduit reconnects automatically while the Mac app is running; opening Bluetooth settings again is not required.
+
+On Mac, enable **Settings → Launch at login**. On Xiaomi, enable **Settings → Xiaomi autostart** for Conduit once. This is separate from battery optimization and allows the Android service to return after updates and restarts.
 
 Language follows the system by default. Change it in **Settings → Language** on either device.
 
@@ -74,7 +76,7 @@ Without Shizuku, use **Settings → Send clipboard** on the phone.
 - This is a prototype, tested on Xiaomi 15 / Android 16 and Apple Silicon / macOS 26.6.2. See [validation notes](docs/VALIDATION.md) for the tested scope.
 - Clipboard sync supports text only and keeps no history. Android-to-Mac reading may pause while the phone is locked.
 - Bluetooth is slower than Wi-Fi. Received files go to `~/Downloads/Conduit` on Mac and `Download/Conduit` on Android 10+.
-- Open both apps after a restart. Connection reports are available in **Settings → Diagnostics**; clipboard and notification content is excluded.
+- Launch at login on Mac and background autostart on Android restore an enabled connection after a restart. Reports are available in **Settings → Diagnostics**; clipboard and notification content is excluded.
 
 ## Development
 

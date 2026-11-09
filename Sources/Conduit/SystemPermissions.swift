@@ -1,5 +1,20 @@
 import AppKit
 import UserNotifications
+import ServiceManagement
+
+@MainActor enum LaunchAtLogin {
+    static var status: SMAppService.Status { SMAppService.mainApp.status }
+    static func setEnabled(_ enabled: Bool) throws {
+        let current = status
+        if enabled && current != .enabled && current != .requiresApproval { try SMAppService.mainApp.register() }
+        if !enabled && (current == .enabled || current == .requiresApproval) { try SMAppService.mainApp.unregister() }
+    }
+    static func openSettings() { SMAppService.openSystemSettingsLoginItems() }
+    static var report: [String: Any] {
+        ["loginItemStatus": status.rawValue, "loginItemEnabled": status == .enabled,
+         "loginItemRequiresApproval": status == .requiresApproval]
+    }
+}
 
 enum MacNotificationPermission {
     case checking, notAsked, denied, allowed, quiet, unknown
@@ -18,7 +33,21 @@ enum MacNotificationPermission {
 }
 
 extension ConduitModel {
+    func refreshLoginItemStatus() {
+        launchAtLogin = LaunchAtLogin.status == .enabled || LaunchAtLogin.status == .requiresApproval
+        loginItemNeedsApproval = LaunchAtLogin.status == .requiresApproval
+    }
+    func setLaunchAtLogin(_ enabled: Bool) {
+        loginItemError = nil
+        do { try LaunchAtLogin.setEnabled(enabled) }
+        catch {
+            loginItemError = L("Не удалось изменить автозапуск. Проверь объекты входа в настройках macOS.")
+            ConnectionDiagnostics.record("login-item.failed", "code=\((error as NSError).code)")
+        }
+        refreshLoginItemStatus()
+    }
     func refreshSystemPermissions() async {
+        refreshLoginItemStatus()
         macBluetoothPermission = ConnectionDiagnostics.permission
         let settings = await UNUserNotificationCenter.current().notificationSettings()
         switch settings.authorizationStatus {

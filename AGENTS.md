@@ -17,6 +17,7 @@ Read only relevant material. Start work from this repository root.
 
 - Keep Mac/Android wire contracts compatible. Preserve app identities and update
   signing continuity; explain intentional compatibility changes in the task.
+  Never use ad-hoc signing for installed updates.
 - Edit translations in `localization/strings.json` and brand geometry in
   `design/brand.json`; regenerate native resources instead of patching outputs.
 - Keep clipboard/notification content, tokens, signing keys and raw device

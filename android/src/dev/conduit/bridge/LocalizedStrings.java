@@ -47,10 +47,12 @@ final class LocalizedStrings {
         values.put("Android did not allow starting the connection (",R.string.text_184857d4ff11);
         values.put("Android log not yet received",R.string.text_28c118c81d04);
         values.put("Android permission required",R.string.text_f17e8b8c358c);
+        values.put("Android restricted background startup. Open Conduit to restore the connection.",R.string.text_3caf3fa9314b);
         values.put("Android service reconnecting",R.string.text_226af8d5c44a);
         values.put("Android не нашёл службу Conduit. Переустанови обновление приложения.",R.string.text_7e91693e2dc2);
         values.put("Android не разрешил запустить соединение (",R.string.text_184857d4ff11);
         values.put("Android не разрешил фоновую службу Conduit (",R.string.text_6fbd5dfc5665);
+        values.put("Android ограничил фоновый запуск. Открой Conduit для восстановления соединения.",R.string.text_3caf3fa9314b);
         values.put("Android → Developer options → Wireless debugging. Both devices must be on the same network.",R.string.text_dee3721806ff);
         values.put("Android → Mac notifications",R.string.text_9777acaac3fe);
         values.put("Android → Для разработчиков → Беспроводная отладка. Оба устройства должны быть в одной сети.",R.string.text_dee3721806ff);
@@ -69,6 +71,7 @@ final class LocalizedStrings {
         values.put("Background clipboard access requires a running Shizuku service and Conduit authorization. Start Shizuku again after restarting Android.\n\nAndroid pauses clipboard access while the device is locked.",R.string.text_911cfd7bd40a);
         values.put("Background operation",R.string.text_9c3a16fa921c);
         values.put("Banners disabled in macOS",R.string.text_07e39f70682f);
+        values.put("Battery optimization",R.string.text_7e2906ba5797);
         values.put("Bluetooth access",R.string.text_ce69f779909f);
         values.put("Bluetooth authentication failed. Pair the phone and Mac again in system settings.",R.string.text_f0d79d39175c);
         values.put("Bluetooth channel error",R.string.text_f3430261dd61);
@@ -77,6 +80,8 @@ final class LocalizedStrings {
         values.put("Bluetooth disconnected (",R.string.text_a4f131d70fd7);
         values.put("Bluetooth file limit: 100 MB",R.string.text_1f70012d6dfb);
         values.put("Bluetooth is off on this Mac. Enable it in Bluetooth settings.",R.string.text_aa6da50dff2c);
+        values.put("Bluetooth is off. The connection will resume when it is enabled.",R.string.text_823276d06bdf);
+        values.put("Bluetooth is ready. Add this phone in Conduit on your Mac.",R.string.text_00d5dc5d7067);
         values.put("Bluetooth is still off. Enable it in phone settings and try again.",R.string.text_df877239cfc7);
         values.put("Bluetooth ready. Select your phone in Conduit on Mac.",R.string.text_a24203da6d1f);
         values.put("Bluetooth send error",R.string.text_328999bf653e);
@@ -84,7 +89,9 @@ final class LocalizedStrings {
         values.put("Bluetooth supports files up to 100 MB. Send folders as ZIP archives.",R.string.text_788338515860);
         values.put("Bluetooth unavailable on this phone",R.string.text_e58aad571494);
         values.put("Bluetooth выключен в Conduit",R.string.text_fd371f604dfa);
+        values.put("Bluetooth выключен. Соединение восстановится после включения.",R.string.text_823276d06bdf);
         values.put("Bluetooth готов. Выбери телефон в Conduit на Mac.",R.string.text_a24203da6d1f);
+        values.put("Bluetooth готов. Добавь телефон в Conduit на Mac.",R.string.text_00d5dc5d7067);
         values.put("Bluetooth на Mac выключен. Включи его в настройках Bluetooth.",R.string.text_aa6da50dff2c);
         values.put("Bluetooth остался выключенным. Включи его в настройках телефона и повтори.",R.string.text_df877239cfc7);
         values.put("Bluetooth отключился (",R.string.text_a4f131d70fd7);
@@ -123,10 +130,14 @@ final class LocalizedStrings {
         values.put("Conduit code (8 digits)",R.string.text_0a3d95613aea);
         values.put("Conduit notification icon test",R.string.text_7b0b381484a8);
         values.put("Conduit notifications",R.string.text_c3f860bd3267);
+        values.put("Conduit on the phone is currently unavailable. The connection will be retried automatically.",R.string.text_9674ec4b2eb8);
         values.put("Conduit service did not respond within 12 seconds. Copy the connection diagnostics from Settings.",R.string.text_ddf04f8ac870);
         values.put("Conduit sync with the connected phone",R.string.text_747b711185e9);
         values.put("Conduit was not found. Open the latest Conduit on your phone and enable the connection. Select Connect manually to refresh the service list.",R.string.text_0732b2869472);
+        values.put("Conduit will retry Bluetooth service discovery automatically.",R.string.text_7f71847067e3);
+        values.put("Conduit на телефоне пока недоступен. Подключение будет повторено автоматически.",R.string.text_9674ec4b2eb8);
         values.put("Conduit не разрешён доступ к Bluetooth. Открой Системные настройки → Конфиденциальность и безопасность → Bluetooth и включи Conduit.",R.string.text_b87419ce53eb);
+        values.put("Conduit повторит обновление Bluetooth-служб автоматически.",R.string.text_7f71847067e3);
         values.put("Conduit — diagnostics",R.string.text_e45849529aed);
         values.put("Conduit — notifications on Mac",R.string.text_fd35cd25ca07);
         values.put("Conduit — диагностика",R.string.text_e45849529aed);
@@ -158,6 +169,7 @@ final class LocalizedStrings {
         values.put("Connection disabled",R.string.text_b77c3b26b7d9);
         values.put("Connection enabled",R.string.text_9d6a0e4c8782);
         values.put("Connection error",R.string.text_119f4ad16eeb);
+        values.put("Connection interrupted. Conduit will reconnect automatically.",R.string.text_56684a741b3a);
         values.put("Connection lost. Waiting for phone…",R.string.text_784c966e83bf);
         values.put("Connection method",R.string.text_aaf61b55a95e);
         values.put("Connection not running",R.string.text_811fb371f1fe);
@@ -183,6 +195,8 @@ final class LocalizedStrings {
         values.put("Drop files to send",R.string.text_aa9ee2fd001a);
         values.put("Enable Bluetooth on your phone",R.string.text_2ba549ae1eb7);
         values.put("Enable connection",R.string.text_32925dc26a1f);
+        values.put("Enable once for Conduit to restore the connection after restarts and updates.",R.string.text_e48b63078376);
+        values.put("Enabled",R.string.text_4b043d0b1605);
         values.put("Enter the IP:port from the wireless debugging screen.",R.string.text_9d48bc982ea6);
         values.put("Enter the pairing IP:port and six-digit code shown on your phone.",R.string.text_8ec984ab5092);
         values.put("Excluded: ",R.string.text_63384f1ed0fb);
@@ -224,6 +238,7 @@ final class LocalizedStrings {
         values.put("Keychain did not allow saving the connection.",R.string.text_5414c739700a);
         values.put("LANGUAGE",R.string.text_5748a3bd9cb3);
         values.put("Language",R.string.text_5bd57038dbad);
+        values.put("Launch at login",R.string.text_63754139c1ac);
         values.put("Light",R.string.text_f75449335765);
         values.put("Local connection",R.string.text_1b57f6e704a5);
         values.put("Local connection. No clipboard history.",R.string.text_636f23035254);
@@ -314,6 +329,7 @@ final class LocalizedStrings {
         values.put("Requesting phone log…",R.string.text_2d2633558fa6);
         values.put("Requesting…",R.string.text_949556c9a6c1);
         values.put("Required to stay connected with the screen off",R.string.text_1817269ef14a);
+        values.put("Restoring the saved connection…",R.string.text_8e42bda10c4c);
         values.put("Restricted",R.string.text_532734a818e3);
         values.put("Retry startup",R.string.text_036f0535f16e);
         values.put("SYNC",R.string.text_74c4b0b3e979);
@@ -362,6 +378,7 @@ final class LocalizedStrings {
         values.put("The Bluetooth queue is full. Reconnect the phone.",R.string.text_78bc0ca75a51);
         values.put("The Conduit code must contain exactly 8 digits. Use the code from the Android app, not the system Bluetooth pairing code.",R.string.text_dbfeedf374ef);
         values.put("The companion did not confirm the connection. Open it on your phone and try again.",R.string.text_7bca05524caa);
+        values.put("The connection will resume automatically when the phone is available.",R.string.text_a5609caa5584);
         values.put("The device list has changed. Select the phone again.",R.string.text_70c4df18986d);
         values.put("The first connection requires a Conduit code. Open Conduit on your phone, select Add Mac and enter the eight digits.",R.string.text_6fb83f149190);
         values.put("The phone advertised Conduit without a connection channel. Turn the connection off and on in the Android app.",R.string.text_50a3afd79d57);
@@ -374,6 +391,7 @@ final class LocalizedStrings {
         values.put("The phone did not respond to the service search. Unlock it, open Conduit and enable the connection.",R.string.text_767d1ed429ef);
         values.put("The phone did not respond within 20 seconds. Open Conduit on your phone, enable the connection and check system Bluetooth pairing.",R.string.text_6a7eafe330df);
         values.put("The phone did not respond. Update the Android companion to retrieve its log.",R.string.text_e795857a111d);
+        values.put("The phone is currently unavailable. Conduit will reconnect automatically.",R.string.text_762b7f73896b);
         values.put("The phone is paired with this Mac, but Conduit was not found. Update Conduit on your phone and enable the connection.",R.string.text_f2627d03ec53);
         values.put("The phone rejected Conduit's Bluetooth channel. Open the Android app and enable the connection again.",R.string.text_ce3bafa8b16c);
         values.put("The phone response does not match the Conduit protocol. Check the Android app version.",R.string.text_064fe5c2d6e1);
@@ -383,12 +401,14 @@ final class LocalizedStrings {
         values.put("Theme",R.string.text_1731619efa3a);
         values.put("This connection attempt has ended. Select Connect to try again.",R.string.text_fbd56c31549d);
         values.put("This notification no longer accepts replies",R.string.text_8ab06b701146);
+        values.put("This phone is already authorized. Pairing and a new code are not required.",R.string.text_03f56197e2ec);
         values.put("Transfer between Mac and Android.",R.string.text_0a13941904ef);
         values.put("Transfer incomplete",R.string.text_05b19e38bf66);
         values.put("Transfer incomplete: ",R.string.text_1e584ae227b4);
         values.put("Transferring…",R.string.text_4f6a8cc76e48);
         values.put("USB requires Android debugging and authorization for this Mac.",R.string.text_ac8cb071b4ae);
         values.put("Unable to",R.string.text_50ccde397ce1);
+        values.put("Unable to change launch at login. Check Login Items in macOS settings.",R.string.text_bd2a3a675d41);
         values.put("Unable to connect",R.string.text_b323a1b637de);
         values.put("Unable to connect to Shizuku",R.string.text_2f2590f82000);
         values.put("Unable to connect to Shizuku. Copy diagnostics.",R.string.text_a29fb711faaf);
@@ -421,10 +441,14 @@ final class LocalizedStrings {
         values.put("Waiting for Mac",R.string.text_cb3c99d2a4b0);
         values.put("Waiting for Mac connection",R.string.text_1ae228374544);
         values.put("Waiting for Mac over Bluetooth",R.string.text_000c402b9be5);
+        values.put("Waiting for Mac. The connection will resume automatically.",R.string.text_731b91e9e1c2);
         values.put("Waiting for connection",R.string.text_00c737b5cfb6);
         values.put("Waiting for connection to Mac",R.string.text_560cde5daa8a);
+        values.put("Waiting for phone",R.string.text_d1712b4dd725);
         values.put("Wireless debugging",R.string.text_d1509c91af8b);
         values.put("Writing to Shizuku timed out. Enable automatic sending again; Bluetooth remains connected.",R.string.text_c09d5f06f23b);
+        values.put("Xiaomi autostart",R.string.text_23a47aa1500e);
+        values.put("macOS approval is required for launch at login",R.string.text_e767ca1f9588);
         values.put("macOS did not connect to the phone. Reconnect it in Bluetooth settings.",R.string.text_37149c8bec99);
         values.put("macOS did not display the notification. Check app permissions.",R.string.text_9f3ce4888f5e);
         values.put("macOS did not provide a Bluetooth adapter to the app.",R.string.text_43205870f497);
@@ -432,6 +456,7 @@ final class LocalizedStrings {
         values.put("macOS notifications",R.string.text_c3574c40857f);
         values.put("macOS permission required",R.string.text_f5fd3e06d766);
         values.put("macOS returned a different Bluetooth channel. Try connecting again.",R.string.text_296e908e19ed);
+        values.put("macOS settings",R.string.text_76a651547e47);
         values.put("macOS was unable to connect to the phone over Bluetooth.",R.string.text_c15c59e3ed7e);
         values.put("macOS was unable to open the Bluetooth channel. Check system pairing and that Conduit is running on your phone.",R.string.text_2201befc952d);
         values.put("macOS was unable to refresh phone services. Disconnect and reconnect the phone in Bluetooth settings, then try Conduit again.",R.string.text_c069e0d27519);
@@ -449,6 +474,7 @@ final class LocalizedStrings {
         values.put("Автобуфер ожидает подключения Mac",R.string.text_1732f9a813df);
         values.put("Автобуфер прервался. Включи его снова или скопируй диагностику.",R.string.text_e80c0a799998);
         values.put("Автобуфер через Shizuku подключён",R.string.text_c2f1009fd2b9);
+        values.put("Автозапуск Xiaomi",R.string.text_23a47aa1500e);
         values.put("Автоматическая отправка",R.string.text_d8c965edff29);
         values.put("Автоматическая отправка отключена",R.string.text_a037029b35f9);
         values.put("Автоматическое подключение",R.string.text_e04efa0af329);
@@ -466,8 +492,11 @@ final class LocalizedStrings {
         values.put("В сборке отсутствует Android APK.",R.string.text_6fbb4cb8df92);
         values.put("В сборке отсутствует сервер буфера обмена.",R.string.text_f2bd063997ab);
         values.put("Введи адрес сопряжения IP:порт и шестизначный код с телефона.",R.string.text_8ec984ab5092);
+        values.put("Включена",R.string.text_4b043d0b1605);
         values.put("Включи Bluetooth на телефоне",R.string.text_2ba549ae1eb7);
+        values.put("Включите для Conduit один раз: восстановление после перезагрузки и обновления.",R.string.text_e48b63078376);
         values.put("Включить соединение",R.string.text_32925dc26a1f);
+        values.put("Восстанавливаю сохранённое соединение…",R.string.text_8e42bda10c4c);
         values.put("Все",R.string.text_215816bf4210);
         values.put("Входящие",R.string.text_5a198abc4c76);
         values.put("Выбери устройство",R.string.text_931f40e7a523);
@@ -513,6 +542,7 @@ final class LocalizedStrings {
         values.put("Запрашиваю журнал телефона…",R.string.text_2d2633558fa6);
         values.put("Запрос…",R.string.text_949556c9a6c1);
         values.put("Запуск соединения…",R.string.text_a5989ecf5ae7);
+        values.put("Запускать при входе",R.string.text_63754139c1ac);
         values.put("Запускаю Bluetooth-соединение Conduit…",R.string.text_e7d1cf152545);
         values.put("Запусти Shizuku и разреши Conduit",R.string.text_0fa08073ed26);
         values.put("Запустите Conduit на Android.",R.string.text_44eade8ef26d);
@@ -543,6 +573,7 @@ final class LocalizedStrings {
         values.put("Настроить",R.string.text_d71875872c7e);
         values.put("Настройки",R.string.text_985b5e0f2ccf);
         values.put("Настройки Bluetooth",R.string.text_7a8eeb0651f5);
+        values.put("Настройки macOS",R.string.text_76a651547e47);
         values.put("Настройки приложения",R.string.text_39176dbb613c);
         values.put("Не выбран телефон. Свяжи его с Mac в настройках Bluetooth, нажми «Обновить» и выбери в списке.",R.string.text_243705898d55);
         values.put("Не завершено системное сопряжение. Свяжи телефон и Mac в настройках Bluetooth.",R.string.text_ee6ff47a5c63);
@@ -556,6 +587,7 @@ final class LocalizedStrings {
         values.put("Не удалось запустить модуль Shizuku",R.string.text_fa60f1e3c4a3);
         values.put("Не удалось запустить привилегированный буфер",R.string.text_c357401a2d22);
         values.put("Не удалось запустить соединение",R.string.text_858ec8f1e481);
+        values.put("Не удалось изменить автозапуск. Проверь объекты входа в настройках macOS.",R.string.text_bd2a3a675d41);
         values.put("Не удалось открыть канал к телефону.",R.string.text_7dc8673012ce);
         values.put("Не удалось открыть обнаружение. Если Mac уже сопряжён с телефоном, можно подключаться по коду Conduit.",R.string.text_78874e333009);
         values.put("Не удалось открыть передачу Bluetooth. APK доступен внутри сборки и отдельно в чате.",R.string.text_f43b2024159c);
@@ -595,15 +627,19 @@ final class LocalizedStrings {
         values.put("Общий буфер обмена",R.string.text_f86578e08989);
         values.put("Ограничена",R.string.text_532734a818e3);
         values.put("Ожидание Mac",R.string.text_cb3c99d2a4b0);
+        values.put("Ожидание Mac. Подключение восстановится автоматически.",R.string.text_731b91e9e1c2);
         values.put("Ожидание подключения",R.string.text_36bd5cd80a7a);
         values.put("Ожидание подключения Mac",R.string.text_1ae228374544);
         values.put("Ожидание соединения",R.string.text_00c737b5cfb6);
         values.put("Ожидание соединения с Mac",R.string.text_560cde5daa8a);
+        values.put("Ожидание телефона",R.string.text_d1712b4dd725);
         values.put("Ожидаю Mac по Bluetooth",R.string.text_000c402b9be5);
         values.put("Ожидаю включения Bluetooth…",R.string.text_11c2f01814fc);
+        values.put("Оптимизация батареи",R.string.text_7e2906ba5797);
         values.put("Ответ отправлен",R.string.text_a79345c505f3);
         values.put("Ответ телефона не соответствует протоколу Conduit. Проверь версию Android-приложения.",R.string.text_064fe5c2d6e1);
         values.put("Ответить",R.string.text_b9af23eeff5d);
+        values.put("Отключена",R.string.text_5bd2e464d062);
         values.put("Отключено",R.string.text_3e95800065e0);
         values.put("Отключены",R.string.text_b2961e255496);
         values.put("Отключены в macOS",R.string.text_72f4d3007e21);
@@ -665,6 +701,7 @@ final class LocalizedStrings {
         values.put("Подготовка",R.string.text_5ea5c68f20d4);
         values.put("Подключаю автобуфер…",R.string.text_3ee2524dc040);
         values.put("Подключение",R.string.text_ab71afb97f2e);
+        values.put("Подключение восстановится автоматически, когда телефон будет доступен.",R.string.text_a5609caa5584);
         values.put("Подключение не выполнено",R.string.text_430dc86b0480);
         values.put("Подключение отменено",R.string.text_efdfb28539c0);
         values.put("Подключение уже выполняется. Подожди или нажми «Отменить».",R.string.text_7cdf886f3c5c);
@@ -677,6 +714,7 @@ final class LocalizedStrings {
         values.put("Подключить Mac",R.string.text_f9012a770263);
         values.put("Подключить компаньон",R.string.text_04adf50f9afb);
         values.put("Подключить телефон",R.string.text_11383c8513de);
+        values.put("Подключиться",R.string.text_36b4c0b07f08);
         values.put("Подключён по %@",R.string.text_d6b8d18bca4d);
         values.put("Подключён по Bluetooth",R.string.text_88a10f7ddfdc);
         values.put("Подключён через отладку",R.string.text_bb76d6f2ffea);
@@ -742,6 +780,7 @@ final class LocalizedStrings {
         values.put("Соединение остановлено",R.string.text_83263b8c231b);
         values.put("Соединение остановлено. Нажми «Включить» снова.",R.string.text_e37f47d5a319);
         values.put("Соединение отключено",R.string.text_b77c3b26b7d9);
+        values.put("Соединение прервано. Conduit повторит подключение автоматически.",R.string.text_56684a741b3a);
         values.put("Соединение с Mac",R.string.text_7656e12b1a56);
         values.put("Соединяю Mac с телефоном…",R.string.text_e4ee6be77a72);
         values.put("Соединяюсь по Bluetooth…",R.string.text_7b97b6ddf68d);
@@ -775,13 +814,16 @@ final class LocalizedStrings {
         values.put("Телефон отключился",R.string.text_f0be19dc0132);
         values.put("Телефон открыл Bluetooth-канал, но Conduit не ответил за 10 секунд. Проверь, что на телефоне установлен APK 0.2.3 или новее и включено соединение.",R.string.text_d4a86907355d);
         values.put("Телефон подключён. Синхронизируются новые копирования текста.",R.string.text_afd1d85fe833);
+        values.put("Телефон пока недоступен. Conduit повторит подключение автоматически.",R.string.text_762b7f73896b);
         values.put("Телефон сообщил службу Conduit без канала подключения. Выключи и снова включи соединение в Android-приложении.",R.string.text_50a3afd79d57);
         values.put("Телефон сопряжён с Mac, но служба Conduit не найдена. На телефоне установи APK 0.2.3 или новее и нажми «Включить Bluetooth-соединение».",R.string.text_f2627d03ec53);
         values.put("Телефон сопряжён с Mac, но служба Conduit не найдена. На телефоне установи APK 0.2.3 или новее и нажми «Включить соединение».",R.string.text_f2627d03ec53);
+        values.put("Телефон уже авторизован. Повторное сопряжение и новый код не нужны.",R.string.text_03f56197e2ec);
         values.put("Требуется для связи с выключенным экраном",R.string.text_1817269ef14a);
         values.put("Требуется доступ Android",R.string.text_f17e8b8c358c);
         values.put("Требуется доступ macOS",R.string.text_f5fd3e06d766);
         values.put("Требуется разрешение Android",R.string.text_2b16d149c809);
+        values.put("Требуется разрешение macOS для автозапуска",R.string.text_e767ca1f9588);
         values.put("Требуется разрешение на Android",R.string.text_f477a5302824);
         values.put("Требуется соединение с Mac и включённый буфер обмена",R.string.text_02e2698b92cd);
         values.put("Тёмное",R.string.text_6d6124d6f901);

@@ -17,8 +17,10 @@ private struct BluetoothCallbackReference<T: AnyObject>: @unchecked Sendable { l
     var onData: ((Data) -> Void)?
     var onClose: ((String) -> Void)?
     var onProgress: ((String) -> Void)?
+    var authorizeServiceRefresh: (() -> Bool)?
     private var channel: IOBluetoothRFCOMMChannel?
     private var device: IOBluetoothDevice?
+    private var disconnectNotification: IOBluetoothUserNotification?
     private var pending: CheckedContinuation<Void, Error>?
     private var outbound = Data()
     private var inFlight: NSMutableData?
@@ -29,7 +31,7 @@ private struct BluetoothCallbackReference<T: AnyObject>: @unchecked Sendable { l
     private var mayRefreshServices = true
     private var refreshedServices = false
     private var requestedChannel: BluetoothRFCOMMChannelID = 0
-    private var linkAttempts = 0
+    private var linkEstablishment = BluetoothLinkEstablishment(at: 0)
 
     static func pairedPhones() -> [BluetoothPhone] {
         var seen = Set<String>()
@@ -50,6 +52,7 @@ private struct BluetoothCallbackReference<T: AnyObject>: @unchecked Sendable { l
         guard !closed else { throw AppError(L("Подключение отменено")) }
         mayRefreshServices = allowServiceRefresh
         device = phone.device
+        disconnectNotification = phone.device.register(forDisconnectNotification: self, selector: #selector(deviceDisconnected(_:device:)))
         try await withCheckedThrowingContinuation { continuation in
             pending = continuation
             if phone.device.isConnected() { search() } else { connectDevice() }
@@ -66,24 +69,41 @@ private struct BluetoothCallbackReference<T: AnyObject>: @unchecked Sendable { l
     }
     private func connectDevice() {
         guard let device, !closed, pending != nil else { return }
-        linkAttempts = 0
-        step("device.connect", L("Соединяю Mac с телефоном…"), timeout: 25,
-             failure: L("Телефон не ответил на Bluetooth-подключение. Разблокируй его и открой Conduit."))
-        requestDeviceConnection(device)
+        linkTask?.cancel()
+        linkEstablishment = BluetoothLinkEstablishment(at: ProcessInfo.processInfo.systemUptime)
+        step("device.connect", L("Соединяю Mac с телефоном…"), timeout: 30,
+             failure: L("Телефон пока недоступен. Conduit повторит подключение автоматически."))
+        linkTask = Task { [weak self] in
+            while !Task.isCancelled {
+                guard let self, !self.closed, self.pending != nil, self.phase == "device.connect" else { return }
+                switch self.linkEstablishment.next(at: ProcessInfo.processInfo.systemUptime, connected: device.isConnected()) {
+                case .ready: self.search(); return
+                case .connect: self.requestDeviceConnection(device)
+                case .failed: self.finish(L("Телефон пока недоступен. Conduit повторит подключение автоматически.")); return
+                case .wait: break
+                }
+                do { try await Task.sleep(nanoseconds: 250_000_000) } catch { return }
+            }
+        }
     }
     private func requestDeviceConnection(_ device: IOBluetoothDevice) {
         guard !closed, phase == "device.connect" else { return }
-        linkAttempts += 1
-        let result = device.openConnection(self)
-        if result != kIOReturnSuccess { ConnectionDiagnostics.record("device.connect.start", Self.code(result)); finish(L("macOS не смогла подключиться к телефону по Bluetooth.")) }
+        ConnectionDiagnostics.record("device.connect.request", "attempt=\(linkEstablishment.requests)")
+        // Page timeout uses 0.625 ms units: 0x4000 is 10.24 seconds.
+        let result = device.openConnection(self, withPageTimeout: 0x4000, authenticationRequired: true)
+        if result != kIOReturnSuccess {
+            ConnectionDiagnostics.record("device.connect.start", Self.code(result))
+            linkEstablishment.completed(at: ProcessInfo.processInfo.systemUptime)
+        }
     }
     private func recoverOrFinish(_ reason: String) {
         guard !closed else { return }
         guard mayRefreshServices, !refreshedServices, let device, device.isPaired() else { finish(reason); return }
+        guard authorizeServiceRefresh?() ?? true else { finish(reason); return }
         refreshedServices = true
         step("device.refresh", L("Переподключаю телефон для обновления служб…"), timeout: 6,
-             failure: L("macOS не смогла обновить список служб. В настройках Bluetooth отключи телефон и подключи снова, затем повтори попытку в Conduit."))
-        // This selected device only, once for a manual attempt. Never toggle the adapter.
+             failure: L("Conduit повторит обновление Bluetooth-служб автоматически."))
+        // This selected paired device only, with a refresh budget shared across attempts.
         let previous = channel; channel = nil; previous?.setDelegate(nil); previous?.close()
         if device.isConnected() {
             let result = device.closeConnection()
@@ -99,6 +119,7 @@ private struct BluetoothCallbackReference<T: AnyObject>: @unchecked Sendable { l
     }
     private func search() {
         guard let device, !closed else { return }
+        linkTask?.cancel(); linkTask = nil
         // macOS 26 answers from its stored service table; a missing entry is refreshed by relinking.
         step("sdp.full", L("Ищу Conduit на телефоне…"), timeout: 20,
              failure: L("Телефон не ответил на поиск Conduit за 20 секунд. Открой Conduit на телефоне, включи Bluetooth-соединение и проверь системное сопряжение."))
@@ -113,6 +134,15 @@ private struct BluetoothCallbackReference<T: AnyObject>: @unchecked Sendable { l
         DispatchQueue.main.async { [weak self] in self?.handleSDP(callback.value, status: status) }
     }
     nonisolated func remoteNameRequestComplete(_ device: IOBluetoothDevice!, status: IOReturn) { }
+    @objc nonisolated private func deviceDisconnected(_ notification: IOBluetoothUserNotification!, device disconnected: IOBluetoothDevice!) {
+        let callback = BluetoothCallbackReference(value: disconnected)
+        DispatchQueue.main.async { [weak self] in
+            guard let self, !self.closed, let peer = callback.value, self.device === peer, !peer.isConnected(),
+                  ["sdp.full", "rfcomm.open", "rfcomm.authentication", "connected"].contains(self.phase) else { return }
+            ConnectionDiagnostics.record("device.disconnected")
+            self.finish(L("Соединение прервано. Conduit повторит подключение автоматически."))
+        }
+    }
     nonisolated func connectionComplete(_ device: IOBluetoothDevice!, status: IOReturn) {
         let callback = BluetoothCallbackReference(value: device)
         DispatchQueue.main.async { [weak self] in self?.handleDeviceConnection(callback.value, status: status) }
@@ -121,14 +151,9 @@ private struct BluetoothCallbackReference<T: AnyObject>: @unchecked Sendable { l
         guard !closed, phase == "device.connect", pending != nil else { return }
         ConnectionDiagnostics.record("device.connection", Self.code(status))
         if let connectedDevice { device = connectedDevice }
-        guard status == kIOReturnSuccess, let device, device.isPaired() else { finish(L("Не удалось подтвердить Bluetooth-соединение с сопряжённым телефоном.")); return }
-        if device.isConnected() { search(); return }
-        // An early command on macOS 26 can be discarded with status zero. Do not call that success.
-        guard linkAttempts < 4 else { finish(L("macOS не установила соединение с телефоном. Повтори подключение в настройках Bluetooth.")); return }
-        linkTask = Task { [weak self] in
-            do { try await Task.sleep(nanoseconds: 150_000_000) } catch { return }
-            self?.requestDeviceConnection(device)
-        }
+        guard let device, device.isPaired() else { finish(L("Не завершено системное сопряжение. Свяжи телефон и Mac в настройках Bluetooth.")); return }
+        ConnectionDiagnostics.record("device.connection.state", "connected=\(device.isConnected())")
+        linkEstablishment.completed(at: ProcessInfo.processInfo.systemUptime)
     }
     private func handleSDP(_ callbackDevice: IOBluetoothDevice?, status: IOReturn) {
         guard !closed, pending != nil, phase.hasPrefix("sdp.") else { return }
@@ -137,7 +162,7 @@ private struct BluetoothCallbackReference<T: AnyObject>: @unchecked Sendable { l
         guard status == kIOReturnSuccess else { finish(L("Телефон не ответил на поиск службы Conduit. Разблокируй его, открой Conduit и включи Bluetooth-соединение.")); return }
         ConnectionDiagnostics.record("sdp.services", "count=\(device?.services?.count ?? 0)")
         guard let record = device?.getServiceRecord(for: Self.serviceUUID()) else {
-            recoverOrFinish(L("Служба Conduit не найдена после поиска. На телефоне открой Conduit 0.2.3 или новее и включи Bluetooth-соединение. При автоматическом подключении нажми «Подключить» вручную, чтобы обновить список служб.")); return
+            recoverOrFinish(L("Conduit на телефоне пока недоступен. Подключение будет повторено автоматически.")); return
         }
         var channelID: BluetoothRFCOMMChannelID = 0
         let lookup = record.getRFCOMMChannelID(&channelID)
@@ -145,7 +170,7 @@ private struct BluetoothCallbackReference<T: AnyObject>: @unchecked Sendable { l
             ConnectionDiagnostics.record("rfcomm.lookup", Self.code(lookup)); finish(L("Телефон сообщил службу Conduit без канала подключения. Выключи и снова включи соединение в Android-приложении.")); return
         }
         requestedChannel = channelID
-        step("rfcomm.open", L("Открываю Bluetooth-канал…"), timeout: 15, failure: L("Bluetooth-канал не открылся за 15 секунд. Перезапусти Bluetooth-соединение в Conduit на телефоне."))
+        step("rfcomm.open", L("Открываю Bluetooth-канал…"), timeout: 15, failure: L("Conduit на телефоне пока недоступен. Подключение будет повторено автоматически."))
         let result = device.openRFCOMMChannelAsync(&channel, withChannelID: channelID, delegate: self)
         if result != kIOReturnSuccess { ConnectionDiagnostics.record("rfcomm.start", Self.code(result)); recoverOrFinish(L("macOS не смогла открыть Bluetooth-канал. Проверь системное сопряжение и запущен ли Conduit на телефоне.")) }
     }
@@ -217,12 +242,13 @@ private struct BluetoothCallbackReference<T: AnyObject>: @unchecked Sendable { l
     private func finish(_ reason: String, notify: Bool = true) {
         guard !closed else { return }
         closed = true; deadline?.cancel(); deadline = nil; linkTask?.cancel(); linkTask = nil
+        disconnectNotification?.unregister(); disconnectNotification = nil
         ConnectionDiagnostics.record(notify ? "channel.failed" : "channel.cancelled", reason)
         pending?.resume(throwing: AppError(reason)); pending = nil
         channel?.setDelegate(nil); channel?.close(); channel = nil
         outbound.removeAll(); inFlight = nil
         if notify { onClose?(reason) }
-        onData = nil; onClose = nil; onProgress = nil
+        onData = nil; onClose = nil; onProgress = nil; authorizeServiceRefresh = nil
     }
 }
 

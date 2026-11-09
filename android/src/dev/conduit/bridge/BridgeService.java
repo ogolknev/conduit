@@ -3,13 +3,17 @@ package dev.conduit.bridge;
 import static dev.conduit.bridge.I18n.t;
 
 import android.app.*;
+import android.bluetooth.BluetoothAdapter;
+import android.bluetooth.BluetoothManager;
 import android.content.*;
+import android.content.pm.PackageManager;
 import android.net.*;
 import android.os.*;
 import org.json.*;
 import java.io.*;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
+import java.util.ArrayList;
 import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -28,7 +32,22 @@ public final class BridgeService extends Service {
     private final ExecutorService bluetoothWorker = Executors.newSingleThreadExecutor();
     private PowerManager.WakeLock connectionWakeLock;
     private final Handler main = new Handler(Looper.getMainLooper());
+    private final BluetoothListenerRecovery listenerRecovery = new BluetoothListenerRecovery();
+    private final ArrayList<ResultReceiver> startupReceivers = new ArrayList<>();
+    private boolean bluetoothRetryScheduled;
+    private final Runnable retryBluetooth = () -> { bluetoothRetryScheduled = false; ensureBluetoothListener(null); };
     private final Runnable renewPower = () -> updateConnectionPower();
+    private final BroadcastReceiver bluetoothEvents = new BroadcastReceiver() {
+        @Override public void onReceive(Context context, Intent intent) {
+            int state = intent.getIntExtra(BluetoothAdapter.EXTRA_STATE, BluetoothAdapter.ERROR);
+            PhoneDiagnostics.record(BridgeService.this, "bluetooth.state." + state);
+            if (state == BluetoothAdapter.STATE_TURNING_OFF || state == BluetoothAdapter.STATE_OFF) {
+                cancelBluetoothRetry(); bluetooth.suspend(); updateConnectionPower();
+            } else if (state == BluetoothAdapter.STATE_ON) {
+                cancelBluetoothRetry(); ensureBluetoothListener(null);
+            }
+        }
+    };
     private final BroadcastReceiver powerEvents = new BroadcastReceiver() {
         @Override public void onReceive(Context context, Intent intent) {
             String action = intent.getAction();
@@ -67,6 +86,10 @@ public final class BridgeService extends Service {
         events.addAction(PowerManager.ACTION_DEVICE_IDLE_MODE_CHANGED); events.addAction(PowerManager.ACTION_POWER_SAVE_MODE_CHANGED);
         if (Build.VERSION.SDK_INT >= 33) registerReceiver(powerEvents, events, Context.RECEIVER_NOT_EXPORTED);
         else registerReceiver(powerEvents, events);
+        // Bluetooth broadcasts originate in a privileged Bluetooth process, not always system UID.
+        IntentFilter bluetoothState = new IntentFilter(BluetoothAdapter.ACTION_STATE_CHANGED);
+        if (Build.VERSION.SDK_INT >= 33) registerReceiver(bluetoothEvents, bluetoothState, Context.RECEIVER_EXPORTED);
+        else registerReceiver(bluetoothEvents, bluetoothState);
         new Thread(() -> {
             LocalServerSocket local = null;
             try {
@@ -106,22 +129,79 @@ public final class BridgeService extends Service {
         }
         boolean bluetoothStart = intent != null && "BLUETOOTH_START".equals(intent.getAction());
         if (bluetoothStart) getSharedPreferences("settings", MODE_PRIVATE).edit().putBoolean("bluetoothWanted", true).apply();
-        boolean wanted = getSharedPreferences("settings", MODE_PRIVATE).getBoolean("bluetoothWanted", false);
-        if (bluetoothStart || (intent == null && wanted)) {
-            final ResultReceiver receiver = intent == null ? null : intent.getParcelableExtra("startupReceiver");
-            bluetoothWorker.execute(() -> {
-                BluetoothLink.StartResult result = bluetooth.start();
-                startupResult(receiver, result.ready, result.message);
-            });
-        }
+        boolean wanted = bluetoothWanted(this);
+        if (wanted) ensureBluetoothListener(intent == null ? null : intent.getParcelableExtra("startupReceiver"));
+        else if (intent != null && "BLUETOOTH_RESTORE".equals(intent.getAction())) { stopSelf(startId); return START_NOT_STICKY; }
         if (intent != null && "CLIPBOARD_START".equals(intent.getAction()) && clipboard != null) clipboard.startIfWanted();
         return wanted ? START_STICKY : START_NOT_STICKY;
     }
+    static boolean bluetoothWanted(Context context) {
+        android.content.SharedPreferences prefs = context.getSharedPreferences("settings", MODE_PRIVATE);
+        return prefs.getBoolean("bluetoothWanted", prefs.getBoolean("autoClipboard", false)
+            || !context.getSharedPreferences("bluetooth-trust", MODE_PRIVATE).getAll().isEmpty());
+    }
+    static void restoreIfWanted(Context context) {
+        boolean permission = Build.VERSION.SDK_INT < 31 || context.checkSelfPermission(BluetoothPermissions.CONNECT) == PackageManager.PERMISSION_GRANTED;
+        if (!BluetoothListenerRecovery.mayRestore(bluetoothWanted(context), Build.VERSION.SDK_INT, permission)) return;
+        BridgeService current = instance;
+        if (current != null && current.running) { current.ensureBluetoothListener(null); return; }
+        try {
+            context.startForegroundService(new Intent(context, BridgeService.class).setAction("BLUETOOTH_RESTORE"));
+            PhoneDiagnostics.record(context, "service.restore.request");
+        } catch (RuntimeException failure) {
+            BluetoothLink.status = t("Android ограничил фоновый запуск. Открой Conduit для восстановления соединения.");
+            PhoneDiagnostics.record(context, "service.restore.failed", failure);
+        }
+    }
+    private boolean bluetoothAvailable() {
+        try {
+            BluetoothManager manager = getSystemService(BluetoothManager.class);
+            return manager != null && manager.getAdapter() != null && manager.getAdapter().isEnabled();
+        } catch (SecurityException failure) { return false; }
+    }
+    private void deliverStartupResults(boolean ready, String message) {
+        for (ResultReceiver receiver : startupReceivers) startupResult(receiver, ready, message);
+        startupReceivers.clear();
+    }
+    private void ensureBluetoothListener(ResultReceiver receiver) {
+        if (receiver != null) startupReceivers.add(receiver);
+        if (!running || !bluetoothWanted(this)) { deliverStartupResults(false, t("Соединение остановлено")); return; }
+        if (bluetooth.isListening()) { deliverStartupResults(true, BluetoothLink.status); return; }
+        if (listenerRecovery.isStarting()) return;
+        if (!bluetoothAvailable()) {
+            BluetoothLink.status = t("Bluetooth выключен. Соединение восстановится после включения.");
+            deliverStartupResults(false, BluetoothLink.status); updateConnectionPower(); return;
+        }
+        if (!listenerRecovery.begin(true, true, false)) return;
+        cancelBluetoothRetry();
+        bluetoothWorker.execute(() -> {
+            BluetoothLink.StartResult result = bluetooth.start();
+            main.post(() -> {
+                if (!running) return;
+                boolean ready = result.ready && bluetooth.isListening();
+                listenerRecovery.completed(ready, SystemClock.elapsedRealtime());
+                deliverStartupResults(ready, ready ? result.message : BluetoothLink.status);
+                if (!ready) scheduleBluetoothRetry();
+                updateConnectionPower(); emit(status("status"));
+            });
+        });
+    }
+    void bluetoothListenerStopped() {
+        main.post(() -> { if (running && !listenerRecovery.isStarting()) scheduleBluetoothRetry(); });
+    }
+    private void scheduleBluetoothRetry() {
+        if (!running || !bluetoothWanted(this) || !bluetoothAvailable() || bluetooth.isListening() || bluetoothRetryScheduled) return;
+        long delay = listenerRecovery.retryDelay(SystemClock.elapsedRealtime());
+        bluetoothRetryScheduled = true;
+        PhoneDiagnostics.record(this, "listener.retry." + delay + "ms");
+        main.postDelayed(retryBluetooth, delay);
+    }
+    private void cancelBluetoothRetry() { main.removeCallbacks(retryBluetooth); bluetoothRetryScheduled = false; }
     boolean isBluetoothListening() { return bluetooth!=null && bluetooth.isListening(); }
     boolean hasConnectionWakeLock() { return connectionWakeLock != null && connectionWakeLock.isHeld(); }
     private Notification connectionNotification() {
         Endpoint peer=client;
-        String text=peer==null?t("Ожидание Mac"):peer.isBluetooth()?t("Mac подключён · Bluetooth"):t("Mac подключён · Отладка");
+        String text=peer==null?(bluetoothAvailable()?t("Ожидание Mac"):t("Bluetooth выключен. Соединение восстановится после включения.")):peer.isBluetooth()?t("Mac подключён · Bluetooth"):t("Mac подключён · Отладка");
         PendingIntent open=PendingIntent.getActivity(this,0,new Intent(this,MainActivity.class),PendingIntent.FLAG_IMMUTABLE);
         return new Notification.Builder(this,"connection").setSmallIcon(R.drawable.ic_notification).setContentTitle("Conduit").setContentText(text)
             .setContentIntent(open).setOngoing(true).setOnlyAlertOnce(true).setShowWhen(false).build();
@@ -179,6 +259,7 @@ public final class BridgeService extends Service {
         if (old != null && old != next) old.close();
         BridgeService service = instance;
         if (service != null) {
+            service.main.post(() -> service.listenerRecovery.connected());
             service.updateConnectionPower();
             if (service.clipboard != null) { if (next.isBluetooth()) service.clipboard.startIfWanted(); else service.clipboard.stop(); }
         }
@@ -291,9 +372,10 @@ public final class BridgeService extends Service {
         @Override void close() { closeWriter(); try { socket.close(); } catch (IOException ignored) {} }
     }
     @Override public void onDestroy() {
-        running = false; bluetoothWorker.shutdownNow(); bluetooth.stop(); if (clipboard != null) clipboard.dispose(); instance = null;
+        running = false; cancelBluetoothRetry(); bluetoothWorker.shutdownNow(); bluetooth.stop(); if (clipboard != null) clipboard.dispose(); instance = null;
         updateConnectionPower(); main.removeCallbacks(renewPower);
         try { unregisterReceiver(powerEvents); } catch (IllegalArgumentException ignored) {}
+        try { unregisterReceiver(bluetoothEvents); } catch (IllegalArgumentException ignored) {}
         PhoneDiagnostics.record(this, "service.destroy");
         Endpoint old = client; client = null; if (old != null) old.close();
         if (server != null) try { server.close(); } catch (IOException ignored) {}
