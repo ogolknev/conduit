@@ -29,8 +29,10 @@ final class BluetoothLink {
         final boolean ready; final String message;
         StartResult(boolean ready, String message) { this.ready = ready; this.message = message; }
     }
-    private static String readyMessage() {
-        return BridgeService.client != null && BridgeService.client.isBluetooth() ? t("Mac подключён по Bluetooth") : t("Bluetooth готов. Выбери телефон в Conduit на Mac.");
+    private String readyMessage() {
+        if (BridgeService.client != null && BridgeService.client.isBluetooth()) return t("Mac подключён по Bluetooth");
+        return context.getSharedPreferences("bluetooth-trust", Context.MODE_PRIVATE).getAll().isEmpty()
+            ? t("Bluetooth готов. Добавь телефон в Conduit на Mac.") : t("Ожидание Mac. Подключение восстановится автоматически.");
     }
     StartResult start() {
         final int version;
@@ -77,13 +79,14 @@ final class BluetoothLink {
         } catch (IOException | RuntimeException e) {
             synchronized (this) {
                 if (current(version)) {
-                    status = t("Bluetooth отключился (") + e.getClass().getSimpleName() + t("). Нажми «Включить» снова.");
+                    status = t("Соединение прервано. Conduit повторит подключение автоматически.");
                     PhoneDiagnostics.record(context, "listener.accept.failed", e);
                 }
             }
         } finally {
             close(listener);
             synchronized (this) { if (generation == version) { running = false; server = null; } }
+            context.bluetoothListenerStopped();
         }
     }
     private void accept(BluetoothSocket socket, int version) {
@@ -141,9 +144,11 @@ final class BluetoothLink {
     static boolean validUUID(String value) {
         try { return UUID.fromString(value).toString().equalsIgnoreCase(value); } catch (Exception e) { return false; }
     }
-    void stop() {
+    void suspend() { stopListening(false); }
+    void stop() { stopListening(true); }
+    private void stopListening(boolean permanently) {
         BluetoothServerSocket previous;
-        synchronized (this) { closed = true; generation++; running = false; previous = server; server = null; status = t("Bluetooth выключен в Conduit"); }
+        synchronized (this) { closed = closed || permanently; generation++; running = false; previous = server; server = null; status = permanently ? t("Bluetooth выключен в Conduit") : t("Bluetooth выключен. Соединение восстановится после включения."); }
         close(previous);
         BridgeService.Endpoint current = BridgeService.client;
         if (current != null && current.isBluetooth()) { BridgeService.deactivate(current); current.close(); }

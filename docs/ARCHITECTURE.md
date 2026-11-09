@@ -41,12 +41,22 @@ authentication to hide a connection error.
 
 **Treat sleep as a pause, not proof of peer failure.** Heartbeat policy in
 `ConnectionLiveness.swift` sends a fresh probe after a delayed timer or clock change.
-Reconnect attempts use backoff and bounded SDP refreshes. Session identifiers keep
-late callbacks from changing a newer connection.
+Reconnect attempts use backoff and bounded SDP refreshes, charged when a refresh is
+actually needed. Native callbacks reporting success are checked against the actual
+baseband link; disconnected requests are paced rather than retried in one tick. A
+device-disconnect notification cancels an obsolete channel attempt promptly. Session
+identifiers keep late callbacks from changing a newer connection. Quitting preserves
+the saved connection intent; explicit Disconnect pauses it. Opt-in launch at login
+uses `SMAppService.mainApp`, with registration/approval read from macOS rather
+than an independent preference that can drift from system state.
 
 **Use Shizuku for Android background clipboard access.** `ClipboardRelay` binds
 `ClipboardUserService` after permission is granted. It verifies the pinned scrcpy
 server before use and exposes bounded clipboard operations, not arbitrary commands.
+Android restores an enabled secure listener on adapter-on, process restart and
+supported boot/update broadcasts. Unexpected listener failures use bounded backoff.
+An explicit stop is preserved; foreground-start restrictions are respected. Xiaomi
+background autostart is a separate user setting from battery optimization.
 Full device lock can block clipboard reads on the tested Android version. A
 `USER_PRESENT` event requests a snapshot after unlock; retain this recovery path.
 
@@ -60,7 +70,10 @@ helpers enforce framing, file and image limits. Device diagnostics record events
 and outcomes without clipboard, notification, pairing-code or token content.
 
 **Preserve update identity.** Mac bundle ID is `dev.conduit.mac`; Android package is
-`dev.conduit.bridge`. Reuse the Android signing key for upgrades. Mac icon catalog
+`dev.conduit.bridge`. Reuse the Android signing key for upgrades. Mac updates use a persistent signing
+identity: an ad-hoc designated requirement pins one build hash and cannot identify
+a changed build as the same code. Local private development uses a dedicated
+certificate; public distribution uses Developer ID. Mac icon catalog
 hashes bind compiled `Assets.car` to its sources; changing geometry requires
 regeneration and catalog compilation, not replacing one isolated icon.
 

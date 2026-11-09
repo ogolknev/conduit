@@ -407,4 +407,26 @@
     <string name="text_5748a3bd9cb3" formatted="false">"LANGUAGE"</string>
     <string name="text_fd35cd25ca07" formatted="false">"Conduit — notifications on Mac"</string>
     <string name="text_6da140fdd4be" formatted="false">"Русский"</string>
+    <string name="text_762b7f73896b" formatted="false">"The phone is currently unavailable. Conduit will reconnect automatically."</string>
+    <string name="text_7f71847067e3" formatted="false">"Conduit will retry Bluetooth service discovery automatically."</string>
+    <string name="text_9674ec4b2eb8" formatted="false">"Conduit on the phone is currently unavailable. The connection will be retried automatically."</string>
+    <string name="text_8e42bda10c4c" formatted="false">"Restoring the saved connection…"</string>
+    <string name="text_d1712b4dd725" formatted="false">"Waiting for phone"</string>
+    <string name="text_a5609caa5584" formatted="false">"The connection will resume automatically when the phone is available."</string>
+    <string name="text_36b4c0b07f08" formatted="false">"Connect"</string>
+    <string name="text_03f56197e2ec" formatted="false">"This phone is already authorized. Pairing and a new code are not required."</string>
+    <string name="text_00d5dc5d7067" formatted="false">"Bluetooth is ready. Add this phone in Conduit on your Mac."</string>
+    <string name="text_731b91e9e1c2" formatted="false">"Waiting for Mac. The connection will resume automatically."</string>
+    <string name="text_56684a741b3a" formatted="false">"Connection interrupted. Conduit will reconnect automatically."</string>
+    <string name="text_823276d06bdf" formatted="false">"Bluetooth is off. The connection will resume when it is enabled."</string>
+    <string name="text_3caf3fa9314b" formatted="false">"Android restricted background startup. Open Conduit to restore the connection."</string>
+    <string name="text_7e2906ba5797" formatted="false">"Battery optimization"</string>
+    <string name="text_23a47aa1500e" formatted="false">"Xiaomi autostart"</string>
+    <string name="text_e48b63078376" formatted="false">"Enable once for Conduit to restore the connection after restarts and updates."</string>
+    <string name="text_5bd2e464d062" formatted="false">"Disabled"</string>
+    <string name="text_4b043d0b1605" formatted="false">"Enabled"</string>
+    <string name="text_63754139c1ac" formatted="false">"Launch at login"</string>
+    <string name="text_e767ca1f9588" formatted="false">"macOS approval is required for launch at login"</string>
+    <string name="text_bd2a3a675d41" formatted="false">"Unable to change launch at login. Check Login Items in macOS settings."</string>
+    <string name="text_76a651547e47" formatted="false">"macOS settings"</string>
 </resources>

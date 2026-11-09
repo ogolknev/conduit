@@ -10,6 +10,19 @@ private var appVersion: String { Bundle.main.object(forInfoDictionaryKey: "CFBun
     @MainActor static func main() {
         let args = CommandLine.arguments
         AppLocalization.configure(arguments: args)
+        if let index = args.firstIndex(of: "--login-item"), args.count > index + 1 {
+            NSApplication.shared.setActivationPolicy(.prohibited)
+            do {
+                switch args[index + 1] {
+                case "enable": try LaunchAtLogin.setEnabled(true)
+                case "disable": try LaunchAtLogin.setEnabled(false)
+                case "status": break
+                default: exit(64)
+                }
+                let data = try JSONSerialization.data(withJSONObject: LaunchAtLogin.report, options: .sortedKeys)
+                print(String(data: data, encoding: .utf8)!); return
+            } catch { print("Login item error: \((error as NSError).code)"); exit(1) }
+        }
         if args.contains("--permission-status") || args.contains("--notification-check") || args.contains("--clear-notification-test") {
             NSApplication.shared.setActivationPolicy(.prohibited)
             Task {
@@ -111,7 +124,7 @@ struct ConduitApp: App {
         .windowStyle(.hiddenTitleBar)
         .commands {
             CommandGroup(replacing: .appTermination) {
-                Button(L("Завершить Conduit")) { Task { await model.disconnect(); NSApp.terminate(nil) } }.keyboardShortcut("q")
+                Button(L("Завершить Conduit")) { Task { await model.prepareToQuit(); NSApp.terminate(nil) } }.keyboardShortcut("q")
             }
         }
         MenuBarExtra {
@@ -137,7 +150,7 @@ private struct MenuView: View {
         Divider()
         Button(L("Открыть Conduit")) { openWindow(id: "main"); NSApp.activate(ignoringOtherApps: true) }
         Button(L("Отключиться")) { Task { await model.disconnect() } }.disabled(!model.connected || model.busy)
-        Button(L("Завершить")) { Task { await model.disconnect(); NSApp.terminate(nil) } }
+        Button(L("Завершить")) { Task { await model.prepareToQuit(); NSApp.terminate(nil) } }
     }
 }
 

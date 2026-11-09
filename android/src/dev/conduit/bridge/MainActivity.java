@@ -190,7 +190,13 @@ public final class MainActivity extends Activity {
         authorizationRow = new SettingsRow(connect, t("Добавить Mac"), "", () -> beginBluetooth(true), "chevron");
         new SettingsRow(connect, "Bluetooth", "", () -> startActivity(new Intent(Settings.ACTION_BLUETOOTH_SETTINGS)), "chevron");
         bluetoothPermissionRow = new SettingsRow(connect,t("Доступ Bluetooth"),"",this::openApplicationSettings,"chevron");
-        backgroundRow = new SettingsRow(connect, t("Работа в фоне"), "", this::requestBackground, "chevron");
+        backgroundRow = new SettingsRow(connect, t("Оптимизация батареи"), "", this::requestBackground, "chevron");
+        String manufacturer = Build.MANUFACTURER.toLowerCase(java.util.Locale.ROOT);
+        if (manufacturer.contains("xiaomi") || manufacturer.contains("redmi") || manufacturer.contains("poco")) {
+            SettingsRow autostart = new SettingsRow(connect, t("Автозапуск Xiaomi"),
+                t("Включите для Conduit один раз: восстановление после перезагрузки и обновления."), this::openAutostartSettings, "chevron");
+            autostart.setStatus(t("Настройки"), muted);
+        }
         rowDivider(connect);
         connectionControlRow = new SettingsRow(connect, "", "", () -> {
             BridgeService current=BridgeService.instance;
@@ -311,7 +317,7 @@ public final class MainActivity extends Activity {
         if (backgroundRow != null) {
             PowerManager power=getSystemService(PowerManager.class);
             boolean unrestricted=power!=null && power.isIgnoringBatteryOptimizations(getPackageName());
-            backgroundRow.setStatus(unrestricted ? t("Разрешена") : t("Ограничена"),unrestricted?success:warning);
+            backgroundRow.setStatus(unrestricted ? t("Отключена") : t("Включена"),unrestricted?success:warning);
             backgroundRow.setDetail(unrestricted ? "" : t("Требуется для связи с выключенным экраном"));
         }
         if (pairing != null) { String code = BluetoothLink.PAIRING.display(); pairing.setText(code.isEmpty() ? t("Код не активен") : code.substring(0, 4) + "  " + code.substring(4)); }
@@ -355,6 +361,10 @@ public final class MainActivity extends Activity {
         startActivity(new Intent(Settings.ACTION_NOTIFICATION_LISTENER_SETTINGS));
     }
     private void openApplicationSettings() { startActivity(new Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS,Uri.parse("package:"+getPackageName()))); }
+    private void openAutostartSettings() {
+        try { startActivity(new Intent("miui.intent.action.OP_AUTO_START").setPackage("com.miui.securitycenter")); }
+        catch (RuntimeException unavailable) { openApplicationSettings(); }
+    }
     private void configureOwnNotifications() {
         SharedPreferences prefs=getSharedPreferences("settings",MODE_PRIVATE);
         if (Build.VERSION.SDK_INT>=33 && checkSelfPermission(Manifest.permission.POST_NOTIFICATIONS)!=PackageManager.PERMISSION_GRANTED &&
@@ -508,9 +518,7 @@ public final class MainActivity extends Activity {
     }
     @Override protected void onResume() {
         super.onResume(); PhoneDiagnostics.record(this, "activity.resume"); handler.removeCallbacks(update); update.run();
-        SharedPreferences prefs = getSharedPreferences("settings", MODE_PRIVATE);
-        boolean wanted = prefs.getBoolean("bluetoothWanted", prefs.getBoolean("autoClipboard", false) || !getSharedPreferences("bluetooth-trust", MODE_PRIVATE).getAll().isEmpty());
-        if (wanted && BridgeService.instance == null && !bluetoothBusy && missingBluetoothPermissions(false).length == 0) startBluetooth(false);
+        if (!bluetoothBusy) BridgeService.restoreIfWanted(this);
     }
     @Override protected void onPause() { PhoneDiagnostics.record(this, "activity.pause"); handler.removeCallbacks(update); super.onPause(); }
     @Override protected void onNewIntent(Intent intent) { super.onNewIntent(intent); setIntent(intent); handleShare(intent); }

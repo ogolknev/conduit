@@ -10,6 +10,10 @@ struct PendingBluetoothReply {
 }
 
 extension ConduitModel {
+    var hasTrustedBluetoothPhone: Bool {
+        transport == .bluetooth && !bluetoothAddress.isEmpty && BluetoothTrust.token(for: bluetoothAddress) != nil
+    }
+    var waitingForBluetooth: Bool { transport == .bluetooth && autoReconnect && shouldReconnect && hasTrustedBluetoothPhone }
     func shareCompanionViaBluetooth() {
         guard let apk = resource("conduit-companion.zip") ?? resource("conduit-companion.apk") else { return }
         let app = URL(fileURLWithPath: "/System/Applications/Utilities/Bluetooth File Exchange.app")
@@ -94,11 +98,14 @@ extension ConduitModel {
             self.bluetoothSetupError = self.bluetoothSetupError ?? reason
             if !self.busy { self.bluetoothLost(reason) }
         }
+        channel.authorizeServiceRefresh = { [weak self] in
+            guard let self, self.sessionID == id else { return false }
+            return self.reconnectPolicy.allowServiceRefresh(automatic: automatic, at: ProcessInfo.processInfo.systemUptime)
+        }
         do {
-            let mayRefresh = reconnectPolicy.allowServiceRefresh(automatic: automatic, at: ProcessInfo.processInfo.systemUptime)
-            try await channel.connect(phone, allowServiceRefresh: mayRefresh)
+            try await channel.connect(phone)
             guard sessionID == id, connectionAttempt == attempt else { return }
-            connectionStage = L("Проверяю код Conduit на телефоне…"); status = connectionStage
+            connectionStage = savedToken == nil ? L("Проверяю код Conduit на телефоне…") : L("Восстанавливаю сохранённое соединение…"); status = connectionStage
             ConnectionDiagnostics.record("application.auth", savedToken == nil ? "new-pair" : "remembered-pair")
             channel.sendJSON(["type":"hello", "protocol":2, "client":BluetoothTrust.clientID,
                 "name":Host.current().localizedName ?? "Mac", "token":savedToken ?? "", "code":code])

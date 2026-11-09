@@ -134,7 +134,7 @@ struct MainView: View {
     private var statusPill: some View {
         HStack(spacing: 7) {
             Circle().fill(model.connected ? Palette.success : Palette.muted.opacity(0.5)).frame(width: 6, height: 6)
-            Text(model.connected ? L("Подключено · %@", model.transport.rawValue) : (model.busy ? L("Подключение…") : L("Нет соединения")))
+            Text(model.connected ? L("Подключено · %@", model.transport.rawValue) : (model.busy ? L("Подключение…") : model.waitingForBluetooth ? L("Ожидание телефона") : L("Нет соединения")))
                 .font(.system(size: 11, weight: .medium))
         }.foregroundStyle(model.connected ? Palette.success : Palette.muted).padding(.horizontal, 11).padding(.vertical, 7)
             .background(Color.clear)
@@ -148,12 +148,15 @@ struct MainView: View {
                     VStack(alignment: .leading, spacing: 10) {
                         Text(model.connected ? deviceName : (model.busy ? L("Подключение") : L("Телефон не подключён")))
                             .font(.system(size: 20, weight: .medium))
-                        Text(model.connected ? L("Подключён по %@", model.transport.rawValue) : L("Запустите Conduit на Android."))
+                        Text(model.connected ? L("Подключён по %@", model.transport.rawValue) : model.waitingForBluetooth ? L("Подключение восстановится автоматически, когда телефон будет доступен.") : L("Запустите Conduit на Android."))
                             .font(.system(size: 13)).foregroundStyle(Palette.muted).lineSpacing(2)
                         if model.connected {
                             Button(L("Отключить")) { Task { await model.disconnect() } }.buttonStyle(ActionStyle())
                         } else {
-                            Button(model.busy ? L("Показать подключение") : L("Подключить телефон")) { connectionSheet = true }.buttonStyle(ActionStyle(primary: true))
+                            Button(model.busy ? L("Показать подключение") : model.hasTrustedBluetoothPhone ? L("Подключиться") : L("Подключить телефон")) {
+                                if model.hasTrustedBluetoothPhone && !model.busy { Task { await model.connectBluetooth() } }
+                                else { connectionSheet = true }
+                            }.buttonStyle(ActionStyle(primary: true))
                         }
                     }
                     Spacer(minLength: 0)
@@ -240,12 +243,23 @@ struct MainView: View {
                 HStack {
                     HStack(spacing: 10) { LineIcon("phone").frame(width: 20, height: 22); Text(model.connected ? deviceName : L("Телефон")).font(.system(size: 14, weight: .medium)) }
                     Spacer()
-                    Button(model.connected ? L("Отключить") : L("Настроить")) {
-                        if model.connected { Task { await model.disconnect() } } else { connectionSheet = true }
+                    Button(model.connected ? L("Отключить") : model.hasTrustedBluetoothPhone ? L("Подключиться") : L("Настроить")) {
+                        if model.connected { Task { await model.disconnect() } }
+                        else if model.hasTrustedBluetoothPhone && !model.busy { Task { await model.connectBluetooth() } }
+                        else { connectionSheet = true }
                     }.buttonStyle(ActionStyle())
                 }
                 Divider().overlay(Palette.line)
                 settingToggle(L("Автоматическое подключение"), isOn: $model.autoReconnect)
+                settingToggle(L("Запускать при входе"), isOn: Binding(get: { model.launchAtLogin }, set: { model.setLaunchAtLogin($0) }))
+                if model.loginItemNeedsApproval {
+                    HStack {
+                        Text(L("Требуется разрешение macOS для автозапуска")).font(.system(size: 12)).foregroundStyle(Palette.warning)
+                        Spacer()
+                        Button(L("Настройки macOS")) { LaunchAtLogin.openSettings() }.buttonStyle(.link)
+                    }
+                }
+                if let error = model.loginItemError { Text(L(error)).font(.system(size: 12)).foregroundStyle(Palette.error) }
                 HStack {
                     Text(L("Доступ Bluetooth")).font(.system(size:13)); Spacer()
                     Text(model.macBluetoothPermission == .allowed ? L("Разрешён") : model.macBluetoothPermission == .unknown ? L("Не запрошен") : L("Не разрешён")).font(.system(size:12)).foregroundStyle(model.macBluetoothPermission == .allowed ? Palette.success : Palette.warning)
@@ -314,7 +328,7 @@ struct MainView: View {
                 ForEach(ConnectionKind.allCases, id: \.self) { Text($0.rawValue).tag($0) }
             }.pickerStyle(.segmented).disabled(model.connected || model.busy)
             if model.transport == .bluetooth {
-                Text(L("1. Сопряжение устройств в настройках Bluetooth.\n2. На Android: Conduit → «Связать Mac».\n3. Выбор устройства и ввод кода ниже."))
+                Text(model.hasTrustedBluetoothPhone ? L("Телефон уже авторизован. Повторное сопряжение и новый код не нужны.") : L("1. Сопряжение устройств в настройках Bluetooth.\n2. На Android: Conduit → «Связать Mac».\n3. Выбор устройства и ввод кода ниже."))
                     .font(.system(size: 13)).lineSpacing(7).foregroundStyle(Palette.muted)
                 HStack {
                     Picker(L("Телефон"), selection: $model.bluetoothAddress) {

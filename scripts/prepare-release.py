@@ -62,7 +62,7 @@ def validate_source_archive(path):
             unsafe = any(part in {'.git', 'work', '.build', '.swiftpm', 'dist', 'outputs', '__pycache__'} for part in parts)
             leaf = Path(name).name
             unsafe |= leaf == '.env' or (leaf.startswith('.env.') and leaf != '.env.example')
-            unsafe |= leaf == 'local.properties' or leaf.endswith(('.p12', '.pfx', '.jks', '.keystore', '.key', '.pem', '.log', '.apk', '.aar', '.jar'))
+            unsafe |= leaf in {'local.properties', 'keychain-password'} or leaf.endswith(('.p12', '.pfx', '.jks', '.keystore', '.key', '.pem', '.keychain', '.keychain-db', '.log', '.apk', '.aar', '.jar'))
             require(not unsafe, f'Unexpected private/generated file in source archive: {name}')
 
 

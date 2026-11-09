@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 import sys, argparse, hashlib, json, os, pathlib, plistlib, shutil, subprocess, zipfile
+from mac_signing import DEFAULT_DIRECTORY, local_identity, private_config, sign
 
 p = argparse.ArgumentParser()
 p.add_argument('--scratch', required=True)
@@ -7,7 +8,26 @@ p.add_argument('--platform-tools', required=True)
 p.add_argument('--server', required=True)
 p.add_argument('--apk', required=True)
 p.add_argument('--output', required=True)
+p.add_argument('--signing-directory', default=str(DEFAULT_DIRECTORY), help='Persistent local identity directory, independent of build scratch')
+p.add_argument('--signing-identity', help='Use an existing codesigning identity, such as Developer ID Application')
+p.add_argument('--keychain', help='Keychain for an explicitly selected identity')
+p.add_argument('--ad-hoc', action='store_true', help='Explicit disposable development signing; privacy permissions will not survive updates')
 args = p.parse_args()
+if args.ad_hoc and args.signing_identity:
+    p.error('Choose either a persistent identity or explicit ad-hoc signing')
+if args.signing_identity == '-':
+    p.error('Use --ad-hoc explicitly for disposable signing')
+if args.keychain and not args.signing_identity:
+    p.error('--keychain requires --signing-identity')
+if args.ad_hoc:
+    identity, keychain = '-', None
+elif args.signing_identity:
+    identity, keychain = args.signing_identity, args.keychain
+else:
+    if not (pathlib.Path(args.signing_directory).expanduser() / 'identity.json').exists():
+        p.error('Set up a persistent identity with scripts/setup-mac-signing.py, or select --signing-identity. Use --ad-hoc only for disposable builds.')
+    config = private_config(args.signing_directory)
+    identity, keychain = config['identity'], config['keychain']
 project = pathlib.Path(__file__).resolve().parents[1]
 subprocess.run([sys.executable, str(project / "scripts/generate-brand.py"), "--check"], check=True)
 subprocess.run([sys.executable, str(project / "scripts/generate-localizations.py"), "--check"], check=True)
@@ -48,12 +68,14 @@ shutil.copy2(icon_catalog / 'Assets.car', resources / 'Assets.car')
 (resources / 'Conduit.icns').unlink(missing_ok=True)
 with (app / 'Contents/Info.plist').open('wb') as f:
     plistlib.dump({'CFBundleName':'Conduit', 'CFBundleDisplayName':'Conduit', 'CFBundleExecutable':'Conduit',
-        'CFBundleIdentifier':'dev.conduit.mac', 'CFBundlePackageType':'APPL', 'CFBundleShortVersionString':'0.4.0',
-        'CFBundleVersion':'16', 'CFBundleIconFile':'AppIcon', 'CFBundleIconName':'AppIcon',
+        'CFBundleIdentifier':'dev.conduit.mac', 'CFBundlePackageType':'APPL', 'CFBundleShortVersionString':'0.4.1',
+        'CFBundleVersion':'18', 'CFBundleIconFile':'AppIcon', 'CFBundleIconName':'AppIcon',
         'CFBundleInfoDictionaryVersion':'6.0', 'CFBundleSupportedPlatforms':['MacOSX'], 'CFBundleDevelopmentRegion':'en', 'CFBundleLocalizations':['en','ru'], 'CFBundleSignature':'????', 'LSMinimumSystemVersion':'13.0', 'NSHighResolutionCapable':True,
         'NSPrincipalClass':'NSApplication', 'NSBluetoothAlwaysUsageDescription':'Conduit connects this Mac to Android for clipboard, notifications and files over Bluetooth.'}, f)
 for language in ['en', 'ru']:
     shutil.copytree(project / 'localization' / (language + '.lproj'), resources / (language + '.lproj'), dirs_exist_ok=True)
 (app / 'Contents/PkgInfo').write_bytes(b'APPL????')
-subprocess.run(['/usr/bin/codesign', '--force', '--deep', '--sign', '-', str(app)], check=True)
+if not args.ad_hoc and not args.signing_identity:
+    identity, keychain = local_identity(args.signing_directory)
+print(sign(app, identity, keychain))
 print('Built:', app)

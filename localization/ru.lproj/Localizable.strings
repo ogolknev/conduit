@@ -39,10 +39,12 @@
 "Android did not allow starting the connection (" = "Android не разрешил запустить соединение (";
 "Android log not yet received" = "Журнал Android ещё не получен";
 "Android permission required" = "Требуется доступ Android";
+"Android restricted background startup. Open Conduit to restore the connection." = "Android ограничил фоновый запуск. Открой Conduit для восстановления соединения.";
 "Android service reconnecting" = "Служба Android переподключается";
 "Android не нашёл службу Conduit. Переустанови обновление приложения." = "Android не нашёл службу Conduit. Переустанови обновление приложения.";
 "Android не разрешил запустить соединение (" = "Android не разрешил запустить соединение (";
 "Android не разрешил фоновую службу Conduit (" = "Android не разрешил фоновую службу Conduit (";
+"Android ограничил фоновый запуск. Открой Conduit для восстановления соединения." = "Android ограничил фоновый запуск. Открой Conduit для восстановления соединения.";
 "Android → Developer options → Wireless debugging. Both devices must be on the same network." = "Android → Для разработчиков → Беспроводная отладка. Оба устройства должны быть в одной сети.";
 "Android → Mac notifications" = "Уведомления Android → Mac";
 "Android → Для разработчиков → Беспроводная отладка. Оба устройства должны быть в одной сети." = "Android → Для разработчиков → Беспроводная отладка. Оба устройства должны быть в одной сети.";
@@ -61,6 +63,7 @@
 "Background clipboard access requires a running Shizuku service and Conduit authorization. Start Shizuku again after restarting Android.\n\nAndroid pauses clipboard access while the device is locked." = "Для чтения буфера в фоне требуется запущенный Shizuku и разрешение Conduit. После перезагрузки Android Shizuku необходимо запустить повторно.\n\nПри полной блокировке Android чтение приостанавливается до разблокировки.";
 "Background operation" = "Работа в фоне";
 "Banners disabled in macOS" = "Баннеры отключены в macOS";
+"Battery optimization" = "Оптимизация батареи";
 "Bluetooth access" = "Доступ Bluetooth";
 "Bluetooth authentication failed. Pair the phone and Mac again in system settings." = "Аутентификация Bluetooth-соединения не прошла. Повтори системное сопряжение телефона и Mac.";
 "Bluetooth channel error" = "Ошибка Bluetooth-канала";
@@ -69,6 +72,8 @@
 "Bluetooth disconnected (" = "Bluetooth отключился (";
 "Bluetooth file limit: 100 MB" = "По Bluetooth — файлы до 100 МБ";
 "Bluetooth is off on this Mac. Enable it in Bluetooth settings." = "Bluetooth на Mac выключен. Включи его в настройках Bluetooth.";
+"Bluetooth is off. The connection will resume when it is enabled." = "Bluetooth выключен. Соединение восстановится после включения.";
+"Bluetooth is ready. Add this phone in Conduit on your Mac." = "Bluetooth готов. Добавь телефон в Conduit на Mac.";
 "Bluetooth is still off. Enable it in phone settings and try again." = "Bluetooth остался выключенным. Включи его в настройках телефона и повтори.";
 "Bluetooth ready. Select your phone in Conduit on Mac." = "Bluetooth готов. Выбери телефон в Conduit на Mac.";
 "Bluetooth send error" = "Ошибка отправки по Bluetooth";
@@ -76,7 +81,9 @@
 "Bluetooth supports files up to 100 MB. Send folders as ZIP archives." = "По Bluetooth поддерживаются файлы до 100 МБ. Папку можно отправить ZIP.";
 "Bluetooth unavailable on this phone" = "На телефоне недоступен Bluetooth";
 "Bluetooth выключен в Conduit" = "Bluetooth выключен в Conduit";
+"Bluetooth выключен. Соединение восстановится после включения." = "Bluetooth выключен. Соединение восстановится после включения.";
 "Bluetooth готов. Выбери телефон в Conduit на Mac." = "Bluetooth готов. Выбери телефон в Conduit на Mac.";
+"Bluetooth готов. Добавь телефон в Conduit на Mac." = "Bluetooth готов. Добавь телефон в Conduit на Mac.";
 "Bluetooth на Mac выключен. Включи его в настройках Bluetooth." = "Bluetooth на Mac выключен. Включи его в настройках Bluetooth.";
 "Bluetooth остался выключенным. Включи его в настройках телефона и повтори." = "Bluetooth остался выключенным. Включи его в настройках телефона и повтори.";
 "Bluetooth отключился (" = "Bluetooth отключился (";
@@ -115,10 +122,14 @@
 "Conduit code (8 digits)" = "Код Conduit (8 цифр)";
 "Conduit notification icon test" = "Проверка значка из каталога Xcode";
 "Conduit notifications" = "Уведомления Conduit";
+"Conduit on the phone is currently unavailable. The connection will be retried automatically." = "Conduit на телефоне пока недоступен. Подключение будет повторено автоматически.";
 "Conduit service did not respond within 12 seconds. Copy the connection diagnostics from Settings." = "Служба Conduit не ответила за 12 секунд. Нажми «Скопировать диагностику соединения» и пришли результат.";
 "Conduit sync with the connected phone" = "Синхронизация Conduit с подключённым телефоном";
 "Conduit was not found. Open the latest Conduit on your phone and enable the connection. Select Connect manually to refresh the service list." = "Служба Conduit не найдена после поиска. На телефоне открой Conduit 0.2.3 или новее и включи Bluetooth-соединение. При автоматическом подключении нажми «Подключить» вручную, чтобы обновить список служб.";
+"Conduit will retry Bluetooth service discovery automatically." = "Conduit повторит обновление Bluetooth-служб автоматически.";
+"Conduit на телефоне пока недоступен. Подключение будет повторено автоматически." = "Conduit на телефоне пока недоступен. Подключение будет повторено автоматически.";
 "Conduit не разрешён доступ к Bluetooth. Открой Системные настройки → Конфиденциальность и безопасность → Bluetooth и включи Conduit." = "Conduit не разрешён доступ к Bluetooth. Открой Системные настройки → Конфиденциальность и безопасность → Bluetooth и включи Conduit.";
+"Conduit повторит обновление Bluetooth-служб автоматически." = "Conduit повторит обновление Bluetooth-служб автоматически.";
 "Conduit — diagnostics" = "Conduit — диагностика";
 "Conduit — notifications on Mac" = "Conduit — уведомления на Mac";
 "Conduit — диагностика" = "Conduit — диагностика";
@@ -150,6 +161,7 @@
 "Connection disabled" = "Соединение отключено";
 "Connection enabled" = "Соединение включено";
 "Connection error" = "Ошибка соединения";
+"Connection interrupted. Conduit will reconnect automatically." = "Соединение прервано. Conduit повторит подключение автоматически.";
 "Connection lost. Waiting for phone…" = "Связь потеряна. Ожидаю телефон…";
 "Connection method" = "Способ связи";
 "Connection not running" = "Соединение не запущено";
@@ -175,6 +187,8 @@
 "Drop files to send" = "Отпустите файлы для отправки";
 "Enable Bluetooth on your phone" = "Включи Bluetooth на телефоне";
 "Enable connection" = "Включить соединение";
+"Enable once for Conduit to restore the connection after restarts and updates." = "Включите для Conduit один раз: восстановление после перезагрузки и обновления.";
+"Enabled" = "Включена";
 "Enter the IP:port from the wireless debugging screen." = "Нужен адрес IP:порт с экрана беспроводной отладки.";
 "Enter the pairing IP:port and six-digit code shown on your phone." = "Введи адрес сопряжения IP:порт и шестизначный код с телефона.";
 "Excluded: " = "Исключения: ";
@@ -216,6 +230,7 @@
 "Keychain did not allow saving the connection." = "Связка ключей не разрешила сохранить связь.";
 "LANGUAGE" = "ЯЗЫК";
 "Language" = "Язык";
+"Launch at login" = "Запускать при входе";
 "Light" = "Светлое";
 "Local connection" = "Локальное соединение";
 "Local connection. No clipboard history." = "Локальная связь. Буфер без истории.";
@@ -306,6 +321,7 @@
 "Requesting phone log…" = "Запрашиваю журнал телефона…";
 "Requesting…" = "Запрос…";
 "Required to stay connected with the screen off" = "Требуется для связи с выключенным экраном";
+"Restoring the saved connection…" = "Восстанавливаю сохранённое соединение…";
 "Restricted" = "Ограничена";
 "Retry startup" = "Повторить запуск";
 "SYNC" = "СИНХРОНИЗАЦИЯ";
@@ -354,6 +370,7 @@
 "The Bluetooth queue is full. Reconnect the phone." = "Bluetooth-очередь переполнена. Подключись снова.";
 "The Conduit code must contain exactly 8 digits. Use the code from the Android app, not the system Bluetooth pairing code." = "Код Conduit должен содержать ровно 8 цифр. Это код из Android-приложения, а не код системного сопряжения Bluetooth.";
 "The companion did not confirm the connection. Open it on your phone and try again." = "Компаньон не подтвердил соединение. Открой его на телефоне и повтори.";
+"The connection will resume automatically when the phone is available." = "Подключение восстановится автоматически, когда телефон будет доступен.";
 "The device list has changed. Select the phone again." = "Список устройств изменился. Выбери телефон снова.";
 "The first connection requires a Conduit code. Open Conduit on your phone, select Add Mac and enter the eight digits." = "Для первого подключения нужен код Conduit. На телефоне открой приложение, нажми «Добавить Mac» и введи 8 цифр.";
 "The phone advertised Conduit without a connection channel. Turn the connection off and on in the Android app." = "Телефон сообщил службу Conduit без канала подключения. Выключи и снова включи соединение в Android-приложении.";
@@ -366,6 +383,7 @@
 "The phone did not respond to the service search. Unlock it, open Conduit and enable the connection." = "Телефон не ответил на поиск службы Conduit. Разблокируй его, открой Conduit и включи Bluetooth-соединение.";
 "The phone did not respond within 20 seconds. Open Conduit on your phone, enable the connection and check system Bluetooth pairing." = "Телефон не ответил на поиск Conduit за 20 секунд. Открой Conduit на телефоне, включи Bluetooth-соединение и проверь системное сопряжение.";
 "The phone did not respond. Update the Android companion to retrieve its log." = "Телефон не ответил. Для журнала нужен APK 0.2.6 или новее.";
+"The phone is currently unavailable. Conduit will reconnect automatically." = "Телефон пока недоступен. Conduit повторит подключение автоматически.";
 "The phone is paired with this Mac, but Conduit was not found. Update Conduit on your phone and enable the connection." = "Телефон сопряжён с Mac, но служба Conduit не найдена. На телефоне установи APK 0.2.3 или новее и нажми «Включить соединение».";
 "The phone rejected Conduit's Bluetooth channel. Open the Android app and enable the connection again." = "Телефон отклонил Bluetooth-канал Conduit. Открой Android-приложение и включи соединение снова.";
 "The phone response does not match the Conduit protocol. Check the Android app version." = "Ответ телефона не соответствует протоколу Conduit. Проверь версию Android-приложения.";
@@ -375,12 +393,14 @@
 "Theme" = "Оформление";
 "This connection attempt has ended. Select Connect to try again." = "Попытка подключения уже закрыта. Нажми «Подключить» снова.";
 "This notification no longer accepts replies" = "Уведомление больше не принимает ответ";
+"This phone is already authorized. Pairing and a new code are not required." = "Телефон уже авторизован. Повторное сопряжение и новый код не нужны.";
 "Transfer between Mac and Android." = "Передача между Mac и Android.";
 "Transfer incomplete" = "Передача не завершена";
 "Transfer incomplete: " = "Передача не завершена: ";
 "Transferring…" = "Передача…";
 "USB requires Android debugging and authorization for this Mac." = "Для USB требуется отладка Android и разрешение доступа для Mac.";
 "Unable to" = "Не удалось";
+"Unable to change launch at login. Check Login Items in macOS settings." = "Не удалось изменить автозапуск. Проверь объекты входа в настройках macOS.";
 "Unable to connect" = "Не удалось подключиться";
 "Unable to connect to Shizuku" = "Не удалось подключить Shizuku";
 "Unable to connect to Shizuku. Copy diagnostics." = "Не удалось подключить Shizuku. Скопируй диагностику.";
@@ -413,10 +433,14 @@
 "Waiting for Mac" = "Ожидание Mac";
 "Waiting for Mac connection" = "Ожидание подключения Mac";
 "Waiting for Mac over Bluetooth" = "Ожидаю Mac по Bluetooth";
+"Waiting for Mac. The connection will resume automatically." = "Ожидание Mac. Подключение восстановится автоматически.";
 "Waiting for connection" = "Ожидание соединения";
 "Waiting for connection to Mac" = "Ожидание соединения с Mac";
+"Waiting for phone" = "Ожидание телефона";
 "Wireless debugging" = "Беспроводная отладка";
 "Writing to Shizuku timed out. Enable automatic sending again; Bluetooth remains connected." = "Запись в Shizuku зависла. Включи автобуфер снова; Bluetooth остаётся активным.";
+"Xiaomi autostart" = "Автозапуск Xiaomi";
+"macOS approval is required for launch at login" = "Требуется разрешение macOS для автозапуска";
 "macOS did not connect to the phone. Reconnect it in Bluetooth settings." = "macOS не установила соединение с телефоном. Повтори подключение в настройках Bluetooth.";
 "macOS did not display the notification. Check app permissions." = "macOS не показала уведомление. Проверь разрешения приложения.";
 "macOS did not provide a Bluetooth adapter to the app." = "macOS не предоставила приложению Bluetooth-адаптер.";
@@ -424,6 +448,7 @@
 "macOS notifications" = "Уведомления macOS";
 "macOS permission required" = "Требуется доступ macOS";
 "macOS returned a different Bluetooth channel. Try connecting again." = "macOS вернула другой Bluetooth-канал. Повтори подключение.";
+"macOS settings" = "Настройки macOS";
 "macOS was unable to connect to the phone over Bluetooth." = "macOS не смогла подключиться к телефону по Bluetooth.";
 "macOS was unable to open the Bluetooth channel. Check system pairing and that Conduit is running on your phone." = "macOS не смогла открыть Bluetooth-канал. Проверь системное сопряжение и запущен ли Conduit на телефоне.";
 "macOS was unable to refresh phone services. Disconnect and reconnect the phone in Bluetooth settings, then try Conduit again." = "macOS не смогла обновить список служб. В настройках Bluetooth отключи телефон и подключи снова, затем повтори попытку в Conduit.";
@@ -441,6 +466,7 @@
 "Автобуфер ожидает подключения Mac" = "Автобуфер ожидает подключения Mac";
 "Автобуфер прервался. Включи его снова или скопируй диагностику." = "Автобуфер прервался. Включи его снова или скопируй диагностику.";
 "Автобуфер через Shizuku подключён" = "Автобуфер через Shizuku подключён";
+"Автозапуск Xiaomi" = "Автозапуск Xiaomi";
 "Автоматическая отправка" = "Автоматическая отправка";
 "Автоматическая отправка отключена" = "Автоматическая отправка отключена";
 "Автоматическое подключение" = "Автоматическое подключение";
@@ -458,8 +484,11 @@
 "В сборке отсутствует Android APK." = "В сборке отсутствует Android APK.";
 "В сборке отсутствует сервер буфера обмена." = "В сборке отсутствует сервер буфера обмена.";
 "Введи адрес сопряжения IP:порт и шестизначный код с телефона." = "Введи адрес сопряжения IP:порт и шестизначный код с телефона.";
+"Включена" = "Включена";
 "Включи Bluetooth на телефоне" = "Включи Bluetooth на телефоне";
+"Включите для Conduit один раз: восстановление после перезагрузки и обновления." = "Включите для Conduit один раз: восстановление после перезагрузки и обновления.";
 "Включить соединение" = "Включить соединение";
+"Восстанавливаю сохранённое соединение…" = "Восстанавливаю сохранённое соединение…";
 "Все" = "Все";
 "Входящие" = "Входящие";
 "Выбери устройство" = "Выбери устройство";
@@ -505,6 +534,7 @@
 "Запрашиваю журнал телефона…" = "Запрашиваю журнал телефона…";
 "Запрос…" = "Запрос…";
 "Запуск соединения…" = "Запуск соединения…";
+"Запускать при входе" = "Запускать при входе";
 "Запускаю Bluetooth-соединение Conduit…" = "Запускаю Bluetooth-соединение Conduit…";
 "Запусти Shizuku и разреши Conduit" = "Запусти Shizuku и разреши Conduit";
 "Запустите Conduit на Android." = "Запустите Conduit на Android.";
@@ -535,6 +565,7 @@
 "Настроить" = "Настроить";
 "Настройки" = "Настройки";
 "Настройки Bluetooth" = "Настройки Bluetooth";
+"Настройки macOS" = "Настройки macOS";
 "Настройки приложения" = "Настройки приложения";
 "Не выбран телефон. Свяжи его с Mac в настройках Bluetooth, нажми «Обновить» и выбери в списке." = "Не выбран телефон. Свяжи его с Mac в настройках Bluetooth, нажми «Обновить» и выбери в списке.";
 "Не завершено системное сопряжение. Свяжи телефон и Mac в настройках Bluetooth." = "Не завершено системное сопряжение. Свяжи телефон и Mac в настройках Bluetooth.";
@@ -548,6 +579,7 @@
 "Не удалось запустить модуль Shizuku" = "Не удалось запустить модуль Shizuku";
 "Не удалось запустить привилегированный буфер" = "Не удалось запустить привилегированный буфер";
 "Не удалось запустить соединение" = "Не удалось запустить соединение";
+"Не удалось изменить автозапуск. Проверь объекты входа в настройках macOS." = "Не удалось изменить автозапуск. Проверь объекты входа в настройках macOS.";
 "Не удалось открыть канал к телефону." = "Не удалось открыть канал к телефону.";
 "Не удалось открыть обнаружение. Если Mac уже сопряжён с телефоном, можно подключаться по коду Conduit." = "Не удалось открыть обнаружение. Если Mac уже сопряжён с телефоном, можно подключаться по коду Conduit.";
 "Не удалось открыть передачу Bluetooth. APK доступен внутри сборки и отдельно в чате." = "Не удалось открыть передачу Bluetooth. APK доступен внутри сборки и отдельно в чате.";
@@ -587,15 +619,19 @@
 "Общий буфер обмена" = "Общий буфер обмена";
 "Ограничена" = "Ограничена";
 "Ожидание Mac" = "Ожидание Mac";
+"Ожидание Mac. Подключение восстановится автоматически." = "Ожидание Mac. Подключение восстановится автоматически.";
 "Ожидание подключения" = "Ожидание подключения";
 "Ожидание подключения Mac" = "Ожидание подключения Mac";
 "Ожидание соединения" = "Ожидание соединения";
 "Ожидание соединения с Mac" = "Ожидание соединения с Mac";
+"Ожидание телефона" = "Ожидание телефона";
 "Ожидаю Mac по Bluetooth" = "Ожидаю Mac по Bluetooth";
 "Ожидаю включения Bluetooth…" = "Ожидаю включения Bluetooth…";
+"Оптимизация батареи" = "Оптимизация батареи";
 "Ответ отправлен" = "Ответ отправлен";
 "Ответ телефона не соответствует протоколу Conduit. Проверь версию Android-приложения." = "Ответ телефона не соответствует протоколу Conduit. Проверь версию Android-приложения.";
 "Ответить" = "Ответить";
+"Отключена" = "Отключена";
 "Отключено" = "Отключено";
 "Отключены" = "Отключены";
 "Отключены в macOS" = "Отключены в macOS";
@@ -657,6 +693,7 @@
 "Подготовка" = "Подготовка";
 "Подключаю автобуфер…" = "Подключаю автобуфер…";
 "Подключение" = "Подключение";
+"Подключение восстановится автоматически, когда телефон будет доступен." = "Подключение восстановится автоматически, когда телефон будет доступен.";
 "Подключение не выполнено" = "Подключение не выполнено";
 "Подключение отменено" = "Подключение отменено";
 "Подключение уже выполняется. Подожди или нажми «Отменить»." = "Подключение уже выполняется. Подожди или нажми «Отменить».";
@@ -669,6 +706,7 @@
 "Подключить Mac" = "Подключить Mac";
 "Подключить компаньон" = "Подключить компаньон";
 "Подключить телефон" = "Подключить телефон";
+"Подключиться" = "Подключиться";
 "Подключён по %@" = "Подключён по %@";
 "Подключён по Bluetooth" = "Подключён по Bluetooth";
 "Подключён через отладку" = "Подключён через отладку";
@@ -734,6 +772,7 @@
 "Соединение остановлено" = "Соединение остановлено";
 "Соединение остановлено. Нажми «Включить» снова." = "Соединение остановлено. Нажми «Включить» снова.";
 "Соединение отключено" = "Соединение отключено";
+"Соединение прервано. Conduit повторит подключение автоматически." = "Соединение прервано. Conduit повторит подключение автоматически.";
 "Соединение с Mac" = "Соединение с Mac";
 "Соединяю Mac с телефоном…" = "Соединяю Mac с телефоном…";
 "Соединяюсь по Bluetooth…" = "Соединяюсь по Bluetooth…";
@@ -767,13 +806,16 @@
 "Телефон отключился" = "Телефон отключился";
 "Телефон открыл Bluetooth-канал, но Conduit не ответил за 10 секунд. Проверь, что на телефоне установлен APK 0.2.3 или новее и включено соединение." = "Телефон открыл Bluetooth-канал, но Conduit не ответил за 10 секунд. Проверь, что на телефоне установлен APK 0.2.3 или новее и включено соединение.";
 "Телефон подключён. Синхронизируются новые копирования текста." = "Телефон подключён. Синхронизируются новые копирования текста.";
+"Телефон пока недоступен. Conduit повторит подключение автоматически." = "Телефон пока недоступен. Conduit повторит подключение автоматически.";
 "Телефон сообщил службу Conduit без канала подключения. Выключи и снова включи соединение в Android-приложении." = "Телефон сообщил службу Conduit без канала подключения. Выключи и снова включи соединение в Android-приложении.";
 "Телефон сопряжён с Mac, но служба Conduit не найдена. На телефоне установи APK 0.2.3 или новее и нажми «Включить Bluetooth-соединение»." = "Телефон сопряжён с Mac, но служба Conduit не найдена. На телефоне установи APK 0.2.3 или новее и нажми «Включить соединение».";
 "Телефон сопряжён с Mac, но служба Conduit не найдена. На телефоне установи APK 0.2.3 или новее и нажми «Включить соединение»." = "Телефон сопряжён с Mac, но служба Conduit не найдена. На телефоне установи APK 0.2.3 или новее и нажми «Включить соединение».";
+"Телефон уже авторизован. Повторное сопряжение и новый код не нужны." = "Телефон уже авторизован. Повторное сопряжение и новый код не нужны.";
 "Требуется для связи с выключенным экраном" = "Требуется для связи с выключенным экраном";
 "Требуется доступ Android" = "Требуется доступ Android";
 "Требуется доступ macOS" = "Требуется доступ macOS";
 "Требуется разрешение Android" = "Требуется разрешение Android";
+"Требуется разрешение macOS для автозапуска" = "Требуется разрешение macOS для автозапуска";
 "Требуется разрешение на Android" = "Требуется разрешение на Android";
 "Требуется соединение с Mac и включённый буфер обмена" = "Требуется соединение с Mac и включённый буфер обмена";
 "Тёмное" = "Тёмное";

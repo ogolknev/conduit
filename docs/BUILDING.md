@@ -38,6 +38,18 @@ The development key is saved as `work/android-build/development.p12`. Keep it pr
 
 ## Mac app
 
+Set up a persistent local development identity once:
+
+```sh
+python3 scripts/setup-mac-signing.py
+```
+
+It stores a private dedicated keychain outside the repository in
+`~/Library/Application Support/Conduit Development/Signing`. Only user code-signing
+trust is configured for this certificate; system and TLS trust are unchanged.
+Back up this private directory securely and reuse it across checkouts and builds.
+Do not regenerate the identity when cleaning build scratch directories.
+
 ```sh
 python3 scripts/build-mac.py \
   --platform-tools /path/to/platform-tools \
@@ -47,7 +59,16 @@ python3 scripts/build-mac.py \
   --output dist/Conduit.app
 ```
 
-The bundle includes ADB, the companion APK and the pinned scrcpy server. The build uses ad hoc signing, without Apple notarization.
+The bundle includes ADB, the companion APK and the pinned scrcpy server. Normal
+builds reuse the persistent identity and verify the resulting signature. A missing
+identity fails the build; there is no silent fallback to ad-hoc signing.
+
+For an existing Apple identity, pass `--signing-identity "Developer ID Application: ..."`
+and optionally `--keychain /path/to/keychain`. The local certificate is for private
+development; public distribution should use Developer ID and Apple notarization.
+`--ad-hoc` is reserved for disposable builds and does not preserve privacy grants
+across updates. A transition from earlier ad-hoc builds may require one authorization
+again; subsequent builds must keep the same designated requirement.
 
 ## Checks
 
@@ -102,3 +123,5 @@ Both builds include the project MIT license and the notices for their bundled de
 ## Release packages
 
 See [RELEASING.md](RELEASING.md) for packaging verified builds, signing continuity and publication.
+
+The installed Mac app exposes `--login-item status` for inspecting its own system login item. `--login-item enable` and `--login-item disable` change that user setting when requested; the same controls are available in the app Settings.

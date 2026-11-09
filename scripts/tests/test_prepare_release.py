@@ -50,7 +50,7 @@ class ReleaseTests(unittest.TestCase):
             release.validate_source_archive(path)
 
     def test_private_or_generated_source_files_are_rejected(self):
-        for name in ['work/development.p12', '.env.local', 'keys/release.keystore', 'device.log', 'app.apk', '.git/config']:
+        for name in ['work/development.p12', '.env.local', 'keys/release.keystore', 'conduit-signing.keychain-db', 'keychain-password', 'device.log', 'app.apk', '.git/config']:
             with self.subTest(name=name), tempfile.TemporaryDirectory() as temporary:
                 path = Path(temporary) / 'source.zip'
                 with zipfile.ZipFile(path, 'w') as archive:

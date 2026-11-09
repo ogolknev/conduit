@@ -20,6 +20,9 @@ local.properties
 *.keystore
 *.key
 *.pem
+*.keychain
+*.keychain-db
+keychain-password
 
 # Device diagnostics and packaged applications
 *.log
