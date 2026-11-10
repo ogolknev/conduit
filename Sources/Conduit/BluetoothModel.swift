@@ -167,10 +167,12 @@ extension ConduitModel {
                     else { pending.continuation.resume(returning: event) }
                     continue
                 }
+                if receiveInbox(event) { continue }
                 switch type {
                 case "ready", "status":
                     notificationAccess = event["notificationAccess"] as? Bool == true
                     notificationListenerConnected = event["notificationListenerConnected"] as? Bool ?? notificationAccess
+                    notificationSession(event)
                     bluetoothClipboardAuto = event["clipboardAuto"] as? Bool == true
                     bluetoothDeviceLocked = event["deviceLocked"] as? Bool == true
                     ConnectionDiagnostics.record("peer.state", "clipboardAuto=\(bluetoothClipboardAuto)")

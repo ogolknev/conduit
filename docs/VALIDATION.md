@@ -1,5 +1,14 @@
 # Validation
 
+## Notification inbox — development builds 19 / 14
+
+- 40 Swift tests include update deduplication, offline dismissal persistence, reused-key protection, phone isolation, snapshot reconciliation and bounded private storage. Native Mac/Android builds pass.
+- On the connected Xiaomi, synthetic shell notifications were received and included in an active snapshot. Updating the same key changed its instance; a stale dismissal preserved the newer notification. Tracked cancellation was acknowledged and the notification disappeared from a subsequent snapshot.
+- The installed Mac received a test notification over Bluetooth and persisted it. The user confirmed that **Dismiss on phone** removed it from Android and moved it to Mac history.
+- A synthetic notification was marked pending in the stopped Mac app’s private store; relaunch restored that intent, reconciled it over Bluetooth and removed the notification on Android. This checks persisted-queue recovery separately from the user-confirmed online UI action.
+- Light English and dark Russian inbox previews use synthetic content. Real third-party reply actions and non-dismissible notifications have not yet been exercised; failure/timeout UI does not claim success without confirmation.
+- No phone screen/power settings were changed for these checks.
+
 ## 0.4.1 — automatic Bluetooth recovery
 
 - Mac build 18 and Android versionCode 13 preserve both app identities, the Android update key and Bluetooth protocol 2. Native release builds and signature/resource checks pass.

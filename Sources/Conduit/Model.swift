@@ -23,6 +23,16 @@ import ConduitCore
     @Published var companionStatus = L("Нужен Android-компаньон")
     @Published var clipboardEnabled = true { didSet { pasteboardChange = NSPasteboard.general.changeCount; if connected { sendBridge(["type":"preferences", "clipboard":clipboardEnabled]) } } }
     @Published var notificationsEnabled = true
+    @Published var inbox = NotificationInbox()
+    @Published var inboxActionResult: String?
+    @Published var inboxReplyRequest: String?
+    var notificationSyncTimeout: Task<Void, Never>?
+    @Published var inboxStorageError = false
+    @Published var notificationSyncError = false
+    @Published var notificationSource: String?
+    @Published var notificationSnapshot: String?
+    var notificationSeen = Set<String>()
+    var notificationSynced = false
     @Published var events: [String] = []
     @Published var wirelessAddress = ""
     @Published var pairingAddress = ""
@@ -98,10 +108,17 @@ import ConduitCore
         adb = ADB.locate().map(ADB.init)
         if adb == nil { status = L("ADB не найден. Используй готовую сборку приложения.") }
         guard startMonitoring else { return }
+        if FileManager.default.fileExists(atPath: Self.inboxURL.path) {
+            do { inbox = try NotificationInbox.load(from: Self.inboxURL) }
+            catch { inboxStorageError = true }
+        }
         ConnectionDiagnostics.record("launch", "version=\(Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String ?? "dev") permission=\(ConnectionDiagnostics.permission.rawValue)")
         AppDelegate.onAction = { [weak self] action in
-            guard let self, self.notificationsEnabled, self.companionReady else { return }
-            self.sendBridge(action)
+            guard let self, self.notificationsEnabled else { return }
+            if let key = action["key"] as? String, let item = self.inbox.items.first(where: { $0.id == key }) {
+                if action["type"] as? String == "dismiss" { self.dismissNotification(item) }
+                else if let text = action["text"] as? String { self.replyToNotification(item, text: text) }
+            } else if self.companionReady && self.notificationSource == nil { self.sendBridge(action) }
         }
         wakeObserver = NSWorkspace.shared.notificationCenter.addObserver(forName: NSWorkspace.didWakeNotification, object: nil, queue: .main) { [weak self] _ in
             Task { @MainActor in
@@ -258,6 +275,9 @@ import ConduitCore
 
     func cleanup() async {
         sessionID = UUID()
+        notificationSyncTimeout?.cancel(); notificationSyncTimeout = nil
+        if inboxReplyRequest != nil { inboxActionResult = L("Телефон не подтвердил отправку ответа") }; inboxReplyRequest = nil
+        notificationSource = nil; notificationSnapshot = nil; notificationSynced = false; notificationSeen = []
         bluetooth?.cancel(); bluetooth = nil; bluetoothClipboardAuto = false; bluetoothDeviceLocked = false
         androidDiagnosticsPending = false; androidDiagnosticsRequest = UUID()
         let replies = bluetoothReplies; bluetoothReplies.removeAll()
@@ -379,10 +399,12 @@ import ConduitCore
                     guard type == "ready", event["protocol"] as? Int == 1 else { bridge?.cancel(); return }
                     bridgeAuthenticated = true; companionReady = true; connectionHeartbeat.reset()
                 }
+                if receiveInbox(event) { continue }
                 switch type {
                 case "ready", "status":
                     notificationAccess = event["notificationAccess"] as? Bool == true
                     notificationListenerConnected = event["notificationListenerConnected"] as? Bool ?? notificationAccess
+                    notificationSession(event)
                     companionStatus = notificationAccess ? L("Уведомления подключены") : L("Разреши доступ к уведомлениям на телефоне")
                 case "pong": connectionHeartbeat.acknowledge(); ConnectionDiagnostics.record("heartbeat.pong")
                 case "notification":

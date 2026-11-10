@@ -47,6 +47,7 @@ final class PhoneDiagnostics {
             case "diagnosticsRequest": case "diagnostics": case "reply": case "dismiss":
             case "fileBegin": case "fileChunk": case "fileEnd": case "fileReady": case "fileAck":
             case "fileDone": case "fileInfo": case "fileData": case "fileReceived": case "fileError":
+            case "notificationSnapshot": case "notificationSnapshotEnd": case "notificationDismiss": case "notificationDismissed":
             case "notification": case "removed": case "status": case "ready": case "result": return type;
             default: return "other";
         }

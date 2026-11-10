@@ -29,6 +29,7 @@ final class LocalizedStrings {
         values.put("Access allowed, service connecting",R.string.text_48b30b989214);
         values.put("Action failed",R.string.text_7530f803ba06);
         values.put("Action failed on the phone",R.string.text_56ccdc91dac2);
+        values.put("Active",R.string.text_eeaeb97638d8);
         values.put("Add Mac",R.string.text_01416c3b4c23);
         values.put("All",R.string.text_215816bf4210);
         values.put("Allow",R.string.text_241ed4211aa1);
@@ -111,6 +112,7 @@ final class LocalizedStrings {
         values.put("Checking…",R.string.text_638f8008a173);
         values.put("Choose a file or photo. Use the shared clipboard for text.",R.string.text_ede1fa1c9eac);
         values.put("Choose files",R.string.text_6c7cbfdf8314);
+        values.put("Clear history",R.string.text_3f70f0ad6764);
         values.put("Clipboard",R.string.text_eb31594ab4f1);
         values.put("Clipboard disabled on Mac",R.string.text_4ea66d5e68bc);
         values.put("Clipboard protocol error",R.string.text_bc7ff8a49616);
@@ -177,6 +179,8 @@ final class LocalizedStrings {
         values.put("Connection stopped. Enable it again.",R.string.text_e37f47d5a319);
         values.put("Copy diagnostics",R.string.text_1fbb2aeab96b);
         values.put("Copy report",R.string.text_8ec2c58498ce);
+        values.put("Could not save notification history.",R.string.text_e071f38945f1);
+        values.put("Could not sync notifications with the phone.",R.string.text_9fd6856339c7);
         values.put("DIAGNOSTICS",R.string.text_ac43855928a2);
         values.put("Dark",R.string.text_6d6124d6f901);
         values.put("Device authorized. No code required.",R.string.text_59049860a8d5);
@@ -190,6 +194,8 @@ final class LocalizedStrings {
         values.put("Disconnect from Mac?",R.string.text_30d1aa011c7a);
         values.put("Disconnect?",R.string.text_0e4ca4310177);
         values.put("Disconnected",R.string.text_3e95800065e0);
+        values.put("Dismiss on phone",R.string.text_d5a2327c574c);
+        values.put("Dismissal failed",R.string.text_cd5353f5ab5e);
         values.put("Downloads / Conduit",R.string.text_eb00033485d3);
         values.put("Drag files here",R.string.text_b6700baed011);
         values.put("Drop files to send",R.string.text_aa9ee2fd001a);
@@ -223,6 +229,7 @@ final class LocalizedStrings {
         values.put("Forwarding disabled",R.string.text_9f6ab293e226);
         values.put("Forwarding paused",R.string.text_83949d46ac2f);
         values.put("Get code",R.string.text_94b683c81cc2);
+        values.put("History",R.string.text_1417b7792d57);
         values.put("INTERFACE",R.string.text_f15fa8c0cf81);
         values.put("IP:порт подключения",R.string.text_c23cbcea5282);
         values.put("IP:порт сопряжения",R.string.text_e9105d394e6f);
@@ -265,6 +272,7 @@ final class LocalizedStrings {
         values.put("No devices",R.string.text_7d64df88cd9c);
         values.put("No entries",R.string.text_5f084638f6f9);
         values.put("No notification access on the phone",R.string.text_d46fbf0026c8);
+        values.put("No notifications",R.string.text_4c687999b888);
         values.put("No phone selected. Pair it in Bluetooth settings, refresh the device list and select it.",R.string.text_243705898d55);
         values.put("Not allowed",R.string.text_8dbb3c380580);
         values.put("Not connected",R.string.text_430dc86b0480);
@@ -278,6 +286,7 @@ final class LocalizedStrings {
         values.put("Notifications connected",R.string.text_9270a25d6486);
         values.put("Notifications connected over Bluetooth",R.string.text_c46a1f190914);
         values.put("OK",R.string.text_e2ce86b38fd5);
+        values.put("Offline. Dismissals will be sent when the phone reconnects.",R.string.text_58ba434a7853);
         values.put("On Android: Conduit → Settings → Notifications.",R.string.text_6da8fed18724);
         values.put("On Android: file → Share → Conduit.",R.string.text_cddf6b9b19af);
         values.put("On Mac: Conduit → Settings → Diagnostics. Logs transfer on connection and every minute. Clipboard content, notifications and codes are excluded.",R.string.text_a54d2b6fab72);
@@ -331,6 +340,7 @@ final class LocalizedStrings {
         values.put("Required to stay connected with the screen off",R.string.text_1817269ef14a);
         values.put("Restoring the saved connection…",R.string.text_8e42bda10c4c);
         values.put("Restricted",R.string.text_532734a818e3);
+        values.put("Retry",R.string.text_5189135a6110);
         values.put("Retry startup",R.string.text_036f0535f16e);
         values.put("SYNC",R.string.text_74c4b0b3e979);
         values.put("Save",R.string.text_b4d30cae5289);
@@ -344,6 +354,7 @@ final class LocalizedStrings {
         values.put("Send files…",R.string.text_4ef7f147bf20);
         values.put("Send from other apps",R.string.text_ef43d97f5a47);
         values.put("Sending file to Mac",R.string.text_5c5d3e0d2fa1);
+        values.put("Sending reply…",R.string.text_1e0820884531);
         values.put("Sending: ",R.string.text_924214abdba7);
         values.put("Sent over Bluetooth: ",R.string.text_dd44d49bf8a6);
         values.put("Service reconnecting",R.string.text_8c425aa43edc);
@@ -367,6 +378,7 @@ final class LocalizedStrings {
         values.put("Starting connection…",R.string.text_a5989ecf5ae7);
         values.put("Storage unavailable",R.string.text_e4a096dfca2f);
         values.put("Sync paused",R.string.text_ef94f28656ff);
+        values.put("Syncing notifications…",R.string.text_18b74715397d);
         values.put("System",R.string.text_0095c5c89be7);
         values.put("System pairing is incomplete. Pair the phone and Mac in Bluetooth settings.",R.string.text_ee6ff47a5c63);
         values.put("Text exceeds 256 KB. Send it as a file.",R.string.text_fbeaab13f3eb);
@@ -381,10 +393,13 @@ final class LocalizedStrings {
         values.put("The connection will resume automatically when the phone is available.",R.string.text_a5609caa5584);
         values.put("The device list has changed. Select the phone again.",R.string.text_70c4df18986d);
         values.put("The first connection requires a Conduit code. Open Conduit on your phone, select Add Mac and enter the eight digits.",R.string.text_6fb83f149190);
+        values.put("The latest 500 notifications are stored only on this Mac.",R.string.text_ef9591e84953);
         values.put("The phone advertised Conduit without a connection channel. Turn the connection off and on in the Android app.",R.string.text_50a3afd79d57);
         values.put("The phone closed the Bluetooth connection. Check that Conduit is running on your phone.",R.string.text_d08cbcab8c00);
         values.put("The phone did not allow updating the clipboard",R.string.text_47e9c232e477);
         values.put("The phone did not confirm Bluetooth authentication.",R.string.text_6c97d6985695);
+        values.put("The phone did not confirm dismissal. You can retry.",R.string.text_a6b8d195dca0);
+        values.put("The phone did not confirm the reply",R.string.text_bd564868080b);
         values.put("The phone did not confirm the transfer. Reconnect and try again.",R.string.text_1dcb99fab437);
         values.put("The phone did not respond in time. Check the connection.",R.string.text_dc2743c9d62c);
         values.put("The phone did not respond over Bluetooth. Unlock it and open Conduit.",R.string.text_afbb46787570);
@@ -400,6 +415,7 @@ final class LocalizedStrings {
         values.put("The selected phone is no longer listed. Refresh the list and select it again.",R.string.text_0e49e06a1cb8);
         values.put("Theme",R.string.text_1731619efa3a);
         values.put("This connection attempt has ended. Select Connect to try again.",R.string.text_fbd56c31549d);
+        values.put("This notification cannot be dismissed",R.string.text_696d6f43c7ca);
         values.put("This notification no longer accepts replies",R.string.text_8ab06b701146);
         values.put("This phone is already authorized. Pairing and a new code are not required.",R.string.text_03f56197e2ec);
         values.put("Transfer between Mac and Android.",R.string.text_0a13941904ef);
@@ -435,6 +451,7 @@ final class LocalizedStrings {
         values.put("Unknown cause. Copy the diagnostics.",R.string.text_72790e2cc507);
         values.put("Unknown status",R.string.text_65e3ead9dd55);
         values.put("Up to 100 MB per file over Bluetooth",R.string.text_31a6b255df96);
+        values.put("Update Conduit on your phone to sync notifications.",R.string.text_8adb4f895add);
         values.put("Verifying secure connection…",R.string.text_ec9992ea643b);
         values.put("Verifying the Conduit code on the phone…",R.string.text_44acc39debcf);
         values.put("Waiting for Bluetooth to turn on…",R.string.text_11c2f01814fc);
@@ -444,6 +461,7 @@ final class LocalizedStrings {
         values.put("Waiting for Mac. The connection will resume automatically.",R.string.text_731b91e9e1c2);
         values.put("Waiting for connection",R.string.text_00c737b5cfb6);
         values.put("Waiting for connection to Mac",R.string.text_560cde5daa8a);
+        values.put("Waiting for dismissal on the phone",R.string.text_13d81f23aa5a);
         values.put("Waiting for phone",R.string.text_d1712b4dd725);
         values.put("Wireless debugging",R.string.text_d1509c91af8b);
         values.put("Writing to Shizuku timed out. Enable automatic sending again; Bluetooth remains connected.",R.string.text_c09d5f06f23b);
@@ -479,6 +497,7 @@ final class LocalizedStrings {
         values.put("Автоматическая отправка отключена",R.string.text_a037029b35f9);
         values.put("Автоматическое подключение",R.string.text_e04efa0af329);
         values.put("Автоперенос журнала",R.string.text_8f5562de7199);
+        values.put("Активные",R.string.text_eeaeb97638d8);
         values.put("Аутентификация Bluetooth-соединения не прошла. Повтори системное сопряжение телефона и Mac.",R.string.text_f0d79d39175c);
         values.put("БУФЕР ОБМЕНА",R.string.text_e8238affa867);
         values.put("Баннеры отключены в macOS",R.string.text_07e39f70682f);
@@ -548,6 +567,7 @@ final class LocalizedStrings {
         values.put("Запустите Conduit на Android.",R.string.text_44eade8ef26d);
         values.put("ИНТЕРФЕЙС",R.string.text_f15fa8c0cf81);
         values.put("Исключения: ",R.string.text_63384f1ed0fb);
+        values.put("История",R.string.text_1417b7792d57);
         values.put("Ищу Conduit на телефоне…",R.string.text_687f778b55b3);
         values.put("Канал закрыт",R.string.text_5a4076db3446);
         values.put("Канал отключён",R.string.text_3aa1ddc5592b);
@@ -602,10 +622,13 @@ final class LocalizedStrings {
         values.put("Не удалось получить файл: ",R.string.text_70eb9110cc79);
         values.put("Не удалось прочитать буфер",R.string.text_d5a294e03df3);
         values.put("Не удалось прочитать текущий буфер",R.string.text_f160bb9d1be0);
+        values.put("Не удалось сверить уведомления с телефоном.",R.string.text_9fd6856339c7);
         values.put("Не удалось сохранить журнал телефона",R.string.text_81e0fef3a8fd);
+        values.put("Не удалось сохранить историю уведомлений.",R.string.text_e071f38945f1);
         values.put("Не удалось сохранить связь в Связке ключей.",R.string.text_ef2b80cc9db8);
         values.put("Не удалось сохранить файл",R.string.text_63aa3452a482);
         values.put("Не удалось сохранить файл в Загрузки",R.string.text_8b124efa1f1d);
+        values.put("Не удалось удалить",R.string.text_cd5353f5ab5e);
         values.put("Неверные сведения о файле",R.string.text_a77331a855e9);
         values.put("Неверный идентификатор файла",R.string.text_005d53c68124);
         values.put("Неверный порядок частей файла",R.string.text_6c4ee69d7dd5);
@@ -617,15 +640,19 @@ final class LocalizedStrings {
         values.put("Нет соединения с Android",R.string.text_d2b7e4638375);
         values.put("Нет соединения с Mac",R.string.text_2a7d938e40cd);
         values.put("Нет соединения с телефоном",R.string.text_a6a75f0044c0);
+        values.put("Нет соединения. Удаление будет выполнено после подключения телефона.",R.string.text_58ba434a7853);
+        values.put("Нет уведомлений",R.string.text_4c687999b888);
         values.put("Нет устройств",R.string.text_7d64df88cd9c);
         values.put("Новый код",R.string.text_1a0517bfd5dc);
         values.put("Нужен Android-компаньон",R.string.text_3f512772c010);
         values.put("Нужен адрес IP:порт с экрана беспроводной отладки.",R.string.text_9d48bc982ea6);
         values.put("О Shizuku",R.string.text_e084f62b23e6);
+        values.put("Обновите Conduit на телефоне для синхронизации уведомлений.",R.string.text_8adb4f895add);
         values.put("Обновить",R.string.text_603e460bf59c);
         values.put("Обновить список устройств",R.string.text_b211fb82e475);
         values.put("Общий буфер обмена",R.string.text_f86578e08989);
         values.put("Ограничена",R.string.text_532734a818e3);
+        values.put("Ожидает удаления на телефоне",R.string.text_13d81f23aa5a);
         values.put("Ожидание Mac",R.string.text_cb3c99d2a4b0);
         values.put("Ожидание Mac. Подключение восстановится автоматически.",R.string.text_731b91e9e1c2);
         values.put("Ожидание подключения",R.string.text_36bd5cd80a7a);
@@ -665,10 +692,12 @@ final class LocalizedStrings {
         values.put("Отправить файлы",R.string.text_9bd66778766e);
         values.put("Отправить файлы…",R.string.text_4ef7f147bf20);
         values.put("Отправка из приложений",R.string.text_ef43d97f5a47);
+        values.put("Отправка ответа…",R.string.text_1e0820884531);
         values.put("Отправка приостановлена",R.string.text_83949d46ac2f);
         values.put("Отправлен по Bluetooth: ",R.string.text_dd44d49bf8a6);
         values.put("Отпустите файлы для отправки",R.string.text_aa9ee2fd001a);
         values.put("Оформление",R.string.text_1731619efa3a);
+        values.put("Очистить историю",R.string.text_3f70f0ad6764);
         values.put("Ошибка Bluetooth-канала",R.string.text_f3430261dd61);
         values.put("Ошибка канала уведомлений",R.string.text_dc6c26cfea6f);
         values.put("Ошибка отправки по Bluetooth",R.string.text_328999bf653e);
@@ -696,6 +725,7 @@ final class LocalizedStrings {
         values.put("По Bluetooth поддерживаются файлы до 100 МБ. Папку можно отправить ZIP.",R.string.text_788338515860);
         values.put("По Bluetooth — до 100 МБ на файл. Очередь — до 32 файлов, суммарно 1 ГБ.",R.string.text_91200d89b767);
         values.put("По Bluetooth — файлы до 100 МБ",R.string.text_1f70012d6dfb);
+        values.put("Повторить",R.string.text_5189135a6110);
         values.put("Повторить запуск",R.string.text_036f0535f16e);
         values.put("Подготавливаю Bluetooth…",R.string.text_a96820a1df2f);
         values.put("Подготовка",R.string.text_5ea5c68f20d4);
@@ -727,6 +757,7 @@ final class LocalizedStrings {
         values.put("Попытка подключения уже закрыта. Нажми «Подключить» снова.",R.string.text_fbd56c31549d);
         values.put("Порты сопряжения и подключения разные.",R.string.text_144c01bb1551);
         values.put("После подключения и раз в минуту. Без содержимого буфера и уведомлений.",R.string.text_7297bbb97914);
+        values.put("Последние 500 уведомлений хранятся только на этом Mac.",R.string.text_ef9591e84953);
         values.put("Последние события",R.string.text_18e1009d6ab9);
         values.put("Приложения",R.string.text_39c4b42c8d11);
         values.put("Причина неизвестна. Скопируй диагностику.",R.string.text_72790e2cc507);
@@ -765,6 +796,7 @@ final class LocalizedStrings {
         values.put("Сервис буфера не запустился. Разблокируй телефон и проверь разрешение отладки.",R.string.text_9394dac608e6);
         values.put("Синхронизация Conduit с подключённым телефоном",R.string.text_747b711185e9);
         values.put("Синхронизация приостановлена",R.string.text_ef94f28656ff);
+        values.put("Синхронизация уведомлений…",R.string.text_18b74715397d);
         values.put("Системное",R.string.text_0095c5c89be7);
         values.put("Системный",R.string.text_bb86915009ae);
         values.put("Скопировать диагностику",R.string.text_1fbb2aeab96b);
@@ -808,7 +840,9 @@ final class LocalizedStrings {
         values.put("Телефон не ответил. Для журнала нужен APK 0.2.6 или новее.",R.string.text_e795857a111d);
         values.put("Телефон не подключён",R.string.text_404e6a8517e1);
         values.put("Телефон не подтвердил аутентификацию Bluetooth-соединения.",R.string.text_6c97d6985695);
+        values.put("Телефон не подтвердил отправку ответа",R.string.text_bd564868080b);
         values.put("Телефон не подтвердил передачу. Подключись и повтори.",R.string.text_1dcb99fab437);
+        values.put("Телефон не подтвердил удаление. Можно повторить.",R.string.text_a6b8d195dca0);
         values.put("Телефон не разрешил обновить буфер",R.string.text_47e9c232e477);
         values.put("Телефон отклонил Bluetooth-канал Conduit. Открой Android-приложение и включи соединение снова.",R.string.text_ce3bafa8b16c);
         values.put("Телефон отключился",R.string.text_f0be19dc0132);
@@ -836,6 +870,7 @@ final class LocalizedStrings {
         values.put("Уведомления подключены",R.string.text_9270a25d6486);
         values.put("Уведомления подключены по Bluetooth",R.string.text_c46a1f190914);
         values.put("Уведомления телефона",R.string.text_3db0f9ab384a);
+        values.put("Удалить с телефона",R.string.text_d5a2327c574c);
         values.put("Устанавливаю приложение на телефон…",R.string.text_665711af91bb);
         values.put("Установить на телефон",R.string.text_faebc0d520e9);
         values.put("Устройства",R.string.text_2e29ee032cc0);
@@ -851,6 +886,7 @@ final class LocalizedStrings {
         values.put("Хранилище недоступно",R.string.text_e4a096dfca2f);
         values.put("Часть файла слишком велика",R.string.text_516fc1b05bce);
         values.put("Чтение уведомлений",R.string.text_0d8526586665);
+        values.put("Это уведомление нельзя удалить",R.string.text_696d6f43c7ca);
         values.put("ЯЗЫК",R.string.text_5748a3bd9cb3);
         values.put("Язык",R.string.text_5bd57038dbad);
         IDS=Collections.unmodifiableMap(values);

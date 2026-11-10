@@ -13,6 +13,7 @@ import android.util.Base64;
 import android.util.LruCache;
 import java.io.ByteArrayOutputStream;
 import java.util.*;
+import org.json.JSONObject;
 
 public final class PhoneNotifications extends NotificationListenerService {
     private static volatile PhoneNotifications instance;
@@ -57,7 +58,8 @@ public final class PhoneNotifications extends NotificationListenerService {
     @Override public void onNotificationPosted(StatusBarNotification sbn) {
         try { forward(sbn); } catch (RuntimeException ignored) { /* Malformed app extras must not kill the listener. */ }
     }
-    private void forward(StatusBarNotification sbn) {
+    private void forward(StatusBarNotification sbn) { forward(sbn, BridgeService.client, null); }
+    private void forward(StatusBarNotification sbn, BridgeService.Endpoint target, String snapshot) {
         if (sbn == null || sbn.getPackageName().equals(getPackageName())) return;
         SharedPreferences prefs = getSharedPreferences("settings", MODE_PRIVATE);
         if (!prefs.getBoolean("forward", true) || prefs.getStringSet("blocked", Collections.emptySet()).contains(sbn.getPackageName())) return;
@@ -72,7 +74,7 @@ public final class PhoneNotifications extends NotificationListenerService {
         String app = sbn.getPackageName();
         try { app = getPackageManager().getApplicationLabel(getPackageManager().getApplicationInfo(app, 0)).toString(); } catch (Exception ignored) {}
         if (title.isEmpty() && body.isEmpty()) return;
-        BridgeService.emit(BridgeService.object("type", "notification", "key", sbn.getKey(), "package", sbn.getPackageName(),
+        BridgeService.emitTo(target, BridgeService.object("type", "notification", "instance", Long.toString(sbn.getPostTime()), "dismissible", sbn.isClearable(), "snapshot", snapshot, "key", sbn.getKey(), "package", sbn.getPackageName(),
             "app", clipped(app, 128), "title", title, "body", body, "replyable", replyAction(n) != null, "iconPNG", applicationIcon(sbn.getPackageName())));
     }
     private String applicationIcon(String pkg) {
@@ -89,7 +91,7 @@ public final class PhoneNotifications extends NotificationListenerService {
         finally { if(bitmap!=null) bitmap.recycle(); }
     }
     @Override public void onNotificationRemoved(StatusBarNotification sbn) {
-        if (sbn != null) BridgeService.emit(BridgeService.object("type", "removed", "key", sbn.getKey()));
+        if (sbn != null) BridgeService.emit(BridgeService.object("type", "removed", "key", sbn.getKey(), "instance", Long.toString(sbn.getPostTime())));
     }
     private static String clipped(CharSequence value, int size) {
         if (value == null) return "";
@@ -105,14 +107,15 @@ public final class PhoneNotifications extends NotificationListenerService {
         }
         return null;
     }
-    static void reply(String key, String text) {
+    static void reply(String key, String text, String version, BridgeService.Endpoint target, String request) {
         PhoneNotifications service = instance;
-        if (service == null) { BridgeService.result(false, t("Нет доступа к уведомлениям на телефоне")); return; }
+        if (service == null) { replyResult(target, request, false, t("Нет доступа к уведомлениям на телефоне")); return; }
         if (text.isEmpty() || text.length() > 4096) return;
         new Handler(Looper.getMainLooper()).post(() -> {
             try {
+                if (BridgeService.client != target) return;
                 StatusBarNotification[] notifications = service.getActiveNotifications(new String[] { key });
-                if (notifications == null || notifications.length == 0) throw new IllegalStateException();
+                if (notifications == null || notifications.length == 0 || (!version.isEmpty() && !Long.toString(notifications[0].getPostTime()).equals(version))) throw new IllegalStateException();
                 String pkg = notifications[0].getPackageName();
                 SharedPreferences prefs = service.getSharedPreferences("settings", MODE_PRIVATE);
                 if (!prefs.getBoolean("forward", true) || prefs.getStringSet("blocked", Collections.emptySet()).contains(pkg)) throw new IllegalStateException();
@@ -123,9 +126,67 @@ public final class PhoneNotifications extends NotificationListenerService {
                 Intent fill = new Intent();
                 RemoteInput.addResultsToIntent(action.getRemoteInputs(), fill, values);
                 action.actionIntent.send(service, 0, fill);
-                BridgeService.result(true, t("Ответ отправлен"));
-            } catch (Exception e) { BridgeService.result(false, t("Уведомление больше не принимает ответ")); }
+                replyResult(target, request, true, t("Ответ отправлен"));
+            } catch (Exception e) { replyResult(target, request, false, t("Уведомление больше не принимает ответ")); }
         });
+    }
+    private static void replyResult(BridgeService.Endpoint target, String request, boolean ok, String message) {
+        BridgeService.emitTo(target, BridgeService.object("type", request.isEmpty() ? "result" : "notificationReplyResult", "request", request, "ok", ok, "message", message));
+    }
+    static synchronized String source(Context context) {
+        SharedPreferences prefs = context.getSharedPreferences("settings", MODE_PRIVATE);
+        String id = prefs.getString("notificationSource", null);
+        if (id == null) { id = UUID.randomUUID().toString(); prefs.edit().putString("notificationSource", id).commit(); }
+        return id;
+    }
+    static void snapshot(BridgeService.Endpoint target, String request) {
+        if (request.length() > 64) return;
+        new Handler(Looper.getMainLooper()).post(() -> {
+            if (BridgeService.client != target) return;
+            PhoneNotifications service = instance;
+            boolean ok = false;
+            try {
+                if (service != null) {
+                    StatusBarNotification[] active = service.getActiveNotifications();
+                    if (active != null && active.length <= 500) {
+                        for (StatusBarNotification item : active) service.forward(item, target, request);
+                        ok = true;
+                    }
+                }
+            } catch (RuntimeException ignored) {}
+            BridgeService.emitTo(target, BridgeService.object("type", "notificationSnapshotEnd", "request", request, "ok", ok));
+        });
+    }
+    static void dismissTracked(BridgeService.Endpoint target, String key, String version) {
+        if (key.length() > 2048 || version.length() > 64) return;
+        new Handler(Looper.getMainLooper()).post(() -> {
+            if (BridgeService.client != target) return;
+            PhoneNotifications service = instance;
+            try {
+                if (service == null) throw new IllegalStateException();
+                StatusBarNotification[] active = service.getActiveNotifications(new String[] {key});
+                if (active == null) throw new IllegalStateException();
+                if (active.length == 0 || !Long.toString(active[0].getPostTime()).equals(version)) {
+                    dismissResult(target, key, version, true); return;
+                }
+                SharedPreferences prefs = service.getSharedPreferences("settings", MODE_PRIVATE);
+                if (!active[0].isClearable() || !prefs.getBoolean("forward", true) || prefs.getStringSet("blocked", Collections.emptySet()).contains(active[0].getPackageName())) throw new IllegalStateException();
+                service.cancelNotification(key);
+                new Handler(Looper.getMainLooper()).postDelayed(() -> {
+                    if (BridgeService.client != target) return;
+                    boolean removed = false;
+                    try {
+                        if (instance != service) throw new IllegalStateException();
+                        StatusBarNotification[] remaining = service.getActiveNotifications(new String[] {key});
+                        removed = remaining != null && (remaining.length == 0 || !Long.toString(remaining[0].getPostTime()).equals(version));
+                    } catch (RuntimeException ignored) {}
+                    dismissResult(target, key, version, removed);
+                }, 1000);
+            } catch (RuntimeException failure) { dismissResult(target, key, version, false); }
+        });
+    }
+    private static void dismissResult(BridgeService.Endpoint target, String key, String version, boolean ok) {
+        BridgeService.emitTo(target, BridgeService.object("type", "notificationDismissed", "key", key, "instance", version, "ok", ok));
     }
     static void dismiss(String key) {
         PhoneNotifications service = instance;

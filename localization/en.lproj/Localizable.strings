@@ -21,6 +21,7 @@
 "Access allowed, service connecting" = "Access allowed, service connecting";
 "Action failed" = "Action failed";
 "Action failed on the phone" = "Action failed on the phone";
+"Active" = "Active";
 "Add Mac" = "Add Mac";
 "All" = "All";
 "Allow" = "Allow";
@@ -103,6 +104,7 @@
 "Checking…" = "Checking…";
 "Choose a file or photo. Use the shared clipboard for text." = "Choose a file or photo. Use the shared clipboard for text.";
 "Choose files" = "Choose files";
+"Clear history" = "Clear history";
 "Clipboard" = "Clipboard";
 "Clipboard disabled on Mac" = "Clipboard disabled on Mac";
 "Clipboard protocol error" = "Clipboard protocol error";
@@ -169,6 +171,8 @@
 "Connection stopped. Enable it again." = "Connection stopped. Enable it again.";
 "Copy diagnostics" = "Copy diagnostics";
 "Copy report" = "Copy report";
+"Could not save notification history." = "Could not save notification history.";
+"Could not sync notifications with the phone." = "Could not sync notifications with the phone.";
 "DIAGNOSTICS" = "DIAGNOSTICS";
 "Dark" = "Dark";
 "Device authorized. No code required." = "Device authorized. No code required.";
@@ -182,6 +186,8 @@
 "Disconnect from Mac?" = "Disconnect from Mac?";
 "Disconnect?" = "Disconnect?";
 "Disconnected" = "Disconnected";
+"Dismiss on phone" = "Dismiss on phone";
+"Dismissal failed" = "Dismissal failed";
 "Downloads / Conduit" = "Downloads / Conduit";
 "Drag files here" = "Drag files here";
 "Drop files to send" = "Drop files to send";
@@ -215,6 +221,7 @@
 "Forwarding disabled" = "Forwarding disabled";
 "Forwarding paused" = "Forwarding paused";
 "Get code" = "Get code";
+"History" = "History";
 "INTERFACE" = "INTERFACE";
 "IP:порт подключения" = "Connection IP:port";
 "IP:порт сопряжения" = "Pairing IP:port";
@@ -257,6 +264,7 @@
 "No devices" = "No devices";
 "No entries" = "No entries";
 "No notification access on the phone" = "No notification access on the phone";
+"No notifications" = "No notifications";
 "No phone selected. Pair it in Bluetooth settings, refresh the device list and select it." = "No phone selected. Pair it in Bluetooth settings, refresh the device list and select it.";
 "Not allowed" = "Not allowed";
 "Not connected" = "Not connected";
@@ -270,6 +278,7 @@
 "Notifications connected" = "Notifications connected";
 "Notifications connected over Bluetooth" = "Notifications connected over Bluetooth";
 "OK" = "OK";
+"Offline. Dismissals will be sent when the phone reconnects." = "Offline. Dismissals will be sent when the phone reconnects.";
 "On Android: Conduit → Settings → Notifications." = "On Android: Conduit → Settings → Notifications.";
 "On Android: file → Share → Conduit." = "On Android: file → Share → Conduit.";
 "On Mac: Conduit → Settings → Diagnostics. Logs transfer on connection and every minute. Clipboard content, notifications and codes are excluded." = "On Mac: Conduit → Settings → Diagnostics. Logs transfer on connection and every minute. Clipboard content, notifications and codes are excluded.";
@@ -323,6 +332,7 @@
 "Required to stay connected with the screen off" = "Required to stay connected with the screen off";
 "Restoring the saved connection…" = "Restoring the saved connection…";
 "Restricted" = "Restricted";
+"Retry" = "Retry";
 "Retry startup" = "Retry startup";
 "SYNC" = "SYNC";
 "Save" = "Save";
@@ -336,6 +346,7 @@
 "Send files…" = "Send files…";
 "Send from other apps" = "Send from other apps";
 "Sending file to Mac" = "Sending file to Mac";
+"Sending reply…" = "Sending reply…";
 "Sending: " = "Sending: ";
 "Sent over Bluetooth: " = "Sent over Bluetooth: ";
 "Service reconnecting" = "Service reconnecting";
@@ -359,6 +370,7 @@
 "Starting connection…" = "Starting connection…";
 "Storage unavailable" = "Storage unavailable";
 "Sync paused" = "Sync paused";
+"Syncing notifications…" = "Syncing notifications…";
 "System" = "System";
 "System pairing is incomplete. Pair the phone and Mac in Bluetooth settings." = "System pairing is incomplete. Pair the phone and Mac in Bluetooth settings.";
 "Text exceeds 256 KB. Send it as a file." = "Text exceeds 256 KB. Send it as a file.";
@@ -373,10 +385,13 @@
 "The connection will resume automatically when the phone is available." = "The connection will resume automatically when the phone is available.";
 "The device list has changed. Select the phone again." = "The device list has changed. Select the phone again.";
 "The first connection requires a Conduit code. Open Conduit on your phone, select Add Mac and enter the eight digits." = "The first connection requires a Conduit code. Open Conduit on your phone, select Add Mac and enter the eight digits.";
+"The latest 500 notifications are stored only on this Mac." = "The latest 500 notifications are stored only on this Mac.";
 "The phone advertised Conduit without a connection channel. Turn the connection off and on in the Android app." = "The phone advertised Conduit without a connection channel. Turn the connection off and on in the Android app.";
 "The phone closed the Bluetooth connection. Check that Conduit is running on your phone." = "The phone closed the Bluetooth connection. Check that Conduit is running on your phone.";
 "The phone did not allow updating the clipboard" = "The phone did not allow updating the clipboard";
 "The phone did not confirm Bluetooth authentication." = "The phone did not confirm Bluetooth authentication.";
+"The phone did not confirm dismissal. You can retry." = "The phone did not confirm dismissal. You can retry.";
+"The phone did not confirm the reply" = "The phone did not confirm the reply";
 "The phone did not confirm the transfer. Reconnect and try again." = "The phone did not confirm the transfer. Reconnect and try again.";
 "The phone did not respond in time. Check the connection." = "The phone did not respond in time. Check the connection.";
 "The phone did not respond over Bluetooth. Unlock it and open Conduit." = "The phone did not respond over Bluetooth. Unlock it and open Conduit.";
@@ -392,6 +407,7 @@
 "The selected phone is no longer listed. Refresh the list and select it again." = "The selected phone is no longer listed. Refresh the list and select it again.";
 "Theme" = "Theme";
 "This connection attempt has ended. Select Connect to try again." = "This connection attempt has ended. Select Connect to try again.";
+"This notification cannot be dismissed" = "This notification cannot be dismissed";
 "This notification no longer accepts replies" = "This notification no longer accepts replies";
 "This phone is already authorized. Pairing and a new code are not required." = "This phone is already authorized. Pairing and a new code are not required.";
 "Transfer between Mac and Android." = "Transfer between Mac and Android.";
@@ -427,6 +443,7 @@
 "Unknown cause. Copy the diagnostics." = "Unknown cause. Copy the diagnostics.";
 "Unknown status" = "Unknown status";
 "Up to 100 MB per file over Bluetooth" = "Up to 100 MB per file over Bluetooth";
+"Update Conduit on your phone to sync notifications." = "Update Conduit on your phone to sync notifications.";
 "Verifying secure connection…" = "Verifying secure connection…";
 "Verifying the Conduit code on the phone…" = "Verifying the Conduit code on the phone…";
 "Waiting for Bluetooth to turn on…" = "Waiting for Bluetooth to turn on…";
@@ -436,6 +453,7 @@
 "Waiting for Mac. The connection will resume automatically." = "Waiting for Mac. The connection will resume automatically.";
 "Waiting for connection" = "Waiting for connection";
 "Waiting for connection to Mac" = "Waiting for connection to Mac";
+"Waiting for dismissal on the phone" = "Waiting for dismissal on the phone";
 "Waiting for phone" = "Waiting for phone";
 "Wireless debugging" = "Wireless debugging";
 "Writing to Shizuku timed out. Enable automatic sending again; Bluetooth remains connected." = "Writing to Shizuku timed out. Enable automatic sending again; Bluetooth remains connected.";
@@ -471,6 +489,7 @@
 "Автоматическая отправка отключена" = "Automatic sending disabled";
 "Автоматическое подключение" = "Automatic connection";
 "Автоперенос журнала" = "Automatic log transfer";
+"Активные" = "Active";
 "Аутентификация Bluetooth-соединения не прошла. Повтори системное сопряжение телефона и Mac." = "Bluetooth authentication failed. Pair the phone and Mac again in system settings.";
 "БУФЕР ОБМЕНА" = "CLIPBOARD";
 "Баннеры отключены в macOS" = "Banners disabled in macOS";
@@ -540,6 +559,7 @@
 "Запустите Conduit на Android." = "Open Conduit on Android.";
 "ИНТЕРФЕЙС" = "INTERFACE";
 "Исключения: " = "Excluded: ";
+"История" = "History";
 "Ищу Conduit на телефоне…" = "Looking for Conduit on the phone…";
 "Канал закрыт" = "Channel closed";
 "Канал отключён" = "Channel disabled";
@@ -594,10 +614,13 @@
 "Не удалось получить файл: " = "Unable to receive file: ";
 "Не удалось прочитать буфер" = "Unable to read clipboard";
 "Не удалось прочитать текущий буфер" = "Unable to read the current clipboard";
+"Не удалось сверить уведомления с телефоном." = "Could not sync notifications with the phone.";
 "Не удалось сохранить журнал телефона" = "Unable to save the phone log";
+"Не удалось сохранить историю уведомлений." = "Could not save notification history.";
 "Не удалось сохранить связь в Связке ключей." = "Unable to save the connection in Keychain.";
 "Не удалось сохранить файл" = "Unable to save file";
 "Не удалось сохранить файл в Загрузки" = "Unable to save the file to Downloads";
+"Не удалось удалить" = "Dismissal failed";
 "Неверные сведения о файле" = "Invalid file metadata";
 "Неверный идентификатор файла" = "Invalid file identifier";
 "Неверный порядок частей файла" = "Invalid file chunk order";
@@ -609,15 +632,19 @@
 "Нет соединения с Android" = "No connection to Android";
 "Нет соединения с Mac" = "No connection to Mac";
 "Нет соединения с телефоном" = "No connection to the phone";
+"Нет соединения. Удаление будет выполнено после подключения телефона." = "Offline. Dismissals will be sent when the phone reconnects.";
+"Нет уведомлений" = "No notifications";
 "Нет устройств" = "No devices";
 "Новый код" = "New code";
 "Нужен Android-компаньон" = "Android companion required";
 "Нужен адрес IP:порт с экрана беспроводной отладки." = "Enter the IP:port from the wireless debugging screen.";
 "О Shizuku" = "About Shizuku";
+"Обновите Conduit на телефоне для синхронизации уведомлений." = "Update Conduit on your phone to sync notifications.";
 "Обновить" = "Refresh";
 "Обновить список устройств" = "Refresh device list";
 "Общий буфер обмена" = "Shared clipboard";
 "Ограничена" = "Restricted";
+"Ожидает удаления на телефоне" = "Waiting for dismissal on the phone";
 "Ожидание Mac" = "Waiting for Mac";
 "Ожидание Mac. Подключение восстановится автоматически." = "Waiting for Mac. The connection will resume automatically.";
 "Ожидание подключения" = "Waiting for connection";
@@ -657,10 +684,12 @@
 "Отправить файлы" = "Send files";
 "Отправить файлы…" = "Send files…";
 "Отправка из приложений" = "Send from other apps";
+"Отправка ответа…" = "Sending reply…";
 "Отправка приостановлена" = "Forwarding paused";
 "Отправлен по Bluetooth: " = "Sent over Bluetooth: ";
 "Отпустите файлы для отправки" = "Drop files to send";
 "Оформление" = "Theme";
+"Очистить историю" = "Clear history";
 "Ошибка Bluetooth-канала" = "Bluetooth channel error";
 "Ошибка канала уведомлений" = "Notification channel error";
 "Ошибка отправки по Bluetooth" = "Bluetooth send error";
@@ -688,6 +717,7 @@
 "По Bluetooth поддерживаются файлы до 100 МБ. Папку можно отправить ZIP." = "Bluetooth supports files up to 100 MB. Send folders as ZIP archives.";
 "По Bluetooth — до 100 МБ на файл. Очередь — до 32 файлов, суммарно 1 ГБ." = "Bluetooth: up to 100 MB per file. Queue: up to 32 files, 1 GB total.";
 "По Bluetooth — файлы до 100 МБ" = "Bluetooth file limit: 100 MB";
+"Повторить" = "Retry";
 "Повторить запуск" = "Retry startup";
 "Подготавливаю Bluetooth…" = "Preparing Bluetooth…";
 "Подготовка" = "Preparing";
@@ -719,6 +749,7 @@
 "Попытка подключения уже закрыта. Нажми «Подключить» снова." = "This connection attempt has ended. Select Connect to try again.";
 "Порты сопряжения и подключения разные." = "Pairing and connection use different ports.";
 "После подключения и раз в минуту. Без содержимого буфера и уведомлений." = "On connection and every minute. Clipboard and notification content is excluded.";
+"Последние 500 уведомлений хранятся только на этом Mac." = "The latest 500 notifications are stored only on this Mac.";
 "Последние события" = "Recent activity";
 "Приложения" = "Apps";
 "Причина неизвестна. Скопируй диагностику." = "Unknown cause. Copy the diagnostics.";
@@ -757,6 +788,7 @@
 "Сервис буфера не запустился. Разблокируй телефон и проверь разрешение отладки." = "Clipboard service did not start. Unlock the phone and check debugging authorization.";
 "Синхронизация Conduit с подключённым телефоном" = "Conduit sync with the connected phone";
 "Синхронизация приостановлена" = "Sync paused";
+"Синхронизация уведомлений…" = "Syncing notifications…";
 "Системное" = "System";
 "Системный" = "System";
 "Скопировать диагностику" = "Copy diagnostics";
@@ -800,7 +832,9 @@
 "Телефон не ответил. Для журнала нужен APK 0.2.6 или новее." = "The phone did not respond. Update the Android companion to retrieve its log.";
 "Телефон не подключён" = "Phone not connected";
 "Телефон не подтвердил аутентификацию Bluetooth-соединения." = "The phone did not confirm Bluetooth authentication.";
+"Телефон не подтвердил отправку ответа" = "The phone did not confirm the reply";
 "Телефон не подтвердил передачу. Подключись и повтори." = "The phone did not confirm the transfer. Reconnect and try again.";
+"Телефон не подтвердил удаление. Можно повторить." = "The phone did not confirm dismissal. You can retry.";
 "Телефон не разрешил обновить буфер" = "The phone did not allow updating the clipboard";
 "Телефон отклонил Bluetooth-канал Conduit. Открой Android-приложение и включи соединение снова." = "The phone rejected Conduit's Bluetooth channel. Open the Android app and enable the connection again.";
 "Телефон отключился" = "Phone disconnected";
@@ -828,6 +862,7 @@
 "Уведомления подключены" = "Notifications connected";
 "Уведомления подключены по Bluetooth" = "Notifications connected over Bluetooth";
 "Уведомления телефона" = "Phone notifications";
+"Удалить с телефона" = "Dismiss on phone";
 "Устанавливаю приложение на телефон…" = "Installing the Android app…";
 "Установить на телефон" = "Install on phone";
 "Устройства" = "Devices";
@@ -843,5 +878,6 @@
 "Хранилище недоступно" = "Storage unavailable";
 "Часть файла слишком велика" = "File chunk too large";
 "Чтение уведомлений" = "Notification access";
+"Это уведомление нельзя удалить" = "This notification cannot be dismissed";
 "ЯЗЫК" = "LANGUAGE";
 "Язык" = "Language";

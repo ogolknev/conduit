@@ -83,3 +83,23 @@ Swift and JVM checks cover deterministic helpers. Generator checks cover shared
 resources. They do not prove Bluetooth reliability, OEM background behavior,
 notification delivery, permissions or visual layout. Record those observations with
 versions and conditions in [validation](VALIDATION.md), including what was not checked.
+
+## Notification inbox
+
+The Mac retains up to 500 received notifications in a private local JSON store,
+separate from content-free diagnostics. Active/history views share this store.
+Android advertises notificationInbox capability 1 and a stable installation UUID;
+records are scoped by that UUID and Android notification key. The post timestamp
+identifies the current instance, so an offline dismissal cannot delete a newer
+notification which reuses a key.
+
+An authenticated connection requests a streamed snapshot. A successful end marker
+reconciles missing entries into history, then retries pending dismissals for that
+phone. Snapshots do not replay system banners. Missing listener access or an
+incomplete snapshot is an error, never proof that all notifications disappeared.
+Removal callbacks and checked cancellation results update the same entry; replies
+carry a request ID and expire visibly if no acknowledgement arrives. Android
+operations capture the requesting endpoint and reject replaced sessions.
+
+The existing transport versions remain compatible. Older companions still deliver
+legacy banners; the new inbox requires an updated companion and says so in the UI.

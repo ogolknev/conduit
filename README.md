@@ -33,7 +33,7 @@ Clipboard, notifications and files between Android and Mac over Bluetooth. No ac
 | Feature | Support |
 | --- | --- |
 | Clipboard | Automatic Mac → Android; Android → Mac manually or automatically with Shizuku |
-| Notifications | Forward selected apps to Mac; dismiss or reply when the source app supports it |
+| Notifications | Mac inbox with local history; dismiss on phone or reply when supported |
 | Files | Transfer both ways, up to 100 MB per file over Bluetooth |
 | Connections | Bluetooth, or USB / Wi-Fi through ADB |
 | Interface | English and Russian; light and dark themes |
