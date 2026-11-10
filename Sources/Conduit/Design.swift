@@ -3,7 +3,7 @@ import AppKit
 import UniformTypeIdentifiers
 
 // The same palette, spacing, and hierarchy are used by the Android companion.
-private enum Palette {
+enum Palette {
     static func adaptive(_ light: UInt32, _ dark: UInt32) -> Color {
         Color(nsColor: NSColor(name: nil) { appearance in
             let hex = appearance.bestMatch(from: [.aqua, .darkAqua]) == .darkAqua ? dark : light
@@ -24,10 +24,10 @@ private enum Palette {
 }
 
 enum ConduitSection: String, CaseIterable {
-    case overview = "Устройства", files = "Файлы", settings = "Настройки"
+    case overview = "Устройства", files = "Файлы", notifications = "Уведомления", settings = "Настройки"
     var title: String { L(rawValue) }
     var icon: String {
-        switch self { case .overview: return "square.grid.2x2"; case .files: return "folder"; case .settings: return "slider.horizontal.3" }
+        switch self { case .overview: return "square.grid.2x2"; case .files: return "folder"; case .notifications: return "bell"; case .settings: return "slider.horizontal.3" }
     }
 }
 
@@ -83,7 +83,7 @@ struct MainView: View {
                         Spacer()
                         statusPill
                     }.padding(.bottom, 5)
-                    switch section { case .overview: overview; case .files: files; case .settings: settings }
+                    switch section { case .overview: overview; case .files: files; case .notifications: NotificationInboxView(model: model); case .settings: settings }
                 }.padding(32).frame(maxWidth: 860, alignment: .leading).frame(maxWidth: .infinity)
             }
         }.foregroundStyle(Palette.ink).background(Palette.canvas).tint(Palette.accent)

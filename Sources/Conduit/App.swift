@@ -3,6 +3,7 @@ import AppKit
 import UniformTypeIdentifiers
 import CryptoKit
 import UserNotifications
+import ConduitCore
 
 private var appVersion: String { Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String ?? "dev" }
 
@@ -87,9 +88,19 @@ private var appVersion: String { Bundle.main.object(forInfoDictionaryKey: "CFBun
                 model.bluetoothClipboardAuto = true; model.notificationAccess = true; model.notificationListenerConnected = true
                 model.companionStatus = L("Уведомления подключены"); model.macNotificationPermission = .allowed; model.macBluetoothPermission = .allowed
             }
+            if args.contains("--preview-notifications") {
+                let source = "00000000-0000-0000-0000-000000000001"
+                model.notificationSource = source; model.notificationSynced = true
+                for (index, title) in ["Project update", "Transfer complete", "Meeting in 15 minutes"].enumerated() {
+                    if let item = InboxNotification(source: source, event: ["key": "preview-\(index)", "instance": String(Int(Date().timeIntervalSince1970 * 1000) - index * 60000), "app": "Example", "title": title, "body": "Preview notification details", "dismissible": true, "replyable": true]) {
+                        model.inbox.upsert(item)
+                        if index == 1 { model.inbox.state(.pending, id: item.id, instance: item.instance) }
+                    }
+                }
+            }
             if args.contains("--preview-permission-denied") { model.macNotificationPermission = .denied }
             if args.contains("--preview-permission-needed") { model.macNotificationPermission = .notAsked }
-            let section: ConduitSection = args.contains("--preview-settings") ? .settings : (args.contains("--preview-files") ? .files : .overview)
+            let section: ConduitSection = args.contains("--preview-notifications") ? .notifications : args.contains("--preview-settings") ? .settings : (args.contains("--preview-files") ? .files : .overview)
             let previewWidth: CGFloat = args.contains("--preview-compact") ? 860 : 980
             let view = NSHostingView(rootView: MainView(model: model, initialSection: section).frame(width: previewWidth, height: 760))
             view.frame = NSRect(x: 0, y: 0, width: previewWidth, height: 760)

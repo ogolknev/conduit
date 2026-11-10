@@ -429,4 +429,22 @@
     <string name="text_e767ca1f9588" formatted="false">"Требуется разрешение macOS для автозапуска"</string>
     <string name="text_bd2a3a675d41" formatted="false">"Не удалось изменить автозапуск. Проверь объекты входа в настройках macOS."</string>
     <string name="text_76a651547e47" formatted="false">"Настройки macOS"</string>
+    <string name="text_eeaeb97638d8" formatted="false">"Активные"</string>
+    <string name="text_1417b7792d57" formatted="false">"История"</string>
+    <string name="text_3f70f0ad6764" formatted="false">"Очистить историю"</string>
+    <string name="text_ef9591e84953" formatted="false">"Последние 500 уведомлений хранятся только на этом Mac."</string>
+    <string name="text_e071f38945f1" formatted="false">"Не удалось сохранить историю уведомлений."</string>
+    <string name="text_58ba434a7853" formatted="false">"Нет соединения. Удаление будет выполнено после подключения телефона."</string>
+    <string name="text_8adb4f895add" formatted="false">"Обновите Conduit на телефоне для синхронизации уведомлений."</string>
+    <string name="text_9fd6856339c7" formatted="false">"Не удалось сверить уведомления с телефоном."</string>
+    <string name="text_4c687999b888" formatted="false">"Нет уведомлений"</string>
+    <string name="text_13d81f23aa5a" formatted="false">"Ожидает удаления на телефоне"</string>
+    <string name="text_a6b8d195dca0" formatted="false">"Телефон не подтвердил удаление. Можно повторить."</string>
+    <string name="text_d5a2327c574c" formatted="false">"Удалить с телефона"</string>
+    <string name="text_696d6f43c7ca" formatted="false">"Это уведомление нельзя удалить"</string>
+    <string name="text_cd5353f5ab5e" formatted="false">"Не удалось удалить"</string>
+    <string name="text_1e0820884531" formatted="false">"Отправка ответа…"</string>
+    <string name="text_5189135a6110" formatted="false">"Повторить"</string>
+    <string name="text_bd564868080b" formatted="false">"Телефон не подтвердил отправку ответа"</string>
+    <string name="text_18b74715397d" formatted="false">"Синхронизация уведомлений…"</string>
 </resources>

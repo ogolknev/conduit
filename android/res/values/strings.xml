@@ -429,4 +429,22 @@
     <string name="text_e767ca1f9588" formatted="false">"macOS approval is required for launch at login"</string>
     <string name="text_bd2a3a675d41" formatted="false">"Unable to change launch at login. Check Login Items in macOS settings."</string>
     <string name="text_76a651547e47" formatted="false">"macOS settings"</string>
+    <string name="text_eeaeb97638d8" formatted="false">"Active"</string>
+    <string name="text_1417b7792d57" formatted="false">"History"</string>
+    <string name="text_3f70f0ad6764" formatted="false">"Clear history"</string>
+    <string name="text_ef9591e84953" formatted="false">"The latest 500 notifications are stored only on this Mac."</string>
+    <string name="text_e071f38945f1" formatted="false">"Could not save notification history."</string>
+    <string name="text_58ba434a7853" formatted="false">"Offline. Dismissals will be sent when the phone reconnects."</string>
+    <string name="text_8adb4f895add" formatted="false">"Update Conduit on your phone to sync notifications."</string>
+    <string name="text_9fd6856339c7" formatted="false">"Could not sync notifications with the phone."</string>
+    <string name="text_4c687999b888" formatted="false">"No notifications"</string>
+    <string name="text_13d81f23aa5a" formatted="false">"Waiting for dismissal on the phone"</string>
+    <string name="text_a6b8d195dca0" formatted="false">"The phone did not confirm dismissal. You can retry."</string>
+    <string name="text_d5a2327c574c" formatted="false">"Dismiss on phone"</string>
+    <string name="text_696d6f43c7ca" formatted="false">"This notification cannot be dismissed"</string>
+    <string name="text_cd5353f5ab5e" formatted="false">"Dismissal failed"</string>
+    <string name="text_1e0820884531" formatted="false">"Sending reply…"</string>
+    <string name="text_5189135a6110" formatted="false">"Retry"</string>
+    <string name="text_bd564868080b" formatted="false">"The phone did not confirm the reply"</string>
+    <string name="text_18b74715397d" formatted="false">"Syncing notifications…"</string>
 </resources>
