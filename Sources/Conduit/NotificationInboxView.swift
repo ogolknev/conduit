@@ -6,7 +6,7 @@ struct NotificationInboxView: View {
     @State private var history = false
 
     var body: some View {
-        let items = model.inbox.items.filter { history ? $0.state == .removed : $0.state == .active || $0.state == .failed }
+        let items = model.inbox.items.filter { history ? $0.visibleInHistory : $0.visibleInActive }
         let pending = model.inbox.items.filter { $0.state == .pending }.count
         VStack(alignment: .leading, spacing: 16) {
             HStack {
@@ -95,12 +95,10 @@ private struct InboxRow: View {
                     Spacer(minLength: 4)
                     Text(item.date, format: .dateTime.day().month(.abbreviated).hour().minute())
                         .font(.system(size: 11)).fixedSize()
-                    if dismissible {
-                        Button { model.dismissNotification(item) } label: {
-                            Image(systemName: "xmark").font(.system(size: 10, weight: .semibold))
-                                .frame(width: 22, height: 22).background(Palette.soft, in: Circle())
-                        }.buttonStyle(.plain).help(L("Удалить с телефона")).accessibilityLabel(L("Удалить с телефона"))
-                    }
+                    Button { model.closeInboxNotification(item) } label: {
+                        Image(systemName: "xmark").font(.system(size: 11, weight: .semibold))
+                            .frame(width: 24, height: 24).background(Palette.soft, in: Circle())
+                    }.buttonStyle(.plain).help(L("Закрыть на Mac")).accessibilityLabel(L("Закрыть на Mac"))
                 }.foregroundStyle(Palette.muted)
                 if !item.title.isEmpty {
                     Text(item.title).font(.system(size: 15, weight: .semibold)).fixedSize(horizontal: false, vertical: true)
@@ -128,7 +126,13 @@ private struct InboxRow: View {
             }
         }.padding(16).background(Palette.surface, in: RoundedRectangle(cornerRadius: 10))
             .overlay(RoundedRectangle(cornerRadius: 10).strokeBorder(Palette.line))
-            .modifier(NotificationSwipe(enabled: dismissible, dismiss: { model.dismissNotification(item) }))
+            .modifier(NotificationSwipe { model.closeInboxNotification(item) })
+            .contextMenu {
+                Button(L("Закрыть на Mac")) { model.closeInboxNotification(item) }
+                if dismissible {
+                    Button(L("Удалить с телефона")) { model.dismissNotification(item) }
+                }
+            }
     }
 
     @ViewBuilder private var controls: some View {

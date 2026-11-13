@@ -13,6 +13,10 @@ public struct InboxNotification: Codable, Identifiable, Equatable, Sendable {
     public var replyable: Bool
     public var dismissible: Bool
     public var state: State = .active
+    public fileprivate(set) var closedOnMac: Bool?
+    public var visibleInActive: Bool { closedOnMac != true && (state == .active || state == .failed) }
+    public var visibleInHistory: Bool { closedOnMac != true && state == .removed }
+
     public struct Action: Codable, Equatable, Identifiable, Sendable {
         public let id: String
         public let label: String
@@ -54,6 +58,7 @@ public struct NotificationInbox: Codable, Sendable {
         if let old = items.first(where: { $0.id == item.id }), old.instance == item.instance {
             // A replay cannot undo a confirmed dismissal or an offline intent.
             next.state = old.state
+            next.closedOnMac = old.closedOnMac
         }
         items.removeAll { $0.id == next.id }; items.insert(next, at: 0)
         items.sort { $0.date > $1.date }
@@ -86,6 +91,11 @@ public struct NotificationInbox: Codable, Sendable {
             return true
         }
         return removed
+    }
+    public mutating func closeOnMac(id: String, instance: String) -> Bool {
+        guard let index = items.firstIndex(where: { $0.id == id && $0.instance == instance && $0.closedOnMac != true }) else { return false }
+        items[index].closedOnMac = true
+        return true
     }
     public mutating func clearHistory() { items.removeAll { $0.state == .removed } }
     public func save(to url: URL) throws {

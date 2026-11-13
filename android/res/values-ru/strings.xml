@@ -455,4 +455,5 @@
     <string name="text_caa1f92cc95a" formatted="false">"Ожидают удаления на телефоне · %@"</string>
     <string name="text_1e7160bf0de1" formatted="false">"Не удалось получить доступ к сохранённой связи в Связке ключей."</string>
     <string name="text_b0d299ecfa01" formatted="false">"Нажми «Подключиться», чтобы разрешить доступ к сохранённой связи."</string>
+    <string name="text_daca7f333525" formatted="false">"Закрыть на Mac"</string>
 </resources>

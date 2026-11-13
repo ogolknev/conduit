@@ -121,6 +121,7 @@ final class LocalizedStrings {
         values.put("Clipboard service did not start. Unlock the phone and check debugging authorization.",R.string.text_9394dac608e6);
         values.put("Clipboard sync, notifications and file transfers will pause.",R.string.text_58a9a9426139);
         values.put("Close",R.string.text_a7a4033657e8);
+        values.put("Close on Mac",R.string.text_daca7f333525);
         values.put("Code",R.string.text_1b3a63b288a4);
         values.put("Code rejected. Select Add Mac on your phone and enter a new code.",R.string.text_1cfd3a1acf65);
         values.put("Code valid for 2 minutes. Devices must be paired in system Bluetooth settings.",R.string.text_8457698c0805);
@@ -566,6 +567,7 @@ final class LocalizedStrings {
         values.put("Завершить Conduit",R.string.text_b27b7df9aa80);
         values.put("Загрузки / Conduit",R.string.text_eb00033485d3);
         values.put("Закрыть",R.string.text_a7a4033657e8);
+        values.put("Закрыть на Mac",R.string.text_daca7f333525);
         values.put("Запись в Shizuku зависла. Включи автобуфер снова; Bluetooth остаётся активным.",R.string.text_c09d5f06f23b);
         values.put("Запрашиваю журнал телефона…",R.string.text_2d2633558fa6);
         values.put("Запрос…",R.string.text_949556c9a6c1);

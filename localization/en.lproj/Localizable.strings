@@ -113,6 +113,7 @@
 "Clipboard service did not start. Unlock the phone and check debugging authorization." = "Clipboard service did not start. Unlock the phone and check debugging authorization.";
 "Clipboard sync, notifications and file transfers will pause." = "Clipboard sync, notifications and file transfers will pause.";
 "Close" = "Close";
+"Close on Mac" = "Close on Mac";
 "Code" = "Code";
 "Code rejected. Select Add Mac on your phone and enter a new code." = "Code rejected. Select Add Mac on your phone and enter a new code.";
 "Code valid for 2 minutes. Devices must be paired in system Bluetooth settings." = "Code valid for 2 minutes. Devices must be paired in system Bluetooth settings.";
@@ -558,6 +559,7 @@
 "Завершить Conduit" = "Quit Conduit";
 "Загрузки / Conduit" = "Downloads / Conduit";
 "Закрыть" = "Close";
+"Закрыть на Mac" = "Close on Mac";
 "Запись в Shizuku зависла. Включи автобуфер снова; Bluetooth остаётся активным." = "Writing to Shizuku timed out. Enable automatic sending again; Bluetooth remains connected.";
 "Запрашиваю журнал телефона…" = "Requesting phone log…";
 "Запрос…" = "Requesting…";

@@ -455,4 +455,5 @@
     <string name="text_caa1f92cc95a" formatted="false">"Pending dismissal on phone · %@"</string>
     <string name="text_1e7160bf0de1" formatted="false">"Could not access the saved pairing in Keychain."</string>
     <string name="text_b0d299ecfa01" formatted="false">"Click Connect to allow access to the saved pairing."</string>
+    <string name="text_daca7f333525" formatted="false">"Close on Mac"</string>
 </resources>

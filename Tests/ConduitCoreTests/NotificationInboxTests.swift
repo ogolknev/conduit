@@ -54,6 +54,38 @@ struct NotificationInboxTests {
         #expect(box.items.isEmpty)
     }
 
+    @Test func localCloseOfOngoingCardSurvivesReplayRestartAndPhoneRemoval() throws {
+        var box = NotificationInbox()
+        var player = item()
+        player.dismissible = false
+        box.upsert(player)
+        let closed = box.closeOnMac(id: player.id, instance: player.instance)
+        #expect(closed)
+        box = try JSONDecoder().decode(NotificationInbox.self, from: JSONEncoder().encode(box))
+        box.upsert(player)
+        #expect(box.items[0].state == .active)
+        #expect(!box.items[0].visibleInActive)
+        box.reconcile(source: player.source, seen: [])
+        #expect(!box.items[0].visibleInHistory)
+        box.upsert(item(instance: "2000"))
+        let stale = box.closeOnMac(id: player.id, instance: player.instance)
+        #expect(!stale)
+        #expect(box.items[0].visibleInActive)
+    }
+
+    @Test func localCloseAlsoRemovesPastCardsFromHistory() {
+        var box = NotificationInbox()
+        let entry = item()
+        box.upsert(entry)
+        box.state(.removed, id: entry.id, instance: entry.instance)
+        #expect(box.items[0].visibleInHistory)
+        let closed = box.closeOnMac(id: entry.id, instance: entry.instance)
+        #expect(closed)
+        box.upsert(entry)
+        #expect(!box.items[0].visibleInHistory)
+        #expect(!box.items[0].visibleInActive)
+    }
+
     @Test func exclusionsPurgeLegacyHistoryOnlyForTheMatchingPhone() throws {
         let key = "0|example.app|24|tag|1000"
         var box = NotificationInbox()
