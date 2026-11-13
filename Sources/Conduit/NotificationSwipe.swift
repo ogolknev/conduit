@@ -14,23 +14,26 @@ struct NotificationSwipe: ViewModifier {
     }
 
     private func swipeable(_ content: Content) -> some View {
-        content.offset(x: distance)
+        let shape = RoundedRectangle(cornerRadius: 10)
+        let reveal = min(abs(distance), width)
+        let progress = min(reveal / 56, 1)
+        return content.clipShape(shape).offset(x: distance)
             .background {
-                if distance != 0 {
-                    HStack {
-                        if distance < 0 { Spacer() }
-                        Image(systemName: "xmark").accessibilityLabel(L("Удалить с телефона"))
-                        if distance > 0 { Spacer() }
-                    }.padding(.horizontal, 20).frame(maxHeight: .infinity)
-                        .foregroundStyle(abs(distance) >= threshold ? Palette.error : Palette.muted)
-                        .background(Palette.canvas)
-                }
+                GeometryReader { geometry in
+                    Image(systemName: "trash")
+                        .font(.system(size: 16, weight: .medium))
+                        .foregroundStyle(reveal >= threshold ? Palette.error : Palette.muted)
+                        .scaleEffect(0.75 + 0.25 * progress)
+                        .opacity(progress)
+                        .position(x: distance > 0 ? reveal / 2 : geometry.size.width - reveal / 2,
+                                  y: geometry.size.height / 2)
+                }.background(Palette.canvas).allowsHitTesting(false).accessibilityHidden(true)
             }
-            .clipped()
+            .clipShape(shape)
             .background(GeometryReader { geometry in
                 Color.clear.onAppear { width = geometry.size.width }.onChange(of: geometry.size.width) { width = $0 }
             })
-            .contentShape(Rectangle())
+            .contentShape(shape)
             .simultaneousGesture(DragGesture(minimumDistance: 8, coordinateSpace: .global)
                 .onChanged { value in
                     if abs(value.translation.width) > abs(value.translation.height) * 1.4 {

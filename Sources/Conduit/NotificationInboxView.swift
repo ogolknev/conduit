@@ -60,8 +60,6 @@ struct NotificationInboxView: View {
                         ForEach(entries) { item in
                             InboxRow(model: model, item: item)
                                 .id([item.id, item.instance])
-                                .background(Palette.soft)
-                                .clipShape(RoundedRectangle(cornerRadius: 10))
                                 .padding(.bottom, item.id == entries.last?.id ? 12 : 6)
                         }
                     }
@@ -123,7 +121,8 @@ private struct InboxRow: View {
                     }
                 }
             }
-        }.padding(.horizontal, 18).padding(.vertical, 15).background(Palette.soft)
+        }.padding(.horizontal, 18).padding(.vertical, 15)
+            .background(Palette.soft, in: RoundedRectangle(cornerRadius: 10))
             .modifier(NotificationSwipe(enabled: item.canDismiss) { model.dismissNotification(item) })
             .contextMenu {
                 if item.canDismiss {
