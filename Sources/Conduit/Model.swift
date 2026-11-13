@@ -117,9 +117,10 @@ import ConduitCore
         AppDelegate.onAction = { [weak self] action in
             guard let self, self.notificationsEnabled else { return }
             if let key = action["key"] as? String, let item = self.inbox.items.first(where: { $0.id == key }) {
+                guard action["instance"] as? String == item.instance else { return }
                 if action["type"] as? String == "dismiss" { self.dismissNotification(item) }
                 else if let text = action["text"] as? String { self.replyToNotification(item, text: text) }
-            } else if self.companionReady && self.notificationSource == nil { self.sendBridge(action) }
+            } else if self.companionReady && self.notificationSource == nil && action["instance"] == nil { self.sendBridge(action) }
         }
         wakeObserver = NSWorkspace.shared.notificationCenter.addObserver(forName: NSWorkspace.didWakeNotification, object: nil, queue: .main) { [weak self] _ in
             Task { @MainActor in

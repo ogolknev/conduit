@@ -2,18 +2,24 @@ import AppKit
 import SwiftUI
 
 struct NotificationSwipe: ViewModifier {
+    let enabled: Bool
     let dismiss: () -> Void
     @State private var distance: CGFloat = 0
     @State private var width: CGFloat = 0
     private var threshold: CGFloat { min(140, max(65, width * 0.28)) }
 
     func body(content: Content) -> some View {
+        if enabled { swipeable(content) }
+        else { content }
+    }
+
+    private func swipeable(_ content: Content) -> some View {
         content.offset(x: distance)
             .background {
                 if distance != 0 {
                     HStack {
                         if distance < 0 { Spacer() }
-                        Image(systemName: "xmark").accessibilityLabel(L("Закрыть на Mac"))
+                        Image(systemName: "xmark").accessibilityLabel(L("Удалить с телефона"))
                         if distance > 0 { Spacer() }
                     }.padding(.horizontal, 20).frame(maxHeight: .infinity)
                         .foregroundStyle(abs(distance) >= threshold ? Palette.error : Palette.muted)
@@ -35,6 +41,7 @@ struct NotificationSwipe: ViewModifier {
                     distance = abs(value.translation.width) > abs(value.translation.height) * 1.4 ? value.translation.width : 0
                     finish()
                 })
+            .onDisappear { distance = 0 }
             .background {
                 TrackpadSwipe(onChange: { distance = $0 }, onEnd: { cancelled in
                     if cancelled { withAnimation { distance = 0 } } else { finish() }

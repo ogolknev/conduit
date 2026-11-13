@@ -102,7 +102,7 @@ extension ConduitModel {
             }
             inbox.upsert(item)
             if event["snapshot"] == nil { persistInbox() }
-            if event["snapshot"] == nil, event["quiet"] as? Bool != true, inbox.items.contains(where: { $0.id == item.id && $0.instance == item.instance && $0.state == .active && $0.closedOnMac != true }) {
+            if event["snapshot"] == nil, event["quiet"] as? Bool != true, inbox.items.contains(where: { $0.id == item.id && $0.instance == item.instance && $0.state == .active }) {
                 var banner = event; banner["key"] = item.id; banner["source"] = source; banner["originalKey"] = item.key
                 Task { do { try await PhoneNotifications.show(banner) } catch { log(L("Проверь разрешение уведомлений macOS")) } }
             }
@@ -124,14 +124,9 @@ extension ConduitModel {
         }
         return true
     }
-    func closeInboxNotification(_ item: InboxNotification) {
-        guard inbox.closeOnMac(id: item.id, instance: item.instance) else { return }
-        PhoneNotifications.remove(item.id)
-        persistInbox()
-    }
     func dismissNotification(_ item: InboxNotification) {
-        guard item.dismissible, item.state == .active || item.state == .failed else { return }
-        inbox.state(.pending, id: item.id, instance: item.instance); persistInbox()
+        guard inbox.requestDismissal(id: item.id, instance: item.instance) else { return }
+        persistInbox()
         if companionReady && notificationSynced && notificationSource == item.source { sendNotificationDismiss(item) }
     }
     func sendNotificationDismiss(_ item: InboxNotification) {

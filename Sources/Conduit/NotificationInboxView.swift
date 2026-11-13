@@ -8,7 +8,6 @@ struct NotificationInboxView: View {
 
     var body: some View {
         let items = model.inbox.items.filter { history ? $0.visibleInHistory : $0.visibleInActive }
-        let pending = model.inbox.items.filter { $0.state == .pending }.count
         VStack(alignment: .leading, spacing: 16) {
             HStack {
                 HStack(spacing: 2) {
@@ -22,9 +21,6 @@ struct NotificationInboxView: View {
             }
             if history {
                 Text(L("Последние 500 уведомлений хранятся только на этом Mac.")).foregroundStyle(Palette.muted)
-            }
-            if !history && pending > 0 {
-                Text(L("Ожидают удаления на телефоне · %@", pending)).foregroundStyle(Palette.muted)
             }
             if model.notificationSnapshot != nil { Text(L("Синхронизация уведомлений…")).foregroundStyle(Palette.muted) }
             if model.inboxStorageError { Text(L("Не удалось сохранить историю уведомлений.")).foregroundStyle(Palette.error) }
@@ -102,7 +98,10 @@ private struct InboxRow: View {
     @State private var reply = ""
     @State private var composing = false
     @FocusState private var replyFocused: Bool
-    private var dismissible: Bool { item.dismissible && (item.state == .active || item.state == .failed) }
+    private var dismissHelp: String {
+        if item.state == .pending { return L("Ожидает удаления на телефоне") }
+        return item.dismissible ? L("Удалить с телефона") : L("Это уведомление нельзя удалить")
+    }
     private var canReply: Bool {
         model.canAct(on: item) && model.inboxReplyRequest == nil && !reply.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty && reply.utf16.count <= 4096
     }
@@ -129,10 +128,13 @@ private struct InboxRow: View {
                     Spacer(minLength: 4)
                     Text(item.date, style: .time)
                         .font(.system(size: 11)).monospacedDigit().fixedSize()
-                    Button { model.closeInboxNotification(item) } label: {
-                        Image(systemName: "xmark").font(.system(size: 11, weight: .semibold))
-                            .frame(width: 24, height: 24).contentShape(Rectangle())
-                    }.buttonStyle(.plain).help(L("Закрыть на Mac")).accessibilityLabel(L("Закрыть на Mac"))
+                    if item.state != .removed {
+                        Button { model.dismissNotification(item) } label: {
+                            Image(systemName: "xmark").font(.system(size: 11, weight: .semibold))
+                                .frame(width: 24, height: 24).contentShape(Rectangle())
+                        }.buttonStyle(.plain).disabled(!item.canDismiss)
+                            .help(dismissHelp).accessibilityLabel(dismissHelp)
+                    }
                 }.foregroundStyle(Palette.muted)
                 if !item.title.isEmpty {
                     Text(item.title).font(.system(size: 15, weight: .semibold)).fixedSize(horizontal: false, vertical: true)
@@ -141,13 +143,14 @@ private struct InboxRow: View {
                     Text(item.body).font(.system(size: 13)).foregroundStyle(Palette.muted).textSelection(.enabled)
                         .fixedSize(horizontal: false, vertical: true)
                 }
+                if item.state == .pending { Text(L("Ожидает удаления на телефоне")).foregroundStyle(Palette.muted) }
                 if item.state == .failed { Text(L("Телефон не подтвердил удаление. Можно повторить.")).foregroundStyle(Palette.error) }
                 if item.state == .active {
                     if !(item.actions ?? []).isEmpty || item.replyable {
                         ViewThatFits(in: .horizontal) {
                             HStack(spacing: 6) { controls }
-                            VStack(alignment: .leading, spacing: 6) { controls }
-                        }.padding(.top, 6)
+                            VStack(alignment: .trailing, spacing: 6) { controls }
+                        }.frame(maxWidth: .infinity, alignment: .trailing).padding(.top, 6)
                     }
                     if composing && item.replyable {
                         HStack {
@@ -159,10 +162,9 @@ private struct InboxRow: View {
                 }
             }
         }.padding(.horizontal, 18).padding(.vertical, 15).background(Palette.soft)
-            .modifier(NotificationSwipe { model.closeInboxNotification(item) })
+            .modifier(NotificationSwipe(enabled: item.canDismiss) { model.dismissNotification(item) })
             .contextMenu {
-                Button(L("Закрыть на Mac")) { model.closeInboxNotification(item) }
-                if dismissible {
+                if item.canDismiss {
                     Button(L("Удалить с телефона")) { model.dismissNotification(item) }
                 }
             }

@@ -54,36 +54,46 @@ struct NotificationInboxTests {
         #expect(box.items.isEmpty)
     }
 
-    @Test func localCloseOfOngoingCardSurvivesReplayRestartAndPhoneRemoval() throws {
-        var box = NotificationInbox()
-        var player = item()
-        player.dismissible = false
-        box.upsert(player)
-        let closed = box.closeOnMac(id: player.id, instance: player.instance)
-        #expect(closed)
-        box = try JSONDecoder().decode(NotificationInbox.self, from: JSONEncoder().encode(box))
-        box.upsert(player)
-        #expect(box.items[0].state == .active)
-        #expect(!box.items[0].visibleInActive)
-        box.reconcile(source: player.source, seen: [])
-        #expect(!box.items[0].visibleInHistory)
-        box.upsert(item(instance: "2000"))
-        let stale = box.closeOnMac(id: player.id, instance: player.instance)
-        #expect(!stale)
-        #expect(box.items[0].visibleInActive)
-    }
-
-    @Test func localCloseAlsoRemovesPastCardsFromHistory() {
+    @Test func dismissalRemainsVisibleUntilConfirmedAndCanRetryOnFailure() throws {
         var box = NotificationInbox()
         let entry = item()
         box.upsert(entry)
+        let first = box.requestDismissal(id: entry.id, instance: entry.instance)
+        let duplicate = box.requestDismissal(id: entry.id, instance: entry.instance)
+        #expect(first && !duplicate)
+        box = try JSONDecoder().decode(NotificationInbox.self, from: JSONEncoder().encode(box))
+        box.upsert(entry)
+        #expect(box.items[0].visibleInActive && !box.items[0].visibleInHistory)
+        #expect(box.items[0].state == .pending && !box.items[0].canDismiss)
+        box.state(.failed, id: entry.id, instance: entry.instance)
+        let retried = box.requestDismissal(id: entry.id, instance: entry.instance)
+        #expect(retried)
+        box.reconcile(source: entry.source, seen: [])
+        #expect(!box.items[0].visibleInActive && box.items[0].visibleInHistory)
+    }
+
+    @Test func staleAndNonclearableCardsCannotQueueDismissals() {
+        var box = NotificationInbox()
+        var entry = item()
+        entry.dismissible = false
+        box.upsert(entry)
+        let ongoing = box.requestDismissal(id: entry.id, instance: entry.instance)
+        box.upsert(item(instance: "2000"))
+        let stale = box.requestDismissal(id: entry.id, instance: entry.instance)
+        #expect(!ongoing && !stale)
+        #expect(box.items[0].state == .active)
+    }
+
+    @Test func oldLocalCloseIsNotAnInstructionToDeleteFromPhone() throws {
+        let entry = item()
+        var values = try #require(JSONSerialization.jsonObject(with: JSONEncoder().encode(entry)) as? [String: Any])
+        values["closedOnMac"] = true
+        let data = try JSONSerialization.data(withJSONObject: ["items": [values]])
+        var box = try JSONDecoder().decode(NotificationInbox.self, from: data)
+        #expect(box.items[0].visibleInActive && box.items[0].state == .active)
+        box.upsert(entry)
         box.state(.removed, id: entry.id, instance: entry.instance)
         #expect(box.items[0].visibleInHistory)
-        let closed = box.closeOnMac(id: entry.id, instance: entry.instance)
-        #expect(closed)
-        box.upsert(entry)
-        #expect(!box.items[0].visibleInHistory)
-        #expect(!box.items[0].visibleInActive)
     }
 
     @Test func exclusionsPurgeLegacyHistoryOnlyForTheMatchingPhone() throws {

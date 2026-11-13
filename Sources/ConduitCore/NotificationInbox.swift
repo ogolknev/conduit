@@ -13,8 +13,10 @@ public struct InboxNotification: Codable, Identifiable, Equatable, Sendable {
     public var replyable: Bool
     public var dismissible: Bool
     public var state: State = .active
-    public fileprivate(set) var closedOnMac: Bool?
-    public var visibleInActive: Bool { closedOnMac != true && (state == .active || state == .failed) }
+    // Kept for already-hidden history from older stores. Active visibility follows Android.
+    fileprivate var closedOnMac: Bool?
+    public var visibleInActive: Bool { state != .removed }
+    public var canDismiss: Bool { dismissible && (state == .active || state == .failed) }
     public var visibleInHistory: Bool { closedOnMac != true && state == .removed }
 
     public struct Action: Codable, Equatable, Identifiable, Sendable {
@@ -58,7 +60,7 @@ public struct NotificationInbox: Codable, Sendable {
         if let old = items.first(where: { $0.id == item.id }), old.instance == item.instance {
             // A replay cannot undo a confirmed dismissal or an offline intent.
             next.state = old.state
-            next.closedOnMac = old.closedOnMac
+            if old.state == .removed { next.closedOnMac = old.closedOnMac }
         }
         items.removeAll { $0.id == next.id }; items.insert(next, at: 0)
         items.sort { $0.date > $1.date }
@@ -92,9 +94,10 @@ public struct NotificationInbox: Codable, Sendable {
         }
         return removed
     }
-    public mutating func closeOnMac(id: String, instance: String) -> Bool {
-        guard let index = items.firstIndex(where: { $0.id == id && $0.instance == instance && $0.closedOnMac != true }) else { return false }
-        items[index].closedOnMac = true
+    public mutating func requestDismissal(id: String, instance: String) -> Bool {
+        guard let index = items.firstIndex(where: { $0.id == id && $0.instance == instance }),
+              items[index].canDismiss else { return false }
+        items[index].state = .pending
         return true
     }
     public mutating func clearHistory() { items.removeAll { $0.state == .removed } }
