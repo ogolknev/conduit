@@ -6,6 +6,8 @@ import android.app.*;
 import android.content.*;
 import android.os.*;
 import android.provider.Settings;
+import android.media.session.MediaController;
+import android.media.session.PlaybackState;
 import android.service.notification.*;
 import android.graphics.*;
 import android.graphics.drawable.Drawable;
@@ -20,6 +22,10 @@ public final class PhoneNotifications extends NotificationListenerService {
     private final LruCache<String,String> icons=new LruCache<>(40);
     private static long lastRebind;
     private static boolean registrationRefreshed;
+    static void filtersChanged() {
+        BridgeService.emit(BridgeService.status("status"));
+        BridgeService.emit(BridgeService.object("type", "notificationFiltersChanged"));
+    }
     static boolean isConnected() { return instance!=null; }
     static void ensureConnected(Context context) {
         long now=SystemClock.elapsedRealtime();
@@ -52,19 +58,63 @@ public final class PhoneNotifications extends NotificationListenerService {
     }
 
     @Override public void onListenerConnected() { instance = this; PhoneDiagnostics.record(this,"notification.listener.connected"); BridgeService.emit(BridgeService.status("status")); }
-    @Override public void onListenerDisconnected() { instance = null; PhoneDiagnostics.record(this,"notification.listener.disconnected"); BridgeService.emit(BridgeService.status("status")); }
-    @Override public void onDestroy() { if (instance == this) instance = null; super.onDestroy(); }
+    @Override public void onListenerDisconnected() { clearWatches(); instance = null; PhoneDiagnostics.record(this,"notification.listener.disconnected"); BridgeService.emit(BridgeService.status("status")); }
+    @Override public void onDestroy() { clearWatches(); if (instance == this) instance = null; super.onDestroy(); }
 
-    @Override public void onNotificationPosted(StatusBarNotification sbn) {
-        try { forward(sbn); } catch (RuntimeException ignored) { /* Malformed app extras must not kill the listener. */ }
+    private final Set<String> suppressedKeys = new HashSet<>();
+    private final Map<String, MediaWatch> mediaWatches = new HashMap<>();
+
+    private static boolean suppressed(Ranking rank) {
+        return rank.getImportance() == NotificationManager.IMPORTANCE_NONE
+                || (Build.VERSION.SDK_INT >= 28 && (rank.isSuspended()
+                || (rank.getSuppressedVisualEffects() & NotificationManager.Policy.SUPPRESSED_EFFECT_NOTIFICATION_LIST) != 0));
     }
-    private void forward(StatusBarNotification sbn) { forward(sbn, BridgeService.client, null); }
-    private void forward(StatusBarNotification sbn, BridgeService.Endpoint target, String snapshot) {
-        if (sbn == null || sbn.getPackageName().equals(getPackageName())) return;
+
+    private boolean visible(StatusBarNotification item, RankingMap ranking) {
         SharedPreferences prefs = getSharedPreferences("settings", MODE_PRIVATE);
-        if (!prefs.getBoolean("forward", true) || prefs.getStringSet("blocked", Collections.emptySet()).contains(sbn.getPackageName())) return;
+        Ranking rank = new Ranking();
+        Notification n = item.getNotification();
+        return !item.getPackageName().equals(getPackageName()) && prefs.getBoolean("forward", true)
+                && !prefs.getStringSet("blocked", Collections.emptySet()).contains(item.getPackageName())
+                && (n.flags & Notification.FLAG_GROUP_SUMMARY) == 0
+                && !(Build.VERSION.SDK_INT >= 29 && n.getBubbleMetadata() != null && n.getBubbleMetadata().isNotificationSuppressed())
+                && ranking != null && ranking.getRanking(item.getKey(), rank) && !suppressed(rank);
+    }
+
+    @Override public void onNotificationPosted(StatusBarNotification item, RankingMap ranking) {
+        try { forward(item, ranking, BridgeService.client, null, false); }
+        catch (RuntimeException ignored) { /* Malformed app extras must not kill the listener. */ }
+    }
+
+    @Override public void onNotificationRankingUpdate(RankingMap ranking) {
+        Set<String> next = new HashSet<>();
+        Ranking rank = new Ranking();
+        for (String key : ranking.getOrderedKeys()) {
+            if (ranking.getRanking(key, rank) && suppressed(rank)) next.add(key);
+        }
+        Set<String> changed = new HashSet<>(suppressedKeys);
+        changed.removeAll(next);
+        for (String key : next) if (!suppressedKeys.contains(key)) changed.add(key);
+        suppressedKeys.clear();
+        suppressedKeys.addAll(next);
+        if (changed.isEmpty() || BridgeService.client == null) return;
+        try {
+            StatusBarNotification[] items = getActiveNotifications(changed.toArray(new String[0]));
+            if (items != null) for (StatusBarNotification item : items) forward(item, ranking, BridgeService.client, null, true);
+        } catch (RuntimeException ignored) {}
+    }
+
+    private void forward(StatusBarNotification sbn, RankingMap ranking, BridgeService.Endpoint target, String snapshot, boolean quiet) {
+        if (sbn == null || target == null || sbn.getPackageName().equals(getPackageName())) return;
+        Ranking rank = new Ranking();
+        if (ranking != null && ranking.getRanking(sbn.getKey(), rank) && suppressed(rank)) suppressedKeys.add(sbn.getKey());
+        if (!visible(sbn, ranking)) {
+            stopWatching(sbn.getKey());
+            hidden(target, sbn, snapshot);
+            return;
+        }
+        if (!target.notificationActions && (sbn.isOngoing() || (quiet && snapshot == null))) return;
         Notification n = sbn.getNotification();
-        if ((n.flags & Notification.FLAG_GROUP_SUMMARY) != 0 || sbn.isOngoing()) return;
         Bundle extras = n.extras;
         if (extras == null) return;
         String title = clipped(extras.getCharSequence(Notification.EXTRA_TITLE), 256);
@@ -74,7 +124,10 @@ public final class PhoneNotifications extends NotificationListenerService {
         String app = sbn.getPackageName();
         try { app = getPackageManager().getApplicationLabel(getPackageManager().getApplicationInfo(app, 0)).toString(); } catch (Exception ignored) {}
         if (title.isEmpty() && body.isEmpty()) return;
-        BridgeService.emitTo(target, BridgeService.object("type", "notification", "instance", Long.toString(sbn.getPostTime()), "dismissible", sbn.isClearable(), "snapshot", snapshot, "key", sbn.getKey(), "package", sbn.getPackageName(),
+        MediaController controller = target.notificationActions ? NotificationControls.controller(this, sbn) : null;
+        List<NotificationControls> controls = target.notificationActions ? NotificationControls.available(n, controller) : Collections.emptyList();
+        watch(sbn.getKey(), controller, target);
+        BridgeService.emitTo(target, BridgeService.object("type", "notification", "quiet", quiet || sbn.isOngoing(), "actions", NotificationControls.describe(controls), "instance", Long.toString(sbn.getPostTime()), "dismissible", sbn.isClearable(), "snapshot", snapshot, "key", sbn.getKey(), "package", sbn.getPackageName(),
             "app", clipped(app, 128), "title", title, "body", body, "replyable", replyAction(n) != null, "iconPNG", applicationIcon(sbn.getPackageName())));
     }
     private String applicationIcon(String pkg) {
@@ -90,8 +143,84 @@ public final class PhoneNotifications extends NotificationListenerService {
         } catch(Exception failure) { return ""; }
         finally { if(bitmap!=null) bitmap.recycle(); }
     }
-    @Override public void onNotificationRemoved(StatusBarNotification sbn) {
-        if (sbn != null) BridgeService.emit(BridgeService.object("type", "removed", "key", sbn.getKey(), "instance", Long.toString(sbn.getPostTime())));
+    private static void hidden(BridgeService.Endpoint target, StatusBarNotification item, String snapshot) {
+        BridgeService.emitTo(target, BridgeService.object("type", "notificationHidden", "key", item.getKey(),
+                "instance", Long.toString(item.getPostTime()), "snapshot", snapshot));
+    }
+
+    private final class MediaWatch extends MediaController.Callback {
+        final String key;
+        final MediaController controller;
+        final BridgeService.Endpoint target;
+        MediaWatch(String key, MediaController controller, BridgeService.Endpoint target) {
+            this.key = key;
+            this.controller = controller;
+            this.target = target;
+        }
+        @Override public void onPlaybackStateChanged(PlaybackState state) {
+            if (mediaWatches.get(key) != this) return;
+            if (BridgeService.client != target) { stopWatching(key); return; }
+            try {
+                StatusBarNotification[] items = getActiveNotifications(new String[]{key});
+                if (items != null && items.length == 1) forward(items[0], getCurrentRanking(), target, null, true);
+                else stopWatching(key);
+            } catch (RuntimeException ignored) {}
+        }
+        @Override public void onSessionDestroyed() {
+            if (mediaWatches.get(key) == this) stopWatching(key);
+        }
+    }
+    private void watch(String key, MediaController controller, BridgeService.Endpoint target) {
+        MediaWatch old = mediaWatches.get(key);
+        if (old != null && controller != null && old.target == target && old.controller.getSessionToken().equals(controller.getSessionToken())) return;
+        stopWatching(key);
+        if (controller != null) {
+            MediaWatch watch = new MediaWatch(key, controller, target);
+            mediaWatches.put(key, watch);
+            controller.registerCallback(watch);
+        }
+    }
+    private void stopWatching(String key) {
+        MediaWatch watch = mediaWatches.remove(key);
+        if (watch != null) watch.controller.unregisterCallback(watch);
+    }
+    private void clearWatches() {
+        for (String key : new ArrayList<>(mediaWatches.keySet())) stopWatching(key);
+        suppressedKeys.clear();
+    }
+    @Override public void onNotificationRemoved(StatusBarNotification sbn, RankingMap ranking, int reason) {
+        if (sbn == null) return;
+        stopWatching(sbn.getKey());
+        suppressedKeys.remove(sbn.getKey());
+        if (reason == REASON_SNOOZED || reason == REASON_PACKAGE_SUSPENDED || reason == REASON_CHANNEL_BANNED
+                || reason == REASON_PACKAGE_BANNED || reason == REASON_PROFILE_TURNED_OFF || reason == REASON_LOCKDOWN)
+            hidden(BridgeService.client, sbn, null);
+        else BridgeService.emit(BridgeService.object("type", "removed", "key", sbn.getKey(), "instance", Long.toString(sbn.getPostTime())));
+    }
+
+    static void perform(BridgeService.Endpoint target, JSONObject message) {
+        String key = message.optString("key"), version = message.optString("instance"), request = message.optString("request");
+        if (key.isEmpty() || key.length() > 2048 || version.isEmpty() || request.isEmpty() || request.length() > 64) return;
+        new Handler(Looper.getMainLooper()).post(() -> {
+            if (BridgeService.client != target) return;
+            boolean ok = false;
+            try {
+                PhoneNotifications service = instance;
+                if (service == null) throw new IllegalStateException();
+                StatusBarNotification[] items = service.getActiveNotifications(new String[]{key});
+                if (items == null || items.length != 1) throw new IllegalStateException();
+                StatusBarNotification item = items[0];
+                if (!version.equals(Long.toString(item.getPostTime())) || !service.visible(item, service.getCurrentRanking())) throw new IllegalStateException();
+                for (NotificationControls control : NotificationControls.available(item.getNotification(), NotificationControls.controller(service, item))) {
+                    if (control.id.equals(message.optString("action")) && control.label.equals(message.optString("label"))) {
+                        control.perform(service);
+                        ok = true;
+                        break;
+                    }
+                }
+            } catch (Exception unavailable) {}
+            BridgeService.emitTo(target, BridgeService.object("type", "notificationActionResult", "request", request, "ok", ok));
+        });
     }
     private static String clipped(CharSequence value, int size) {
         if (value == null) return "";
@@ -101,6 +230,7 @@ public final class PhoneNotifications extends NotificationListenerService {
     private static Notification.Action replyAction(Notification notification) {
         if (notification.actions == null) return null;
         for (Notification.Action action : notification.actions) {
+            if (action == null) continue;
             RemoteInput[] inputs = action.getRemoteInputs();
             if (inputs != null && action.actionIntent != null)
                 for (RemoteInput input : inputs) if (input.getAllowFreeFormInput()) return action;
@@ -116,11 +246,10 @@ public final class PhoneNotifications extends NotificationListenerService {
                 if (BridgeService.client != target) return;
                 StatusBarNotification[] notifications = service.getActiveNotifications(new String[] { key });
                 if (notifications == null || notifications.length == 0 || (!version.isEmpty() && !Long.toString(notifications[0].getPostTime()).equals(version))) throw new IllegalStateException();
-                String pkg = notifications[0].getPackageName();
-                SharedPreferences prefs = service.getSharedPreferences("settings", MODE_PRIVATE);
-                if (!prefs.getBoolean("forward", true) || prefs.getStringSet("blocked", Collections.emptySet()).contains(pkg)) throw new IllegalStateException();
+                if (!service.visible(notifications[0], service.getCurrentRanking())) throw new IllegalStateException();
                 Notification.Action action = replyAction(notifications[0].getNotification());
-                if (action == null) throw new IllegalStateException();
+                if (action == null || (Build.VERSION.SDK_INT >= 31 && action.isAuthenticationRequired()
+                        && service.getSystemService(KeyguardManager.class).isDeviceLocked())) throw new IllegalStateException();
                 Bundle values = new Bundle();
                 for (RemoteInput input : action.getRemoteInputs()) if (input.getAllowFreeFormInput()) values.putCharSequence(input.getResultKey(), text);
                 Intent fill = new Intent();
@@ -149,7 +278,10 @@ public final class PhoneNotifications extends NotificationListenerService {
                 if (service != null) {
                     StatusBarNotification[] active = service.getActiveNotifications();
                     if (active != null && active.length <= 500) {
-                        for (StatusBarNotification item : active) service.forward(item, target, request);
+                        RankingMap ranking = service.getCurrentRanking();
+                        for (StatusBarNotification item : active) service.forward(item, ranking, target, request, true);
+                        StatusBarNotification[] snoozed = service.getSnoozedNotifications();
+                        if (snoozed != null) for (StatusBarNotification item : snoozed) hidden(target, item, request);
                         ok = true;
                     }
                 }
@@ -169,8 +301,7 @@ public final class PhoneNotifications extends NotificationListenerService {
                 if (active.length == 0 || !Long.toString(active[0].getPostTime()).equals(version)) {
                     dismissResult(target, key, version, true); return;
                 }
-                SharedPreferences prefs = service.getSharedPreferences("settings", MODE_PRIVATE);
-                if (!active[0].isClearable() || !prefs.getBoolean("forward", true) || prefs.getStringSet("blocked", Collections.emptySet()).contains(active[0].getPackageName())) throw new IllegalStateException();
+                if (!active[0].isClearable() || !service.visible(active[0], service.getCurrentRanking())) throw new IllegalStateException();
                 service.cancelNotification(key);
                 new Handler(Looper.getMainLooper()).postDelayed(() -> {
                     if (BridgeService.client != target) return;

@@ -26,13 +26,14 @@ import ConduitCore
     @Published var inbox = NotificationInbox()
     @Published var inboxActionResult: String?
     @Published var inboxReplyRequest: String?
+    @Published var notificationActionRequest: String?
     var notificationSyncTimeout: Task<Void, Never>?
     @Published var inboxStorageError = false
     @Published var notificationSyncError = false
     @Published var notificationSource: String?
     @Published var notificationSnapshot: String?
     var notificationSeen = Set<String>()
-    var notificationSynced = false
+    @Published var notificationSynced = false
     @Published var events: [String] = []
     @Published var wirelessAddress = ""
     @Published var pairingAddress = ""
@@ -277,6 +278,7 @@ import ConduitCore
         sessionID = UUID()
         notificationSyncTimeout?.cancel(); notificationSyncTimeout = nil
         if inboxReplyRequest != nil { inboxActionResult = L("Телефон не подтвердил отправку ответа") }; inboxReplyRequest = nil
+        if notificationActionRequest != nil { inboxActionResult = L("Телефон не подтвердил действие") }; notificationActionRequest = nil
         notificationSource = nil; notificationSnapshot = nil; notificationSynced = false; notificationSeen = []
         bluetooth?.cancel(); bluetooth = nil; bluetoothClipboardAuto = false; bluetoothDeviceLocked = false
         androidDiagnosticsPending = false; androidDiagnosticsRequest = UUID()

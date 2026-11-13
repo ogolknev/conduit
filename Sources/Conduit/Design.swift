@@ -37,7 +37,7 @@ private struct ConduitMark: View {
     }
 }
 
-private struct ActionStyle: ButtonStyle {
+struct ActionStyle: ButtonStyle {
     var primary = false
     @Environment(\.isEnabled) private var enabled
     func makeBody(configuration: Configuration) -> some View {

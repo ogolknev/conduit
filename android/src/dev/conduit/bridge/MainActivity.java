@@ -218,7 +218,7 @@ public final class MainActivity extends Activity {
         section(t("УВЕДОМЛЕНИЯ")); LinearLayout notifications = settingsCard();
         SharedPreferences prefs = getSharedPreferences("settings", MODE_PRIVATE);
         MinimalSwitch forwarding = switchRow(notifications, t("Передавать на Mac"), prefs.getBoolean("forward", true));
-        forwarding.setOnCheckedChangeListener((v, enabled) -> { prefs.edit().putBoolean("forward", enabled).apply(); refreshState(); });
+        forwarding.setOnCheckedChangeListener((v, enabled) -> { prefs.edit().putBoolean("forward", enabled).apply(); PhoneNotifications.filtersChanged(); refreshState(); });
         rowDivider(notifications);
         notificationPermissionRow = new SettingsRow(notifications, t("Чтение уведомлений"), "", this::openNotificationAccessSettings, "chevron");
         ownNotificationsRow=new SettingsRow(notifications,t("Уведомления Conduit"),"",this::configureOwnNotifications,"chevron");
@@ -559,7 +559,10 @@ public final class MainActivity extends Activity {
         new AlertDialog.Builder(this).setTitle(t("Показывать на Mac"))
             .setMultiChoiceItems(labels, checked, (dialog, which, enabled) -> {
                 String pkg = apps.get(which).getKey(); if (enabled) blocked.remove(pkg); else blocked.add(pkg);
-            }).setPositiveButton(t("Сохранить"), (dialog, which) -> prefs.edit().putStringSet("blocked", blocked).apply())
+            }).setPositiveButton(t("Сохранить"), (dialog, which) -> {
+                prefs.edit().putStringSet("blocked", blocked).apply();
+                PhoneNotifications.filtersChanged();
+            })
             .setNegativeButton(t("Отмена"), null).show();
     }
     private LinearLayout column() { LinearLayout v = new LinearLayout(this); v.setOrientation(LinearLayout.VERTICAL); return v; }

@@ -447,4 +447,10 @@
     <string name="text_5189135a6110" formatted="false">"Retry"</string>
     <string name="text_bd564868080b" formatted="false">"The phone did not confirm the reply"</string>
     <string name="text_18b74715397d" formatted="false">"Syncing notifications…"</string>
+    <string name="text_5fb8dc939842" formatted="false">"The phone did not confirm the action"</string>
+    <string name="text_3fbf9e4ea1c1" formatted="false">"Previous track"</string>
+    <string name="text_bdd37eb21746" formatted="false">"Play"</string>
+    <string name="text_65530fd463ea" formatted="false">"Pause"</string>
+    <string name="text_46da7285528f" formatted="false">"Next track"</string>
+    <string name="text_caa1f92cc95a" formatted="false">"Pending dismissal on phone · %@"</string>
 </resources>

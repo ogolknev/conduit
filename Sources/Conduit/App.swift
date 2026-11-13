@@ -91,11 +91,17 @@ private var appVersion: String { Bundle.main.object(forInfoDictionaryKey: "CFBun
             if args.contains("--preview-notifications") {
                 let source = "00000000-0000-0000-0000-000000000001"
                 model.notificationSource = source; model.notificationSynced = true
-                for (index, title) in ["Project update", "Transfer complete", "Meeting in 15 minutes"].enumerated() {
-                    if let item = InboxNotification(source: source, event: ["key": "preview-\(index)", "instance": String(Int(Date().timeIntervalSince1970 * 1000) - index * 60000), "app": "Example", "title": title, "body": "Preview notification details", "dismissible": true, "replyable": true]) {
-                        model.inbox.upsert(item)
-                        if index == 1 { model.inbox.state(.pending, id: item.id, instance: item.instance) }
-                    }
+                let samples: [[String: Any]] = [
+                    ["app": "Music", "title": "Night Drive", "body": "Northbound", "dismissible": false,
+                     "actions": ["previous", "pause", "next"].map { ["id": $0, "label": ""] }],
+                    ["app": "Messages", "title": "Studio", "body": "The updated drawings are ready to review.",
+                     "dismissible": true, "replyable": true, "actions": [["id": "action:1", "label": "Mark as read"]]],
+                    ["app": "Calendar", "title": "Design review", "body": "10:00 – 10:30", "dismissible": true]
+                ]
+                for (index, var event) in samples.enumerated() {
+                    event["key"] = "preview-\(index)"
+                    event["instance"] = String(Int(Date().timeIntervalSince1970 * 1000) - index * 60000)
+                    if let item = InboxNotification(source: source, event: event) { model.inbox.upsert(item) }
                 }
             }
             if args.contains("--preview-permission-denied") { model.macNotificationPermission = .denied }

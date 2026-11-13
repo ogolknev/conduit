@@ -13,6 +13,12 @@ public struct InboxNotification: Codable, Identifiable, Equatable, Sendable {
     public var replyable: Bool
     public var dismissible: Bool
     public var state: State = .active
+    public struct Action: Codable, Equatable, Identifiable, Sendable {
+        public let id: String
+        public let label: String
+    }
+    public var actions: [Action]?
+    public var package: String?
     public var icon: Data?
     public init?(source: String, event: [String: Any]) {
         guard let key = event["key"] as? String, !key.isEmpty, key.utf8.count <= 2048,
@@ -25,6 +31,17 @@ public struct InboxNotification: Codable, Identifiable, Equatable, Sendable {
         date = Date(timeIntervalSince1970: milliseconds / 1000)
         replyable = event["replyable"] as? Bool == true
         dismissible = event["dismissible"] as? Bool == true
+        package = event["package"] as? String
+        if let descriptors = event["actions"] as? [[String: Any]] {
+            var ids = Set<String>()
+            actions = descriptors.prefix(8).compactMap { value in
+                guard let id = value["id"] as? String, !id.isEmpty, id.utf16.count <= 180,
+                      let label = value["label"] as? String, label.utf16.count <= 100,
+                      !label.isEmpty || ["play", "pause", "previous", "next"].contains(id),
+                      ids.insert(id).inserted else { return nil }
+                return Action(id: id, label: label)
+            }
+        }
         icon = (event["iconPNG"] as? String).flatMap(NotificationIconPayload.decode)
     }
 }
@@ -51,6 +68,24 @@ public struct NotificationInbox: Codable, Sendable {
         for index in items.indices where items[index].source == source && !seen.contains(items[index].id) {
             items[index].state = .removed
         }
+    }
+    public mutating func hide(id: String, instance: String) -> Bool {
+        guard let version = Int64(instance) else { return false }
+        let previousCount = items.count
+        items.removeAll { $0.id == id && (Int64($0.instance) ?? .max) <= version }
+        return items.count != previousCount
+    }
+    public mutating func exclude(packages: Set<String>, source: String) -> [String] {
+        guard !packages.isEmpty else { return [] }
+        var removed = [String]()
+        items.removeAll { item in
+            // Older stores only retained the Android key (user|package|id|tag|uid).
+            guard item.source == source, let package = item.package ?? item.key.split(separator: "|", maxSplits: 2).dropFirst().first.map(String.init),
+                  packages.contains(package) else { return false }
+            removed.append(item.id)
+            return true
+        }
+        return removed
     }
     public mutating func clearHistory() { items.removeAll { $0.state == .removed } }
     public func save(to url: URL) throws {

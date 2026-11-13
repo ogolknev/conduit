@@ -103,3 +103,9 @@ operations capture the requesting endpoint and reject replaced sessions.
 
 The existing transport versions remain compatible. Older companions still deliver
 legacy banners; the new inbox requires an updated companion and says so in the UI.
+
+The Mac opts into notification actions in its snapshot request. Each action carries
+a short ID and label. Android looks it up again on the visible, current instance
+before sending its pending intent or media-session command. Playback updates refresh
+the controls silently. A hidden or snoozed instance is purged from the local inbox.
+Android package exclusions also purge matching history for that phone.

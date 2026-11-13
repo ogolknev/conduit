@@ -257,6 +257,7 @@
 "Message exceeds the Bluetooth channel limit" = "Message exceeds the Bluetooth channel limit";
 "NOTIFICATIONS" = "NOTIFICATIONS";
 "New code" = "New code";
+"Next track" = "Next track";
 "No active code" = "No active code";
 "No connection to Android" = "No connection to Android";
 "No connection to Mac" = "No connection to Mac";
@@ -298,6 +299,8 @@
 "Paired. Now enter the connection address." = "Paired. Now enter the connection address.";
 "Pairing IP:port" = "Pairing IP:port";
 "Pairing and connection use different ports." = "Pairing and connection use different ports.";
+"Pause" = "Pause";
+"Pending dismissal on phone · %@" = "Pending dismissal on phone · %@";
 "Permission not requested" = "Permission not requested";
 "Phone" = "Phone";
 "Phone connected. New clipboard changes will sync." = "Phone connected. New clipboard changes will sync.";
@@ -311,8 +314,10 @@
 "Phone notifications" = "Phone notifications";
 "Phone ready to connect" = "Phone ready to connect";
 "Photos, documents and other files" = "Photos, documents and other files";
+"Play" = "Play";
 "Preparing" = "Preparing";
 "Preparing Bluetooth…" = "Preparing Bluetooth…";
+"Previous track" = "Previous track";
 "Quit" = "Quit";
 "Quit Conduit" = "Quit Conduit";
 "RECENT ACTIVITY" = "RECENT ACTIVITY";
@@ -391,6 +396,7 @@
 "The phone did not allow updating the clipboard" = "The phone did not allow updating the clipboard";
 "The phone did not confirm Bluetooth authentication." = "The phone did not confirm Bluetooth authentication.";
 "The phone did not confirm dismissal. You can retry." = "The phone did not confirm dismissal. You can retry.";
+"The phone did not confirm the action" = "The phone did not confirm the action";
 "The phone did not confirm the reply" = "The phone did not confirm the reply";
 "The phone did not confirm the transfer. Reconnect and try again." = "The phone did not confirm the transfer. Reconnect and try again.";
 "The phone did not respond in time. Check the connection." = "The phone did not respond in time. Check the connection.";
@@ -507,6 +513,7 @@
 "Включи Bluetooth на телефоне" = "Enable Bluetooth on your phone";
 "Включите для Conduit один раз: восстановление после перезагрузки и обновления." = "Enable once for Conduit to restore the connection after restarts and updates.";
 "Включить соединение" = "Enable connection";
+"Воспроизвести" = "Play";
 "Восстанавливаю сохранённое соединение…" = "Restoring the saved connection…";
 "Все" = "All";
 "Входящие" = "Received files";
@@ -654,6 +661,7 @@
 "Ожидание телефона" = "Waiting for phone";
 "Ожидаю Mac по Bluetooth" = "Waiting for Mac over Bluetooth";
 "Ожидаю включения Bluetooth…" = "Waiting for Bluetooth to turn on…";
+"Ожидают удаления на телефоне · %@" = "Pending dismissal on phone · %@";
 "Оптимизация батареи" = "Battery optimization";
 "Ответ отправлен" = "Reply sent";
 "Ответ телефона не соответствует протоколу Conduit. Проверь версию Android-приложения." = "The phone response does not match the Conduit protocol. Check the Android app version.";
@@ -698,6 +706,7 @@
 "Ошибка соединения" = "Connection error";
 "ПОСЛЕДНИЕ СОБЫТИЯ" = "RECENT ACTIVITY";
 "Папки пока не поддерживаются. Можно отправить ZIP." = "Folders are not supported yet. Send a ZIP archive.";
+"Пауза" = "Pause";
 "Передавать на Mac" = "Forward to Mac";
 "Передача буфера, уведомлений и файлов будет приостановлена." = "Clipboard sync, notifications and file transfers will pause.";
 "Передача между Mac и Android." = "Transfer between Mac and Android.";
@@ -751,6 +760,7 @@
 "После подключения и раз в минуту. Без содержимого буфера и уведомлений." = "On connection and every minute. Clipboard and notification content is excluded.";
 "Последние 500 уведомлений хранятся только на этом Mac." = "The latest 500 notifications are stored only on this Mac.";
 "Последние события" = "Recent activity";
+"Предыдущий трек" = "Previous track";
 "Приложения" = "Apps";
 "Причина неизвестна. Скопируй диагностику." = "Unknown cause. Copy the diagnostics.";
 "Проверка значка из каталога Xcode" = "Conduit notification icon test";
@@ -793,6 +803,7 @@
 "Системный" = "System";
 "Скопировать диагностику" = "Copy diagnostics";
 "Скопировать отчёт" = "Copy report";
+"Следующий трек" = "Next track";
 "Служба Android переподключается" = "Android service reconnecting";
 "Служба Conduit не найдена после поиска. На телефоне открой Conduit 0.2.3 или новее и включи Bluetooth-соединение. При автоматическом подключении нажми «Подключить» вручную, чтобы обновить список служб." = "Conduit was not found. Open the latest Conduit on your phone and enable the connection. Select Connect manually to refresh the service list.";
 "Служба Conduit не ответила за 12 секунд. Нажми «Скопировать диагностику соединения» и пришли результат." = "Conduit service did not respond within 12 seconds. Copy the connection diagnostics from Settings.";
@@ -832,6 +843,7 @@
 "Телефон не ответил. Для журнала нужен APK 0.2.6 или новее." = "The phone did not respond. Update the Android companion to retrieve its log.";
 "Телефон не подключён" = "Phone not connected";
 "Телефон не подтвердил аутентификацию Bluetooth-соединения." = "The phone did not confirm Bluetooth authentication.";
+"Телефон не подтвердил действие" = "The phone did not confirm the action";
 "Телефон не подтвердил отправку ответа" = "The phone did not confirm the reply";
 "Телефон не подтвердил передачу. Подключись и повтори." = "The phone did not confirm the transfer. Reconnect and try again.";
 "Телефон не подтвердил удаление. Можно повторить." = "The phone did not confirm dismissal. You can retry.";
