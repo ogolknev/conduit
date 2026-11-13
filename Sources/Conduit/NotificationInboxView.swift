@@ -65,13 +65,8 @@ struct NotificationInboxView: View {
                             InboxRow(model: model, item: item)
                                 .id([item.id, item.instance])
                                 .background(Palette.soft)
-                                .clipShape(DayRowShape(first: item.id == entries.first?.id, last: item.id == entries.last?.id))
-                                .overlay(alignment: .bottom) {
-                                    if item.id != entries.last?.id {
-                                        Rectangle().fill(Palette.line).frame(height: 1).padding(.leading, 70)
-                                    }
-                                }
-                                .padding(.bottom, item.id == entries.last?.id ? 12 : 0)
+                                .clipShape(RoundedRectangle(cornerRadius: 10))
+                                .padding(.bottom, item.id == entries.last?.id ? 12 : 6)
                         }
                     }
                 }
@@ -98,19 +93,6 @@ struct NotificationInboxView: View {
                 .background(history == value ? Palette.surface : .clear, in: RoundedRectangle(cornerRadius: 7))
                 .contentShape(Rectangle())
         }.buttonStyle(.plain).accessibilityAddTraits(history == value ? .isSelected : [])
-    }
-}
-
-// macOS 13 has no UnevenRoundedRectangle. Round only the exposed ends of a day.
-private struct DayRowShape: Shape {
-    let first: Bool
-    let last: Bool
-    func path(in rect: CGRect) -> Path {
-        let radius = min(12, rect.height / 2, rect.width / 2)
-        var path = Path(roundedRect: rect, cornerRadius: radius)
-        if !first { path.addRect(CGRect(x: rect.minX, y: rect.minY, width: rect.width, height: radius)) }
-        if !last { path.addRect(CGRect(x: rect.minX, y: rect.maxY - radius, width: rect.width, height: radius)) }
-        return path
     }
 }
 
