@@ -67,7 +67,7 @@ struct NotificationInboxView: View {
             }
         }.font(.system(size: 12))
             .environment(\.locale, Locale(identifier: AppLocalization.resolvedLanguage()))
-            .animation(.easeInOut(duration: 0.28), value: items.map { [$0.id, $0.instance] })
+            .animation(.easeInOut(duration: 0.28), value: items.map(\.id))
     }
 
     private var dayFormatter: DateFormatter {
