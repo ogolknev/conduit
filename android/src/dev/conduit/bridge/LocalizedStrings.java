@@ -113,6 +113,7 @@ final class LocalizedStrings {
         values.put("Choose a file or photo. Use the shared clipboard for text.",R.string.text_ede1fa1c9eac);
         values.put("Choose files",R.string.text_6c7cbfdf8314);
         values.put("Clear history",R.string.text_3f70f0ad6764);
+        values.put("Click Connect to allow access to the saved pairing.",R.string.text_b0d299ecfa01);
         values.put("Clipboard",R.string.text_eb31594ab4f1);
         values.put("Clipboard disabled on Mac",R.string.text_4ea66d5e68bc);
         values.put("Clipboard protocol error",R.string.text_bc7ff8a49616);
@@ -179,6 +180,7 @@ final class LocalizedStrings {
         values.put("Connection stopped. Enable it again.",R.string.text_e37f47d5a319);
         values.put("Copy diagnostics",R.string.text_1fbb2aeab96b);
         values.put("Copy report",R.string.text_8ec2c58498ce);
+        values.put("Could not access the saved pairing in Keychain.",R.string.text_1e7160bf0de1);
         values.put("Could not save notification history.",R.string.text_e071f38945f1);
         values.put("Could not sync notifications with the phone.",R.string.text_9fd6856339c7);
         values.put("DIAGNOSTICS",R.string.text_ac43855928a2);
@@ -595,6 +597,7 @@ final class LocalizedStrings {
         values.put("На Mac: Conduit → Настройки → Диагностика. Журнал передаётся при подключении и раз в минуту. Текст буфера, уведомления и коды исключены из отчёта.",R.string.text_a54d2b6fab72);
         values.put("На телефоне недоступен Bluetooth",R.string.text_e58aad571494);
         values.put("На телефоне: Download/Conduit/",R.string.text_7f6a56f1190c);
+        values.put("Нажми «Подключиться», чтобы разрешить доступ к сохранённой связи.",R.string.text_b0d299ecfa01);
         values.put("Найти",R.string.text_be6156b8e4de);
         values.put("Настраивается на Mac",R.string.text_a5c033679bd4);
         values.put("Настроить",R.string.text_d71875872c7e);
@@ -626,6 +629,7 @@ final class LocalizedStrings {
         values.put("Не удалось подключиться",R.string.text_b323a1b637de);
         values.put("Не удалось подключиться к сервису телефона.",R.string.text_552ee23e21dd);
         values.put("Не удалось подтвердить Bluetooth-соединение с сопряжённым телефоном.",R.string.text_0b434864011a);
+        values.put("Не удалось получить доступ к сохранённой связи в Связке ключей.",R.string.text_1e7160bf0de1);
         values.put("Не удалось получить файл: ",R.string.text_70eb9110cc79);
         values.put("Не удалось прочитать буфер",R.string.text_d5a294e03df3);
         values.put("Не удалось прочитать текущий буфер",R.string.text_f160bb9d1be0);

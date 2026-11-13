@@ -1,6 +1,5 @@
 import Foundation
 import IOBluetooth
-import Security
 import ConduitCore
 
 struct BluetoothPhone: Identifiable {
@@ -249,34 +248,5 @@ private struct BluetoothCallbackReference<T: AnyObject>: @unchecked Sendable { l
         outbound.removeAll(); inFlight = nil
         if notify { onClose?(reason) }
         onData = nil; onClose = nil; onProgress = nil; authorizeServiceRefresh = nil
-    }
-}
-
-enum BluetoothTrust {
-    private static let service = "dev.conduit.bluetooth"
-    static var clientID: String {
-        if let id = UserDefaults.standard.string(forKey: "bluetoothClientID") { return id }
-        let id = UUID().uuidString
-        UserDefaults.standard.set(id, forKey: "bluetoothClientID"); return id
-    }
-    static func token(for address: String) -> String? {
-        var query = base(address); query[kSecReturnData as String] = true; query[kSecMatchLimit as String] = kSecMatchLimitOne
-        var value: CFTypeRef?
-        guard SecItemCopyMatching(query as CFDictionary, &value) == errSecSuccess, let data = value as? Data else { return nil }
-        return String(data: data, encoding: .utf8)
-    }
-    static func save(_ token: String, for address: String) throws {
-        var query = base(address)
-        let data = Data(token.utf8)
-        let updated = SecItemUpdate(query as CFDictionary, [kSecValueData: data] as CFDictionary)
-        if updated == errSecItemNotFound {
-            query[kSecValueData as String] = data
-            query[kSecAttrAccessible as String] = kSecAttrAccessibleAfterFirstUnlockThisDeviceOnly
-            guard SecItemAdd(query as CFDictionary, nil) == errSecSuccess else { throw AppError(L("Не удалось сохранить связь в Связке ключей.")) }
-        } else if updated != errSecSuccess { throw AppError(L("Связка ключей не разрешила сохранить связь.")) }
-    }
-    static func forget(_ address: String) { SecItemDelete(base(address) as CFDictionary) }
-    private static func base(_ address: String) -> [String: Any] {
-        [kSecClass as String: kSecClassGenericPassword, kSecAttrService as String: service, kSecAttrAccount as String: address]
     }
 }

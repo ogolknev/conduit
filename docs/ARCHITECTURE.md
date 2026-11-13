@@ -77,6 +77,13 @@ certificate; public distribution uses Developer ID. Mac icon catalog
 hashes bind compiled `Assets.car` to its sources; changing geometry requires
 regeneration and catalog compilation, not replacing one isolated icon.
 
+The signed Mac app reads Bluetooth pairing secrets through its bundled XPC service.
+The service and host verify each other's certificate and bundle identifier. The
+service uses the login session and the existing Keychain service and account.
+Its executable and bundle metadata are versioned independently of the host, since
+a local signing certificate can yield a build-specific Keychain partition. Only
+an explicit connection may request Keychain interaction. UI checks read metadata.
+
 ## Verification boundary
 
 Swift and JVM checks cover deterministic helpers. Generator checks cover shared

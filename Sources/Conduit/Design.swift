@@ -70,7 +70,11 @@ struct MainView: View {
         }
         return model.devices.first(where: { $0.serial == model.selectedSerial })?.name ?? "Android"
     }
-    private var version: String { Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String ?? "dev" }
+    private var version: String {
+        guard let version = Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String,
+              let build = Bundle.main.object(forInfoDictionaryKey: "CFBundleVersion") as? String else { return "dev" }
+        return "\(version) (\(build))"
+    }
 
     var body: some View {
         HStack(spacing: 0) {
@@ -337,7 +341,7 @@ struct MainView: View {
                     }.disabled(model.busy || model.connected)
                     Button { model.refreshBluetoothPhones() } label: { Image(systemName: "arrow.clockwise") }.accessibilityLabel(L("Обновить список устройств"))
                 }
-                if BluetoothTrust.token(for: model.bluetoothAddress) == nil {
+                if !model.hasTrustedBluetoothPhone {
                     SecureField(L("Код Conduit (8 цифр)"), text: $model.bluetoothCode).textFieldStyle(.roundedBorder).disabled(model.busy)
                 } else { Label(L("Устройство авторизовано. Код не требуется."), systemImage: "checkmark.shield").font(.system(size: 12)).foregroundStyle(Palette.accent) }
                 Button(L("Открыть настройки Bluetooth")) { NSWorkspace.shared.open(URL(string: "x-apple.systempreferences:com.apple.BluetoothSettings")!) }.buttonStyle(.link)

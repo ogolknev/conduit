@@ -64,6 +64,30 @@ private var appVersion: String { Bundle.main.object(forInfoDictionaryKey: "CFBun
             if let data = try? JSONSerialization.data(withJSONObject: output, options: [.sortedKeys]), let text = String(data: data, encoding: .utf8) { print(text) }
             return
         }
+        if let index = args.firstIndex(of: "--pairing-service-check") {
+            // A fixture may span two signed host builds. Never operate on a phone account.
+            let options = Array(args.dropFirst(index + 1))
+            let fixture: UUID
+            let mode: String
+            if options.isEmpty { fixture = UUID(); mode = "roundtrip" }
+            else if options.count == 2, ["create", "verify"].contains(options[0]), let id = UUID(uuidString: options[1]) {
+                fixture = id; mode = options[0]
+            } else { exit(64) }
+            let account = "conduit-self-test-" + fixture.uuidString
+            let token = SHA256.hash(data: Data(account.utf8)).map { String(format: "%02x", $0) }.joined()
+            guard Bundle.main.object(forInfoDictionaryKey: "ConduitPairingRequirement") != nil else { exit(1) }
+            do {
+                if mode != "verify" { try BluetoothTrust.save(token, for: account) }
+                if mode != "create" {
+                    defer { try? BluetoothTrust.forget(account) }
+                    guard BluetoothTrust.contains(account), try BluetoothTrust.token(for: account, interactive: false) == token
+                    else { throw AppError("pairing check") }
+                }
+            } catch { print("Pairing service check failed"); exit(1) }
+            if mode != "create" && BluetoothTrust.contains(account) { exit(1) }
+            print("Pairing service check passed (\(mode))")
+            return
+        }
         if args.contains("--smoke-test") {
             let resources = Bundle.main.resourceURL!
             let names = ["platform-tools/adb", "scrcpy-server-v5.0.1", "conduit-companion.apk", "AppIcon.icns", "Assets.car", "en.lproj/Localizable.strings", "ru.lproj/Localizable.strings"]

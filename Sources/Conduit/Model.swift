@@ -158,7 +158,7 @@ import ConduitCore
                     self.refreshBluetoothPhones()
                     if self.shouldReconnect && self.autoReconnect && !self.connected && !self.busy,
                        self.reconnectPolicy.isDue(at: ProcessInfo.processInfo.systemUptime),
-                       BluetoothTrust.token(for: self.bluetoothAddress) != nil { await self.connectBluetooth(automatic: true) }
+                       self.hasTrustedBluetoothPhone { await self.connectBluetooth(automatic: true) }
                     try? await Task.sleep(nanoseconds: 3_000_000_000)
                     continue
                 }

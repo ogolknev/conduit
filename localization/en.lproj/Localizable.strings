@@ -105,6 +105,7 @@
 "Choose a file or photo. Use the shared clipboard for text." = "Choose a file or photo. Use the shared clipboard for text.";
 "Choose files" = "Choose files";
 "Clear history" = "Clear history";
+"Click Connect to allow access to the saved pairing." = "Click Connect to allow access to the saved pairing.";
 "Clipboard" = "Clipboard";
 "Clipboard disabled on Mac" = "Clipboard disabled on Mac";
 "Clipboard protocol error" = "Clipboard protocol error";
@@ -171,6 +172,7 @@
 "Connection stopped. Enable it again." = "Connection stopped. Enable it again.";
 "Copy diagnostics" = "Copy diagnostics";
 "Copy report" = "Copy report";
+"Could not access the saved pairing in Keychain." = "Could not access the saved pairing in Keychain.";
 "Could not save notification history." = "Could not save notification history.";
 "Could not sync notifications with the phone." = "Could not sync notifications with the phone.";
 "DIAGNOSTICS" = "DIAGNOSTICS";
@@ -587,6 +589,7 @@
 "На Mac: Conduit → Настройки → Диагностика. Журнал передаётся при подключении и раз в минуту. Текст буфера, уведомления и коды исключены из отчёта." = "On Mac: Conduit → Settings → Diagnostics. Logs transfer on connection and every minute. Clipboard content, notifications and codes are excluded.";
 "На телефоне недоступен Bluetooth" = "Bluetooth unavailable on this phone";
 "На телефоне: Download/Conduit/" = "On phone: Download/Conduit/";
+"Нажми «Подключиться», чтобы разрешить доступ к сохранённой связи." = "Click Connect to allow access to the saved pairing.";
 "Найти" = "Find";
 "Настраивается на Mac" = "Configure on Mac";
 "Настроить" = "Configure";
@@ -618,6 +621,7 @@
 "Не удалось подключиться" = "Unable to connect";
 "Не удалось подключиться к сервису телефона." = "Unable to connect to the phone service.";
 "Не удалось подтвердить Bluetooth-соединение с сопряжённым телефоном." = "Unable to verify the Bluetooth connection to the paired phone.";
+"Не удалось получить доступ к сохранённой связи в Связке ключей." = "Could not access the saved pairing in Keychain.";
 "Не удалось получить файл: " = "Unable to receive file: ";
 "Не удалось прочитать буфер" = "Unable to read clipboard";
 "Не удалось прочитать текущий буфер" = "Unable to read the current clipboard";
