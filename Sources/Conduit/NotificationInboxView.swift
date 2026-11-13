@@ -106,6 +106,33 @@ private struct InboxRow: View {
         model.canAct(on: item) && model.inboxReplyRequest == nil && !reply.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty && reply.utf16.count <= 4096
     }
     var body: some View {
+        VStack(alignment: .leading, spacing: 10) {
+            notificationContent
+            if item.state == .active {
+                if !(item.actions ?? []).isEmpty || item.replyable {
+                    ViewThatFits(in: .horizontal) {
+                        HStack(spacing: 6) { controls }
+                        VStack(alignment: .leading, spacing: 6) { controls }
+                    }.frame(maxWidth: .infinity, alignment: .leading)
+                }
+                if composing && item.replyable {
+                    HStack {
+                        TextField(L("Сообщение"), text: $reply).textFieldStyle(.roundedBorder)
+                            .focused($replyFocused).onSubmit { if canReply { sendReply() } }
+                        Button(L("Отправить")) { sendReply() }.buttonStyle(ActionStyle()).disabled(!canReply)
+                    }
+                }
+            }
+        }.padding(.horizontal, 18).padding(.vertical, 15).background(Palette.soft)
+            .modifier(NotificationSwipe(enabled: item.canDismiss) { model.dismissNotification(item) })
+            .contextMenu {
+                if item.canDismiss {
+                    Button(L("Удалить с телефона")) { model.dismissNotification(item) }
+                }
+            }
+    }
+
+    private var notificationContent: some View {
         HStack(alignment: .top, spacing: 14) {
             Group {
                 if let data = item.icon, let image = NSImage(data: data) {
@@ -145,29 +172,8 @@ private struct InboxRow: View {
                 }
                 if item.state == .pending { Text(L("Ожидает удаления на телефоне")).foregroundStyle(Palette.muted) }
                 if item.state == .failed { Text(L("Телефон не подтвердил удаление. Можно повторить.")).foregroundStyle(Palette.error) }
-                if item.state == .active {
-                    if !(item.actions ?? []).isEmpty || item.replyable {
-                        ViewThatFits(in: .horizontal) {
-                            HStack(spacing: 6) { controls }
-                            VStack(alignment: .trailing, spacing: 6) { controls }
-                        }.frame(maxWidth: .infinity, alignment: .trailing).padding(.top, 6)
-                    }
-                    if composing && item.replyable {
-                        HStack {
-                            TextField(L("Сообщение"), text: $reply).textFieldStyle(.roundedBorder)
-                                .focused($replyFocused).onSubmit { if canReply { sendReply() } }
-                            Button(L("Отправить")) { sendReply() }.buttonStyle(ActionStyle()).disabled(!canReply)
-                        }.padding(.top, 4)
-                    }
-                }
             }
-        }.padding(.horizontal, 18).padding(.vertical, 15).background(Palette.soft)
-            .modifier(NotificationSwipe(enabled: item.canDismiss) { model.dismissNotification(item) })
-            .contextMenu {
-                if item.canDismiss {
-                    Button(L("Удалить с телефона")) { model.dismissNotification(item) }
-                }
-            }
+        }
     }
 
     @ViewBuilder private var controls: some View {
