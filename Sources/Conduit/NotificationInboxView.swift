@@ -67,6 +67,7 @@ struct NotificationInboxView: View {
             }
         }.font(.system(size: 12))
             .environment(\.locale, Locale(identifier: AppLocalization.resolvedLanguage()))
+            .animation(.easeInOut(duration: 0.28), value: items.map { [$0.id, $0.instance] })
     }
 
     private var dayFormatter: DateFormatter {
@@ -123,6 +124,7 @@ private struct InboxRow: View {
             }
         }.padding(.horizontal, 18).padding(.vertical, 15)
             .background(Palette.soft, in: RoundedRectangle(cornerRadius: 10))
+            .animation(.easeInOut(duration: 0.18), value: item.state)
             .modifier(NotificationSwipe(enabled: item.canDismiss) { model.dismissNotification(item) })
             .contextMenu {
                 if item.canDismiss {

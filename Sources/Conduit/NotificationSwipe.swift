@@ -9,8 +9,10 @@ struct NotificationSwipe: ViewModifier {
     private var threshold: CGFloat { min(140, max(65, width * 0.28)) }
 
     func body(content: Content) -> some View {
-        if enabled { swipeable(content) }
-        else { content }
+        swipeable(content)
+            .transition(.asymmetric(insertion: .opacity,
+                removal: .offset(x: distance < 0 ? -width : width).combined(with: .opacity)))
+            .onChange(of: enabled) { value in if value { reset() } }
     }
 
     private func swipeable(_ content: Content) -> some View {
@@ -36,32 +38,38 @@ struct NotificationSwipe: ViewModifier {
             .contentShape(shape)
             .simultaneousGesture(DragGesture(minimumDistance: 8, coordinateSpace: .global)
                 .onChanged { value in
+                    guard enabled else { return }
                     if abs(value.translation.width) > abs(value.translation.height) * 1.4 {
                         distance = value.translation.width
                     } else { distance = 0 }
                 }
                 .onEnded { value in
+                    guard enabled else { return }
                     distance = abs(value.translation.width) > abs(value.translation.height) * 1.4 ? value.translation.width : 0
                     finish()
                 })
-            .onDisappear { distance = 0 }
             .background {
-                TrackpadSwipe(onChange: { distance = $0 }, onEnd: { cancelled in
-                    if cancelled { withAnimation { distance = 0 } } else { finish() }
+                TrackpadSwipe(enabled: enabled, onChange: { distance = $0 }, onEnd: { cancelled in
+                    if cancelled { reset() } else { finish() }
                 })
             }
     }
 
     private func finish() {
-        let shouldDismiss = abs(distance) >= threshold
-        withAnimation(.easeOut(duration: 0.18)) { distance = 0 }
-        if shouldDismiss { dismiss() }
+        guard enabled else { return }
+        guard abs(distance) >= threshold else { reset(); return }
+        dismiss()
+    }
+
+    private func reset() {
+        withAnimation(.interactiveSpring(response: 0.3, dampingFraction: 0.85)) { distance = 0 }
     }
 }
 
 // AppKit sends two-finger gestures as phased scroll events. Install a monitor
 // only while the pointer is over this row and leave vertical scrolling to its parent.
 private struct TrackpadSwipe: NSViewRepresentable {
+    let enabled: Bool
     let onChange: (CGFloat) -> Void
     let onEnd: (Bool) -> Void
     func makeNSView(context: Context) -> Surface { Surface() }
@@ -104,7 +112,7 @@ private struct TrackpadSwipe: NSViewRepresentable {
             horizontal = nil
         }
         private func handle(_ event: NSEvent) -> Bool {
-            guard event.window === window, event.hasPreciseScrollingDeltas, !event.phase.isEmpty,
+            guard handler?.enabled == true, event.window === window, event.hasPreciseScrollingDeltas, !event.phase.isEmpty,
                   event.momentumPhase.isEmpty else { return false }
             if event.phase.contains(.began) {
                 beganHere = bounds.contains(convert(event.locationInWindow, from: nil))
