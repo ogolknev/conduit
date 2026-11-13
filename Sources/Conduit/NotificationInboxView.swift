@@ -4,6 +4,7 @@ import ConduitCore
 struct NotificationInboxView: View {
     @ObservedObject var model: ConduitModel
     @State private var history = false
+    @Environment(\.calendar) private var calendar
 
     var body: some View {
         let items = model.inbox.items.filter { history ? $0.visibleInHistory : $0.visibleInActive }
@@ -49,14 +50,44 @@ struct NotificationInboxView: View {
                     .background(Palette.surface, in: RoundedRectangle(cornerRadius: 10))
                     .overlay(RoundedRectangle(cornerRadius: 10).strokeBorder(Palette.line))
             } else {
-                LazyVStack(spacing: 10) {
-                    ForEach(items) { item in
-                        InboxRow(model: model, item: item).id([item.id, item.instance])
+                let dayFormatter = dayFormatter
+                let days = Dictionary(grouping: items) { calendar.startOfDay(for: $0.date) }
+                LazyVStack(alignment: .leading, spacing: 0) {
+                    ForEach(days.keys.sorted(by: >), id: \.self) { day in
+                        let entries = days[day] ?? []
+                        HStack(spacing: 12) {
+                            Text(day, formatter: dayFormatter)
+                                .font(.system(size: 13, weight: .semibold))
+                                .accessibilityAddTraits(.isHeader)
+                            Rectangle().fill(Palette.line).frame(height: 1)
+                        }.padding(.top, 8).padding(.bottom, 10)
+                        ForEach(entries) { item in
+                            InboxRow(model: model, item: item)
+                                .id([item.id, item.instance])
+                                .background(Palette.soft)
+                                .clipShape(DayRowShape(first: item.id == entries.first?.id, last: item.id == entries.last?.id))
+                                .overlay(alignment: .bottom) {
+                                    if item.id != entries.last?.id {
+                                        Rectangle().fill(Palette.line).frame(height: 1).padding(.leading, 70)
+                                    }
+                                }
+                                .padding(.bottom, item.id == entries.last?.id ? 12 : 0)
+                        }
                     }
                 }
             }
         }.font(.system(size: 12))
             .environment(\.locale, Locale(identifier: AppLocalization.resolvedLanguage()))
+    }
+
+    private var dayFormatter: DateFormatter {
+        let formatter = DateFormatter()
+        formatter.locale = Locale(identifier: AppLocalization.resolvedLanguage())
+        formatter.calendar = calendar
+        formatter.timeZone = calendar.timeZone
+        formatter.dateStyle = .long
+        formatter.doesRelativeDateFormatting = true
+        return formatter
     }
 
     private func tab(_ label: String, history value: Bool) -> some View {
@@ -67,6 +98,19 @@ struct NotificationInboxView: View {
                 .background(history == value ? Palette.surface : .clear, in: RoundedRectangle(cornerRadius: 7))
                 .contentShape(Rectangle())
         }.buttonStyle(.plain).accessibilityAddTraits(history == value ? .isSelected : [])
+    }
+}
+
+// macOS 13 has no UnevenRoundedRectangle. Round only the exposed ends of a day.
+private struct DayRowShape: Shape {
+    let first: Bool
+    let last: Bool
+    func path(in rect: CGRect) -> Path {
+        let radius = min(12, rect.height / 2, rect.width / 2)
+        var path = Path(roundedRect: rect, cornerRadius: radius)
+        if !first { path.addRect(CGRect(x: rect.minX, y: rect.minY, width: rect.width, height: radius)) }
+        if !last { path.addRect(CGRect(x: rect.minX, y: rect.maxY - radius, width: rect.width, height: radius)) }
+        return path
     }
 }
 
@@ -81,23 +125,31 @@ private struct InboxRow: View {
         model.canAct(on: item) && model.inboxReplyRequest == nil && !reply.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty && reply.utf16.count <= 4096
     }
     var body: some View {
-        HStack(alignment: .top, spacing: 12) {
+        HStack(alignment: .top, spacing: 14) {
             Group {
                 if let data = item.icon, let image = NSImage(data: data) {
                     Image(nsImage: image).resizable().scaledToFit()
                 } else {
-                    LineIcon("bell").padding(7).foregroundStyle(Palette.muted).background(Palette.soft)
+                    if (item.actions ?? []).contains(where: { mediaLabel($0.id) != nil }) {
+                        Image(systemName: "music.note").font(.system(size: 18, weight: .medium))
+                            .frame(maxWidth: .infinity, maxHeight: .infinity)
+                            .foregroundStyle(Palette.canvas).background(Palette.accent)
+                    } else {
+                        Text(String(item.app.prefix(1)).uppercased()).font(.system(size: 18, weight: .semibold))
+                            .frame(maxWidth: .infinity, maxHeight: .infinity)
+                            .foregroundStyle(Palette.ink).background(Palette.surface)
+                    }
                 }
-            }.frame(width: 32, height: 32).clipShape(RoundedRectangle(cornerRadius: 8))
+            }.frame(width: 38, height: 38).clipShape(RoundedRectangle(cornerRadius: 9)).accessibilityHidden(true)
             VStack(alignment: .leading, spacing: 5) {
                 HStack(spacing: 8) {
                     Text(item.app).fontWeight(.medium).lineLimit(1)
                     Spacer(minLength: 4)
-                    Text(item.date, format: .dateTime.day().month(.abbreviated).hour().minute())
-                        .font(.system(size: 11)).fixedSize()
+                    Text(item.date, style: .time)
+                        .font(.system(size: 11)).monospacedDigit().fixedSize()
                     Button { model.closeInboxNotification(item) } label: {
                         Image(systemName: "xmark").font(.system(size: 11, weight: .semibold))
-                            .frame(width: 24, height: 24).background(Palette.soft, in: Circle())
+                            .frame(width: 24, height: 24).contentShape(Rectangle())
                     }.buttonStyle(.plain).help(L("Закрыть на Mac")).accessibilityLabel(L("Закрыть на Mac"))
                 }.foregroundStyle(Palette.muted)
                 if !item.title.isEmpty {
@@ -124,8 +176,7 @@ private struct InboxRow: View {
                     }
                 }
             }
-        }.padding(16).background(Palette.surface, in: RoundedRectangle(cornerRadius: 10))
-            .overlay(RoundedRectangle(cornerRadius: 10).strokeBorder(Palette.line))
+        }.padding(.horizontal, 18).padding(.vertical, 15).background(Palette.soft)
             .modifier(NotificationSwipe { model.closeInboxNotification(item) })
             .contextMenu {
                 Button(L("Закрыть на Mac")) { model.closeInboxNotification(item) }
@@ -142,7 +193,7 @@ private struct InboxRow: View {
             Button { model.performNotificationAction(action, on: item) } label: {
                 if let media { Image(systemName: media.icon).frame(minWidth: 16) }
                 else { Text(title) }
-            }.buttonStyle(ActionStyle()).help(title).accessibilityLabel(title)
+            }.buttonStyle(InboxActionStyle(primary: action.id == "pause" || action.id == "play")).help(title).accessibilityLabel(title)
                 .disabled(!model.canAct(on: item) || model.notificationActionRequest != nil)
         }
         if item.replyable {
@@ -150,7 +201,7 @@ private struct InboxRow: View {
                 composing.toggle()
                 replyFocused = composing
             } label: { Label(L("Ответить"), systemImage: "arrowshape.turn.up.left") }
-                .buttonStyle(ActionStyle()).disabled(!model.canAct(on: item))
+                .buttonStyle(InboxActionStyle()).disabled(!model.canAct(on: item))
         }
     }
     private func mediaLabel(_ id: String) -> (title: String, icon: String)? {
@@ -163,4 +214,20 @@ private struct InboxRow: View {
         }
     }
     private func sendReply() { model.replyToNotification(item, text: reply) }
+}
+
+
+private struct InboxActionStyle: ButtonStyle {
+    var primary = false
+    @Environment(\.isEnabled) private var enabled
+
+    func makeBody(configuration: Configuration) -> some View {
+        configuration.label.font(.system(size: 12, weight: .medium))
+            .padding(.horizontal, 11).frame(minHeight: 28)
+            .foregroundStyle(primary ? Palette.canvas : Palette.ink)
+            .background(primary ? Palette.accent : Palette.surface, in: Capsule())
+            .overlay { Capsule().strokeBorder(primary ? .clear : Palette.line) }
+            .opacity(enabled ? (configuration.isPressed ? 0.65 : 1) : 0.45)
+            .contentShape(Capsule())
+    }
 }

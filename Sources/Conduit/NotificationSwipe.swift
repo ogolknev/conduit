@@ -17,10 +17,10 @@ struct NotificationSwipe: ViewModifier {
                         if distance > 0 { Spacer() }
                     }.padding(.horizontal, 20).frame(maxHeight: .infinity)
                         .foregroundStyle(abs(distance) >= threshold ? Palette.error : Palette.muted)
-                        .background(Palette.soft)
+                        .background(Palette.canvas)
                 }
             }
-            .clipShape(RoundedRectangle(cornerRadius: 10))
+            .clipped()
             .background(GeometryReader { geometry in
                 Color.clear.onAppear { width = geometry.size.width }.onChange(of: geometry.size.width) { width = $0 }
             })

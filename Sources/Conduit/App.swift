@@ -124,7 +124,8 @@ private var appVersion: String { Bundle.main.object(forInfoDictionaryKey: "CFBun
                 ]
                 for (index, var event) in samples.enumerated() {
                     event["key"] = "preview-\(index)"
-                    event["instance"] = String(Int(Date().timeIntervalSince1970 * 1000) - index * 60000)
+                    let minutesAgo = [0, 58, 24 * 60][index]
+                    event["instance"] = String(Int(Date().timeIntervalSince1970 * 1000) - minutesAgo * 60000)
                     if let item = InboxNotification(source: source, event: event) { model.inbox.upsert(item) }
                 }
             }
