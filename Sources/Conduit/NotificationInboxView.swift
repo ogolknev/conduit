@@ -215,9 +215,9 @@ private struct InboxActionStyle: ButtonStyle {
         configuration.label.font(.system(size: 12, weight: .medium))
             .padding(.horizontal, 11).frame(minHeight: 28)
             .foregroundStyle(primary ? Palette.canvas : Palette.ink)
-            .background(primary ? Palette.accent : Palette.surface, in: Capsule())
-            .overlay { Capsule().strokeBorder(primary ? .clear : Palette.line) }
+            .background(primary ? Palette.accent : Palette.surface, in: RoundedRectangle(cornerRadius: 9))
+            .overlay { RoundedRectangle(cornerRadius: 9).strokeBorder(primary ? .clear : Palette.line) }
             .opacity(enabled ? (configuration.isPressed ? 0.65 : 1) : 0.45)
-            .contentShape(Capsule())
+            .contentShape(RoundedRectangle(cornerRadius: 9))
     }
 }
