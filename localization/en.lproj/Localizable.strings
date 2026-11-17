@@ -105,6 +105,7 @@
 "Choose a file or photo. Use the shared clipboard for text." = "Choose a file or photo. Use the shared clipboard for text.";
 "Choose files" = "Choose files";
 "Clear history" = "Clear history";
+"Clear search" = "Clear search";
 "Click Connect to allow access to the saved pairing." = "Click Connect to allow access to the saved pairing.";
 "Clipboard" = "Clipboard";
 "Clipboard disabled on Mac" = "Clipboard disabled on Mac";
@@ -262,6 +263,7 @@
 "New code" = "New code";
 "Next track" = "Next track";
 "No active code" = "No active code";
+"No apps found" = "No apps found";
 "No connection to Android" = "No connection to Android";
 "No connection to Mac" = "No connection to Mac";
 "No connection to the phone" = "No connection to the phone";
@@ -346,6 +348,7 @@
 "Save" = "Save";
 "Save phone log on Mac" = "Save phone log on Mac";
 "Saved: " = "Saved: ";
+"Search by name or package" = "Search by name or package";
 "Select a device" = "Select a device";
 "Send" = "Send";
 "Send APK" = "Send APK";
@@ -704,6 +707,7 @@
 "Отпустите файлы для отправки" = "Drop files to send";
 "Оформление" = "Theme";
 "Очистить историю" = "Clear history";
+"Очистить поиск" = "Clear search";
 "Ошибка Bluetooth-канала" = "Bluetooth channel error";
 "Ошибка канала уведомлений" = "Notification channel error";
 "Ошибка отправки по Bluetooth" = "Bluetooth send error";
@@ -755,6 +759,7 @@
 "Подключён по %@" = "Connected via %@";
 "Подключён по Bluetooth" = "Connected over Bluetooth";
 "Подключён через отладку" = "Connected via debugging";
+"Поиск по названию или пакету" = "Search by name or package";
 "Показать подключение" = "Show connection";
 "Показывать на Mac" = "Show on Mac";
 "Получен по Bluetooth: " = "Received over Bluetooth: ";
@@ -768,6 +773,7 @@
 "Последние события" = "Recent activity";
 "Предыдущий трек" = "Previous track";
 "Приложения" = "Apps";
+"Приложения не найдены" = "No apps found";
 "Причина неизвестна. Скопируй диагностику." = "Unknown cause. Copy the diagnostics.";
 "Проверка значка из каталога Xcode" = "Conduit notification icon test";
 "Проверка…" = "Checking…";

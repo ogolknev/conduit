@@ -24,7 +24,7 @@ extension ConduitModel {
         if !notificationListenerConnected { notificationSynced = false; notificationSnapshot = nil; return }
         if notificationSnapshot == nil && !notificationSynced {
             let request = UUID().uuidString; notificationSnapshot = request; notificationSeen = []
-            sendBridge(["type": "notificationSnapshot", "request": request, "notificationActions": true])
+            sendBridge(["type": "notificationSnapshot", "request": request, "notificationActions": true, "notificationPresentation": true])
             armNotificationSnapshotTimeout()
         }
     }
@@ -96,13 +96,14 @@ extension ConduitModel {
             inboxActionResult = event["ok"] as? Bool == true ? L("Ответ отправлен") : L("Уведомление больше не принимает ответ")
         case "notification":
             guard notificationsEnabled, let item = InboxNotification(source: source, event: event) else { return true }
+            let presentation = NotificationPresentation(event: event, isNewInstance: !inbox.items.contains { $0.id == item.id && $0.instance == item.instance })
             if let snapshot = event["snapshot"] as? String {
                 guard snapshot == notificationSnapshot else { return true }
                 notificationSeen.insert(item.id); armNotificationSnapshotTimeout()
             }
             inbox.upsert(item)
             if event["snapshot"] == nil { persistInbox() }
-            if event["snapshot"] == nil, event["quiet"] as? Bool != true, inbox.items.contains(where: { $0.id == item.id && $0.instance == item.instance && $0.state == .active }) {
+            if presentation.deliver, inbox.items.contains(where: { $0.id == item.id && $0.instance == item.instance && $0.state == .active }) {
                 var banner = event; banner["key"] = item.id; banner["source"] = source; banner["originalKey"] = item.key
                 Task { do { try await PhoneNotifications.show(banner) } catch { log(L("Проверь разрешение уведомлений macOS")) } }
             }

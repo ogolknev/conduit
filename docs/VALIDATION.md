@@ -1,5 +1,15 @@
 # Validation
 
+## App search and notification alerts — development builds 33 / 16
+
+- 49 Swift tests, six Android JVM suites and 12 packaging tests pass. Both signed native builds, resource/localization checks and the Mac smoke test pass. The XPC helper retains its CDHash; a synthetic Keychain item created by installed build 32 was read noninteractively by build 33.
+- On Xiaomi 15 / Android 16, the app selector was checked with case-insensitive package search, empty results/clear, draft changes across queries, Cancel, Save and reopening. A shell notification source without a launcher entry was searchable. Disabling it persisted in service settings and hid a newly posted synthetic notification; re-enabling it restored that notification in a snapshot. The original selection was restored and synthetic notifications were dismissed.
+- Native light/dark selector captures were inspected. Changing the system theme recreated the Activity and preserved both query and unsaved selection; cancelling discarded those edits. The original night mode and screen timeout were restored.
+- An actual Android shell notification carried `banner: false, sound: true`; its snapshot was quiet and tracked dismissal was confirmed. JVM cases cover all four alert combinations, DND/audio suppression, muted/zero-volume audio, silent groups and only-alert-once updates. A full physical Android channel/DND/ringer matrix remains unverified: the phone rejected installation of the separate test APK.
+- The final signed builds were installed as Mac 0.4.2 (33) and Android 0.4.2 (16). A fresh synthetic notification posted on the phone reached the installed Mac inbox over the normal connection, and its phone-side deletion was confirmed. The APK bundled in the Mac app matches the final companion build.
+- Native Mac requests exercised all four banner/sound combinations with the app active and inactive. Eight text notifications reached Notification Center with the intended active/passive levels. Separate sound-only requests were accepted without an empty list entry; foreground delegate presentation flags matched the policy. Actual acoustic playback and a Focus-mode matrix were not measured.
+- Old peers retain their legacy behavior through an additive descriptor and opt-in presentation flag. Snapshot/internal updates and duplicate instances suppress replay in deterministic tests. Android public APIs expose alert eligibility; actual heads-up presentation and OEM-specific popup overrides remain outside that guarantee.
+
 ## Notification inbox — development builds 19 / 14
 
 - 40 Swift tests include update deduplication, offline dismissal persistence, reused-key protection, phone isolation, snapshot reconciliation and bounded private storage. Native Mac/Android builds pass.

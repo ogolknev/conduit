@@ -116,3 +116,21 @@ a short ID and label. Android looks it up again on the visible, current instance
 before sending its pending intent or media-session command. Playback updates refresh
 the controls silently. A hidden or snoozed instance is purged from the local inbox.
 Android package exclusions also purge matching history for that phone.
+
+The Mac opts into notification presentation in its snapshot request. New
+notification events carry an optional `alert` descriptor with independent
+`banner` and `sound` booleans. Android derives these from ranking/channel policy,
+DND visual/audio suppression, ringer/volume state, group alert behavior and
+only-alert-once updates. This is alert eligibility, not proof that System UI
+actually displayed a heads-up window or played audio. Public listener APIs do
+not report the actual heads-up presentation; OEM-specific popup settings and
+transient UI decisions can differ. See Android's [ranking API](https://developer.android.com/reference/android/service/notification/NotificationListenerService.Ranking)
+and [channel behavior](https://developer.android.com/develop/ui/views/notifications/channels).
+
+The Mac keeps shade-only notifications in its inbox and delivers their system
+notification passively. Sound without a banner uses a separate content-free,
+sound-only request, leaving Focus and notification permissions to macOS. Old
+companions retain banner-only behavior when the descriptor is absent; old Macs
+retain the legacy suppression of ongoing notifications. Snapshots,
+internal refreshes and repeated instances never replay alerts. The descriptor is
+additive; transport and inbox versions remain unchanged.

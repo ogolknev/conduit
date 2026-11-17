@@ -16,6 +16,9 @@ import android.graphics.Typeface;
 import android.net.Uri;
 import android.os.*;
 import android.provider.Settings;
+import android.text.Editable;
+import android.text.TextWatcher;
+import android.text.InputType;
 import android.view.*;
 import android.widget.*;
 import java.util.*;
@@ -33,6 +36,9 @@ public final class MainActivity extends Activity {
     private SettingsRow bluetoothPermissionRow, ownNotificationsRow, shizukuPermissionRow;
     private boolean discoverAfterPermission, bluetoothBusy;
     private int startAttempt;
+    private AppSelection appDraft;
+    private EditText appSearch;
+    private AlertDialog appDialog;
     private Runnable startupTimeout;
     private final Handler handler = new Handler(Looper.getMainLooper());
     private final Shizuku.OnRequestPermissionResultListener permissionResult = (code, grant) -> {
@@ -77,6 +83,10 @@ public final class MainActivity extends Activity {
         buildScreen();
         Shizuku.addRequestPermissionResultListener(permissionResult);
         handleShare(getIntent());
+        if (state != null && state.getBoolean("appsOpen")) {
+            ArrayList<String> draft = state.getStringArrayList("appsBlocked");
+            chooseApps(draft == null ? null : new HashSet<>(draft), state.getString("appsQuery", ""));
+        }
     }
 
     private void buildScreen() {
@@ -424,9 +434,14 @@ public final class MainActivity extends Activity {
     }
     @Override protected void onDestroy() {
         handler.removeCallbacks(update); if (startupTimeout != null) handler.removeCallbacks(startupTimeout);
+        if (appDialog != null) appDialog.dismiss();
         Shizuku.removeRequestPermissionResultListener(permissionResult); super.onDestroy();
     }
     @Override protected void onSaveInstanceState(Bundle state) {
+        if (appDialog != null && appDialog.isShowing() && appDraft != null) {
+            state.putBoolean("appsOpen", true); state.putStringArrayList("appsBlocked", new ArrayList<>(appDraft.blocked));
+            state.putString("appsQuery", appSearch.getText().toString());
+        }
         state.putBoolean("discoverAfterPermission", discoverAfterPermission); state.putInt("page", selectedPage); super.onSaveInstanceState(state);
     }
     private void beginBluetooth(boolean discoverable) {
@@ -546,24 +561,84 @@ public final class MainActivity extends Activity {
             else if (data.getData() != null) SharedFiles.share(this, data.getData());
         }
     }
-    private void chooseApps() {
+    private void chooseApps() { chooseApps(null, ""); }
+    private void chooseApps(Set<String> draft, String query) {
         List<ResolveInfo> all = getPackageManager().queryIntentActivities(new Intent(Intent.ACTION_MAIN).addCategory(Intent.CATEGORY_LAUNCHER), 0);
         TreeMap<String, String> labelsByPackage = new TreeMap<>();
         for (ResolveInfo info : all) if (!info.activityInfo.packageName.equals(getPackageName())) labelsByPackage.put(info.activityInfo.packageName, info.loadLabel(getPackageManager()).toString());
-        ArrayList<Map.Entry<String, String>> apps = new ArrayList<>(labelsByPackage.entrySet());
-        apps.sort((a, b) -> a.getValue().compareToIgnoreCase(b.getValue()));
         SharedPreferences prefs = getSharedPreferences("settings", MODE_PRIVATE);
-        Set<String> blocked = new HashSet<>(prefs.getStringSet("blocked", Collections.emptySet()));
-        String[] labels = new String[apps.size()]; boolean[] checked = new boolean[apps.size()];
-        for (int i = 0; i < apps.size(); i++) { labels[i] = apps.get(i).getValue(); checked[i] = !blocked.contains(apps.get(i).getKey()); }
-        new AlertDialog.Builder(this).setTitle(t("Показывать на Mac"))
-            .setMultiChoiceItems(labels, checked, (dialog, which, enabled) -> {
-                String pkg = apps.get(which).getKey(); if (enabled) blocked.remove(pkg); else blocked.add(pkg);
-            }).setPositiveButton(t("Сохранить"), (dialog, which) -> {
-                prefs.edit().putStringSet("blocked", blocked).apply();
+        Set<String> blocked = prefs.getStringSet("blocked", Collections.emptySet());
+        Set<String> additional = PhoneNotifications.activePackages(); additional.addAll(blocked);
+        for (String pkg : additional) {
+            if (pkg.equals(getPackageName()) || labelsByPackage.containsKey(pkg)) continue;
+            try { labelsByPackage.put(pkg, getPackageManager().getApplicationLabel(getPackageManager().getApplicationInfo(pkg, 0)).toString()); }
+            catch (PackageManager.NameNotFoundException ignored) { labelsByPackage.put(pkg, pkg); }
+        }
+        ArrayList<AppSelection.App> entries = new ArrayList<>();
+        for (Map.Entry<String, String> app : labelsByPackage.entrySet()) entries.add(new AppSelection.App(app.getKey(), app.getValue()));
+        java.text.Collator collator = java.text.Collator.getInstance(getResources().getConfiguration().getLocales().get(0));
+        entries.sort((a, b) -> { int order = collator.compare(a.label, b.label); return order != 0 ? order : a.packageName.compareTo(b.packageName); });
+        AppSelection selection = new AppSelection(entries, draft == null ? blocked : draft);
+        appDraft = selection;
+        LinearLayout content = column(); content.setPadding(dp(20), dp(12), dp(20), 0);
+        LinearLayout searchRow = row(); searchRow.setBackground(shape(soft, 7, false));
+        EditText search = new EditText(this); search.setSingleLine(true); search.setTextSize(14); search.setTextColor(ink); search.setHintTextColor(muted);
+        appSearch = search;
+        search.setHint(t("Поиск по названию или пакету")); search.setInputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_FLAG_NO_SUGGESTIONS);
+        search.setBackgroundColor(Color.TRANSPARENT); search.setPadding(dp(12), dp(10), 0, dp(10));
+        searchRow.addView(search, new LinearLayout.LayoutParams(0, dp(48), 1));
+        IconView clear = new IconView("close", muted); clear.setPadding(dp(15), dp(15), dp(15), dp(15));
+        clear.setImportantForAccessibility(View.IMPORTANT_FOR_ACCESSIBILITY_YES); clear.setContentDescription(t("Очистить поиск"));
+        clear.setVisibility(View.INVISIBLE); clear.setOnClickListener(v -> search.setText(""));
+        searchRow.addView(clear, new LinearLayout.LayoutParams(dp(48), dp(48))); content.addView(searchRow);
+        FrameLayout results = new FrameLayout(this);
+        int height = Math.min(dp(360), getResources().getDisplayMetrics().heightPixels / 2);
+        content.addView(results, new LinearLayout.LayoutParams(-1, height));
+        ListView list = new ListView(this); list.setDivider(null); list.setCacheColorHint(Color.TRANSPARENT); list.setClipToPadding(false); list.setPadding(0, dp(8), 0, dp(8));
+        TextView empty = label(t("Приложения не найдены"), 14, false, muted); empty.setGravity(Gravity.CENTER);
+        results.addView(list, new FrameLayout.LayoutParams(-1, -1)); results.addView(empty, new FrameLayout.LayoutParams(-1, -1)); list.setEmptyView(empty);
+        final class AppsAdapter extends BaseAdapter {
+            List<AppSelection.App> visible = selection.search("");
+            public int getCount() { return visible.size(); }
+            public AppSelection.App getItem(int position) { return visible.get(position); }
+            public long getItemId(int position) { return position; }
+            public View getView(int position, View recycled, ViewGroup parent) {
+                AppSelection.App app = getItem(position);
+                LinearLayout cell = row(); cell.setMinimumHeight(dp(64)); cell.setPadding(dp(2), dp(8), dp(2), dp(8));
+                LinearLayout words = column(); words.addView(label(app.label, 14, false, ink));
+                TextView pkg = label(app.packageName, 11, false, muted); pkg.setMaxLines(1); pkg.setEllipsize(android.text.TextUtils.TruncateAt.MIDDLE); words.addView(pkg);
+                cell.addView(words, new LinearLayout.LayoutParams(0, -2, 1));
+                CheckBox check = new CheckBox(MainActivity.this); check.setMinWidth(dp(48)); check.setMinHeight(dp(48));
+                check.setButtonTintList(ColorStateList.valueOf(accent)); check.setChecked(!selection.blocked.contains(app.packageName));
+                check.setContentDescription(app.label + ", " + app.packageName);
+                check.setOnCheckedChangeListener((button, enabled) -> selection.setEnabled(app.packageName, enabled));
+                cell.addView(check); cell.setBackground(pressBackground(Color.TRANSPARENT, soft)); cell.setOnClickListener(v -> check.toggle());
+                return cell;
+            }
+        }
+        AppsAdapter adapter = new AppsAdapter(); list.setAdapter(adapter);
+        search.addTextChangedListener(new TextWatcher() {
+            public void beforeTextChanged(CharSequence text, int start, int count, int after) {}
+            public void onTextChanged(CharSequence text, int start, int before, int count) {
+                clear.setVisibility(text.length() == 0 ? View.INVISIBLE : View.VISIBLE);
+                adapter.visible = selection.search(text.toString()); adapter.notifyDataSetChanged(); list.setSelection(0);
+            }
+            public void afterTextChanged(Editable text) {}
+        });
+        TextView title = label(t("Показывать на Mac"), 18, true, ink); title.setPadding(dp(20), dp(20), dp(20), 0);
+        AlertDialog dialog = new AlertDialog.Builder(this).setCustomTitle(title).setView(content)
+            .setPositiveButton(t("Сохранить"), (view, which) -> {
+                prefs.edit().putStringSet("blocked", new HashSet<>(selection.blocked)).apply();
                 PhoneNotifications.filtersChanged();
             })
-            .setNegativeButton(t("Отмена"), null).show();
+            .setNegativeButton(t("Отмена"), null).create();
+        content.setFocusableInTouchMode(true); content.requestFocus();
+        appDialog = dialog;
+        dialog.setOnDismissListener(view -> { if (appDialog == dialog) { appDialog = null; appDraft = null; appSearch = null; } });
+        dialog.getWindow().setBackgroundDrawable(shape(surface, 10, false));
+        dialog.getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE | WindowManager.LayoutParams.SOFT_INPUT_STATE_ALWAYS_HIDDEN);
+        dialog.show(); dialog.getButton(AlertDialog.BUTTON_POSITIVE).setTextColor(ink); dialog.getButton(AlertDialog.BUTTON_NEGATIVE).setTextColor(muted);
+        search.setText(query);
     }
     private LinearLayout column() { LinearLayout v = new LinearLayout(this); v.setOrientation(LinearLayout.VERTICAL); return v; }
     private LinearLayout row() { LinearLayout v = new LinearLayout(this); v.setOrientation(LinearLayout.HORIZONTAL); v.setGravity(Gravity.CENTER_VERTICAL); return v; }
@@ -668,6 +743,7 @@ public final class MainActivity extends Activity {
             else if (kind.equals("copy")) { c.drawRoundRect(8,8,21,21,2,2,paint); Path p=new Path(); p.moveTo(5,16); p.lineTo(3,16); p.lineTo(3,3); p.lineTo(16,3); p.lineTo(16,5); c.drawPath(p,paint); }
             else if (kind.equals("send")) { c.drawLine(5,19,19,5,paint); c.drawLine(9,5,19,5,paint); c.drawLine(19,5,19,15,paint); }
             else if (kind.equals("chevron")) { c.drawLine(9,6,15,12,paint); c.drawLine(15,12,9,18,paint); }
+            else if (kind.equals("close")) { c.drawLine(6,6,18,18,paint); c.drawLine(18,6,6,18,paint); }
             else { Path p=new Path(); p.moveTo(3,7); p.lineTo(3,20); p.lineTo(21,20); p.lineTo(21,7); p.lineTo(12,7); p.lineTo(10,4); p.lineTo(3,4); p.close(); c.drawPath(p,paint); }
             c.restore();
         }

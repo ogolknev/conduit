@@ -113,6 +113,7 @@ final class LocalizedStrings {
         values.put("Choose a file or photo. Use the shared clipboard for text.",R.string.text_ede1fa1c9eac);
         values.put("Choose files",R.string.text_6c7cbfdf8314);
         values.put("Clear history",R.string.text_3f70f0ad6764);
+        values.put("Clear search",R.string.text_6e1f7baa472f);
         values.put("Click Connect to allow access to the saved pairing.",R.string.text_b0d299ecfa01);
         values.put("Clipboard",R.string.text_eb31594ab4f1);
         values.put("Clipboard disabled on Mac",R.string.text_4ea66d5e68bc);
@@ -270,6 +271,7 @@ final class LocalizedStrings {
         values.put("New code",R.string.text_1a0517bfd5dc);
         values.put("Next track",R.string.text_46da7285528f);
         values.put("No active code",R.string.text_84970149a3c7);
+        values.put("No apps found",R.string.text_d247ed5e2bac);
         values.put("No connection to Android",R.string.text_d2b7e4638375);
         values.put("No connection to Mac",R.string.text_2a7d938e40cd);
         values.put("No connection to the phone",R.string.text_a6a75f0044c0);
@@ -354,6 +356,7 @@ final class LocalizedStrings {
         values.put("Save",R.string.text_b4d30cae5289);
         values.put("Save phone log on Mac",R.string.text_5005f3a5f71f);
         values.put("Saved: ",R.string.text_6ade7957b6de);
+        values.put("Search by name or package",R.string.text_cdce7092bb7a);
         values.put("Select a device",R.string.text_931f40e7a523);
         values.put("Send",R.string.text_ceb68a9287da);
         values.put("Send APK",R.string.text_f3cd124d28e2);
@@ -712,6 +715,7 @@ final class LocalizedStrings {
         values.put("Отпустите файлы для отправки",R.string.text_aa9ee2fd001a);
         values.put("Оформление",R.string.text_1731619efa3a);
         values.put("Очистить историю",R.string.text_3f70f0ad6764);
+        values.put("Очистить поиск",R.string.text_6e1f7baa472f);
         values.put("Ошибка Bluetooth-канала",R.string.text_f3430261dd61);
         values.put("Ошибка канала уведомлений",R.string.text_dc6c26cfea6f);
         values.put("Ошибка отправки по Bluetooth",R.string.text_328999bf653e);
@@ -763,6 +767,7 @@ final class LocalizedStrings {
         values.put("Подключён по %@",R.string.text_d6b8d18bca4d);
         values.put("Подключён по Bluetooth",R.string.text_88a10f7ddfdc);
         values.put("Подключён через отладку",R.string.text_bb76d6f2ffea);
+        values.put("Поиск по названию или пакету",R.string.text_cdce7092bb7a);
         values.put("Показать подключение",R.string.text_c6c740c4bfbd);
         values.put("Показывать на Mac",R.string.text_264b153309a5);
         values.put("Получен по Bluetooth: ",R.string.text_f3088fec316f);
@@ -776,6 +781,7 @@ final class LocalizedStrings {
         values.put("Последние события",R.string.text_18e1009d6ab9);
         values.put("Предыдущий трек",R.string.text_3fbf9e4ea1c1);
         values.put("Приложения",R.string.text_39c4b42c8d11);
+        values.put("Приложения не найдены",R.string.text_d247ed5e2bac);
         values.put("Причина неизвестна. Скопируй диагностику.",R.string.text_72790e2cc507);
         values.put("Проверка значка из каталога Xcode",R.string.text_7b0b381484a8);
         values.put("Проверка…",R.string.text_638f8008a173);

@@ -308,6 +308,7 @@ public final class BridgeService extends Service {
         else if ("notificationAction".equals(type)) PhoneNotifications.perform(endpoint, message);
         else if ("notificationSnapshot".equals(type)) {
             endpoint.notificationActions = message.optBoolean("notificationActions", false);
+            endpoint.notificationPresentation = message.optBoolean("notificationPresentation", false);
             PhoneNotifications.snapshot(endpoint, message.optString("request"));
         }
         else if ("notificationDismiss".equals(type)) PhoneNotifications.dismissTracked(endpoint, message.optString("key"), message.optString("instance"));
@@ -347,6 +348,7 @@ public final class BridgeService extends Service {
 
     static abstract class Endpoint {
         volatile boolean notificationActions;
+        volatile boolean notificationPresentation;
         private final OutputStream output;
         final ThreadPoolExecutor writer = new ThreadPoolExecutor(1, 1, 0, TimeUnit.SECONDS,
             new ArrayBlockingQueue<Runnable>(32), new ThreadPoolExecutor.AbortPolicy());

@@ -456,4 +456,7 @@
     <string name="text_1e7160bf0de1" formatted="false">"Не удалось получить доступ к сохранённой связи в Связке ключей."</string>
     <string name="text_b0d299ecfa01" formatted="false">"Нажми «Подключиться», чтобы разрешить доступ к сохранённой связи."</string>
     <string name="text_daca7f333525" formatted="false">"Закрыть на Mac"</string>
+    <string name="text_cdce7092bb7a" formatted="false">"Поиск по названию или пакету"</string>
+    <string name="text_6e1f7baa472f" formatted="false">"Очистить поиск"</string>
+    <string name="text_d247ed5e2bac" formatted="false">"Приложения не найдены"</string>
 </resources>

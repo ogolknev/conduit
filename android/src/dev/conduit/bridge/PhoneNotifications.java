@@ -8,6 +8,8 @@ import android.os.*;
 import android.provider.Settings;
 import android.media.session.MediaController;
 import android.media.session.PlaybackState;
+import android.media.AudioManager;
+import android.media.AudioAttributes;
 import android.service.notification.*;
 import android.graphics.*;
 import android.graphics.drawable.Drawable;
@@ -62,7 +64,42 @@ public final class PhoneNotifications extends NotificationListenerService {
     @Override public void onDestroy() { clearWatches(); if (instance == this) instance = null; super.onDestroy(); }
 
     private final Set<String> suppressedKeys = new HashSet<>();
+    private final Set<String> postedKeys = new HashSet<>();
     private final Map<String, MediaWatch> mediaWatches = new HashMap<>();
+
+    static Set<String> activePackages() {
+        Set<String> packages = new HashSet<>();
+        PhoneNotifications service = instance;
+        if (service != null) try {
+            StatusBarNotification[] items = service.getActiveNotifications();
+            if (items != null) for (StatusBarNotification item : items) packages.add(item.getPackageName());
+        } catch (RuntimeException ignored) {}
+        return packages;
+    }
+
+    private NotificationAlertPolicy alerts(StatusBarNotification item, Ranking rank, boolean update) {
+        Notification n = item.getNotification();
+        NotificationChannel channel = rank.getChannel();
+        boolean hasSound = channel != null ? channel.getSound() != null : n.sound != null || (n.defaults & Notification.DEFAULT_SOUND) != 0;
+        int effects = rank.getSuppressedVisualEffects();
+        boolean peekSuppressed = (effects & NotificationManager.Policy.SUPPRESSED_EFFECT_SCREEN_ON) != 0
+                || (Build.VERSION.SDK_INT >= 28 && (effects & NotificationManager.Policy.SUPPRESSED_EFFECT_PEEK) != 0);
+        boolean audioAllowed = false;
+        AudioManager audio = getSystemService(AudioManager.class);
+        if (audio != null) {
+            AudioAttributes attributes = channel != null ? channel.getAudioAttributes() : n.audioAttributes;
+            int usage = attributes == null ? AudioAttributes.USAGE_NOTIFICATION : attributes.getUsage();
+            int stream = usage == AudioAttributes.USAGE_ALARM ? AudioManager.STREAM_ALARM
+                    : usage == AudioAttributes.USAGE_NOTIFICATION_RINGTONE ? AudioManager.STREAM_RING : AudioManager.STREAM_NOTIFICATION;
+            audioAllowed = (stream == AudioManager.STREAM_ALARM || audio.getRingerMode() == AudioManager.RINGER_MODE_NORMAL)
+                    && !audio.isStreamMute(stream) && audio.getStreamVolume(stream) > 0;
+        }
+        boolean summary = (n.flags & Notification.FLAG_GROUP_SUMMARY) != 0;
+        boolean groupSilenced = n.getGroup() != null && (n.getGroupAlertBehavior() == Notification.GROUP_ALERT_SUMMARY && !summary
+                || n.getGroupAlertBehavior() == Notification.GROUP_ALERT_CHILDREN && summary);
+        return new NotificationAlertPolicy(rank.getImportance(), rank.matchesInterruptionFilter(), peekSuppressed,
+                hasSound, audioAllowed, groupSilenced, update && (n.flags & Notification.FLAG_ONLY_ALERT_ONCE) != 0);
+    }
 
     private static boolean suppressed(Ranking rank) {
         return rank.getImportance() == NotificationManager.IMPORTANCE_NONE
@@ -115,6 +152,9 @@ public final class PhoneNotifications extends NotificationListenerService {
         }
         if (!target.notificationActions && (sbn.isOngoing() || (quiet && snapshot == null))) return;
         Notification n = sbn.getNotification();
+        boolean update = postedKeys.contains(sbn.getKey());
+        postedKeys.add(sbn.getKey());
+        NotificationAlertPolicy alert = alerts(sbn, rank, update);
         Bundle extras = n.extras;
         if (extras == null) return;
         String title = clipped(extras.getCharSequence(Notification.EXTRA_TITLE), 256);
@@ -127,7 +167,9 @@ public final class PhoneNotifications extends NotificationListenerService {
         MediaController controller = target.notificationActions ? NotificationControls.controller(this, sbn) : null;
         List<NotificationControls> controls = target.notificationActions ? NotificationControls.available(n, controller) : Collections.emptyList();
         watch(sbn.getKey(), controller, target);
-        BridgeService.emitTo(target, BridgeService.object("type", "notification", "quiet", quiet || sbn.isOngoing(), "actions", NotificationControls.describe(controls), "instance", Long.toString(sbn.getPostTime()), "dismissible", sbn.isClearable(), "snapshot", snapshot, "key", sbn.getKey(), "package", sbn.getPackageName(),
+        BridgeService.emitTo(target, BridgeService.object("type", "notification", "quiet", quiet || (!target.notificationPresentation && sbn.isOngoing()),
+            "alert", BridgeService.object("banner", alert.banner, "sound", alert.sound),
+            "actions", NotificationControls.describe(controls), "instance", Long.toString(sbn.getPostTime()), "dismissible", sbn.isClearable(), "snapshot", snapshot, "key", sbn.getKey(), "package", sbn.getPackageName(),
             "app", clipped(app, 128), "title", title, "body", body, "replyable", replyAction(n) != null, "iconPNG", applicationIcon(sbn.getPackageName())));
     }
     private String applicationIcon(String pkg) {
@@ -187,11 +229,13 @@ public final class PhoneNotifications extends NotificationListenerService {
     private void clearWatches() {
         for (String key : new ArrayList<>(mediaWatches.keySet())) stopWatching(key);
         suppressedKeys.clear();
+        postedKeys.clear();
     }
     @Override public void onNotificationRemoved(StatusBarNotification sbn, RankingMap ranking, int reason) {
         if (sbn == null) return;
         stopWatching(sbn.getKey());
         suppressedKeys.remove(sbn.getKey());
+        postedKeys.remove(sbn.getKey());
         if (reason == REASON_SNOOZED || reason == REASON_PACKAGE_SUSPENDED || reason == REASON_CHANNEL_BANNED
                 || reason == REASON_PACKAGE_BANNED || reason == REASON_PROFILE_TURNED_OFF || reason == REASON_LOCKDOWN)
             hidden(BridgeService.client, sbn, null);
