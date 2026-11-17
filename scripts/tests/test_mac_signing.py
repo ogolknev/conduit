@@ -51,6 +51,33 @@ class SigningTests(unittest.TestCase):
                 signing.checked(['security', 'unlock-keychain', '-p', secret], 'Unlock signing keychain')
         self.assertNotIn(secret, str(caught.exception))
 
+    def test_locked_managed_store_fails_before_codesign_can_prompt(self):
+        with tempfile.TemporaryDirectory() as directory:
+            config = self.fixture(directory)
+            with patch.object(signing, 'local_identity', side_effect=RuntimeError('Unlock failed')) as unlock, \
+                    patch.object(signing.subprocess, 'run') as run:
+                with self.assertRaisesRegex(RuntimeError, 'Unlock failed'):
+                    signing.sign(Path(directory) / 'Fixture.app', config['identity'], config['keychain'])
+            unlock.assert_called_once_with(Path(directory).resolve())
+            run.assert_not_called()
+
+    def test_managed_signing_unlocks_without_rotating_identity(self):
+        with tempfile.TemporaryDirectory() as directory:
+            config = self.fixture(directory)
+            calls = []
+            def unlock(path):
+                calls.append('unlock')
+                return config['identity'], config['keychain']
+            def run(command, **kwargs):
+                calls.append('codesign')
+                return subprocess.CompletedProcess(command, 0)
+            with patch.object(signing, 'local_identity', side_effect=unlock), \
+                    patch.object(signing.subprocess, 'run', side_effect=run), \
+                    patch.object(signing, 'designated_requirement', return_value='identifier "fixture"'):
+                signing.sign(Path(directory) / 'Fixture.app', config['identity'], config['keychain'])
+            self.assertEqual(calls, ['unlock', 'codesign', 'codesign'])
+            self.assertEqual(signing.private_config(directory), config)
+
 
 if __name__ == '__main__':
     unittest.main()

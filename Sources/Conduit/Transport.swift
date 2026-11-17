@@ -41,6 +41,11 @@ struct ADB {
         }
         return port
     }
+    func transfer(_ args: [String], serial: String, progress: @escaping @Sendable (Int) -> Void) async throws -> String {
+        let result = try await ProgressCommand.run(executable: executable, arguments: ["-s",serial] + args, timeout: 3600, progress: progress)
+        guard result.status == 0 else { throw AppError(String(result.error.suffix(600)).trimmingCharacters(in: .whitespacesAndNewlines)) }
+        return result.output
+    }
 }
 
 // Callback configuration happens before connect(); connection state is confined to queue.

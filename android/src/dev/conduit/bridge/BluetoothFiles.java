@@ -25,6 +25,7 @@ final class BluetoothFiles {
     private OutputStream upload;
     private MessageDigest hash;
     private RandomAccessFile download;
+    private long downloadSent, downloadSize;
     BluetoothFiles(Context context, BridgeService.Endpoint peer) { this.context = context; this.peer = peer; }
 
     synchronized void handle(JSONObject event) {
@@ -39,6 +40,7 @@ final class BluetoothFiles {
                 uploadName = safeName(event.optString("name", "file"));
                 temporary = File.createTempFile("conduit-bt-", ".partial", context.getCacheDir());
                 upload = new FileOutputStream(temporary); hash = MessageDigest.getInstance("SHA-256");
+                FileTransfers.begin(id,uploadName,false,"Bluetooth",size,FileTransfers.Phase.TRANSFERRING);
                 reply("fileReady", id);
             } else if ("fileChunk".equals(type)) {
                 if (upload == null || !id.equals(uploadID) || event.optLong("offset", -1) != written) throw new IOException(t("Неверный порядок частей файла"));
@@ -47,11 +49,14 @@ final class BluetoothFiles {
                 byte[] data = Base64.decode(encoded, Base64.NO_WRAP);
                 if (data.length == 0 || data.length > 16384 || data.length > uploadSize - written) throw new IOException(t("Неверный размер части файла"));
                 upload.write(data); hash.update(data); written += data.length;
+                FileTransfers.progress(id,written);
                 BridgeService.emitTo(peer, BridgeService.object("type", "fileAck", "id", id, "offset", written));
             } else if ("fileEnd".equals(type)) {
+                if (id.equals(uploadID)) FileTransfers.phase(id,FileTransfers.Phase.VERIFYING);
                 if (upload == null || !id.equals(uploadID) || written != uploadSize || !hex(hash.digest()).equals(expectedHash)) throw new IOException(t("Размер или SHA-256 файла не совпал"));
                 upload.close(); upload = null;
                 publish(temporary, id.substring(0, 8) + "_" + uploadName);
+                FileTransfers.complete(id);
                 temporary.delete(); temporary = null; uploadID = null;
                 reply("fileDone", id);
             } else if ("fileAbort".equals(type)) {
@@ -67,15 +72,25 @@ final class BluetoothFiles {
                 MessageDigest digest = MessageDigest.getInstance("SHA-256");
                 try (InputStream stream = new FileInputStream(file)) { byte[] b = new byte[65536]; int n; while ((n = stream.read(b)) != -1) digest.update(b, 0, n); }
                 closeDownload(); download = new RandomAccessFile(file, "r"); downloadID = id;
+                downloadSent=0; downloadSize=file.length();
+                FileTransfers.begin(id,metadata.optString("name","file"),true,"Bluetooth",downloadSize,FileTransfers.Phase.TRANSFERRING);
                 BridgeService.emitTo(peer, BridgeService.object("type", "fileInfo", "id", id, "size", file.length(), "name", metadata.optString("name", "file"), "sha256", hex(digest.digest())));
             } else if ("fileRead".equals(type)) {
                 long offset = event.optLong("offset", -1);
                 if (download == null || !id.equals(downloadID) || offset < 0 || offset >= download.length()) throw new IOException(t("Файл не открыт"));
                 download.seek(offset);
                 byte[] data = new byte[(int)Math.min(16384, download.length() - offset)]; download.readFully(data);
-                BridgeService.emitTo(peer, BridgeService.object("type", "fileData", "id", id, "offset", offset, "data", Base64.encodeToString(data, Base64.NO_WRAP)));
+                BridgeService.emitTo(peer, BridgeService.object("type", "fileData", "id", id, "offset", offset, "data", Base64.encodeToString(data, Base64.NO_WRAP)), () -> {
+                    synchronized (BluetoothFiles.this) {
+                        if (!id.equals(downloadID)) return;
+                        if (offset==downloadSent) downloadSent+=data.length;
+                        FileTransfers.progress(id,downloadSent);
+                        if (downloadSent==downloadSize) FileTransfers.phase(id,FileTransfers.Phase.VERIFYING);
+                    }
+                });
             }
         } catch (Exception e) {
+            FileTransfers.fail(id,e.getMessage()==null?t("Передача не завершена"):e.getMessage());
             if (id.equals(uploadID)) abortUpload();
             if (id.equals(downloadID)) closeDownload();
             BridgeService.emitTo(peer, BridgeService.object("type", "fileError", "id", id, "message", e.getMessage() == null ? t("Передача не завершена") : e.getMessage()));
@@ -111,11 +126,24 @@ final class BluetoothFiles {
     }
     static String hex(byte[] bytes) { StringBuilder s = new StringBuilder(); for (byte b : bytes) s.append(String.format(Locale.US, "%02x", b & 255)); return s.toString(); }
     private void abortUpload() {
+        FileTransfers.fail(uploadID,t("Передача прервана"));
         if (upload != null) try { upload.close(); } catch (IOException ignored) {}
         upload = null; uploadID = null;
         if (temporary != null) temporary.delete(); temporary = null;
     }
-    private void closeDownload() { if (download != null) try { download.close(); } catch (IOException ignored) {} download = null; downloadID = null; }
-    synchronized void received(String id) { if (id.equals(downloadID)) closeDownload(); }
+    private void closeDownload() {
+        FileTransfers.fail(downloadID,t("Передача прервана"));
+        if (download != null) try { download.close(); } catch (IOException ignored) {}
+        download=null;downloadID=null;downloadSent=0;downloadSize=0;
+    }
+    synchronized void received(String id) {
+        if (id.equals(downloadID)) {
+            // Verified receiver receipt can arrive before the last writer's
+            // progress callback acquires this lock. It confirms the full payload.
+            FileTransfers.progress(id,downloadSize);
+            FileTransfers.complete(id);
+            closeDownload();
+        }
+    }
     synchronized void close() { abortUpload(); closeDownload(); }
 }
