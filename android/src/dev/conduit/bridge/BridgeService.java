@@ -278,7 +278,7 @@ public final class BridgeService extends Service {
     }
     static JSONObject status(String type, int protocol) {
         BridgeService service = instance;
-        return object("type", type, "protocol", protocol, "notificationInbox", 1, "notificationSource", service == null ? "" : PhoneNotifications.source(service), "notificationListenerConnected",PhoneNotifications.isConnected(), "notificationAccess", service != null && PhoneNotifications.hasAccess(service),
+        return object("type", type, "protocol", protocol, "notificationInbox", 1, "blockedPackages", service == null ? null : new org.json.JSONArray(service.getSharedPreferences("settings", MODE_PRIVATE).getStringSet("blocked", java.util.Collections.emptySet())), "notificationSource", service == null ? "" : PhoneNotifications.source(service), "notificationListenerConnected",PhoneNotifications.isConnected(), "notificationAccess", service != null && PhoneNotifications.hasAccess(service),
             "clipboardAuto", service != null && service.clipboard != null && service.clipboard.isReady(),
             "deviceLocked", service != null && deviceLocked(service));
     }
@@ -305,7 +305,12 @@ public final class BridgeService extends Service {
         }
         else if ("clipboardAck".equals(type)) PhoneDiagnostics.record(context, "clipboard.mac.applied");
         else if ("reply".equals(type)) PhoneNotifications.reply(message.optString("key"), message.optString("text"), message.optString("instance"), endpoint, message.optString("request"));
-        else if ("notificationSnapshot".equals(type)) PhoneNotifications.snapshot(endpoint, message.optString("request"));
+        else if ("notificationAction".equals(type)) PhoneNotifications.perform(endpoint, message);
+        else if ("notificationSnapshot".equals(type)) {
+            endpoint.notificationActions = message.optBoolean("notificationActions", false);
+            endpoint.notificationPresentation = message.optBoolean("notificationPresentation", false);
+            PhoneNotifications.snapshot(endpoint, message.optString("request"));
+        }
         else if ("notificationDismiss".equals(type)) PhoneNotifications.dismissTracked(endpoint, message.optString("key"), message.optString("instance"));
         else if ("dismiss".equals(type)) PhoneNotifications.dismiss(message.optString("key"));
         else if ("fileReceived".equals(type)) { if (endpoint instanceof BluetoothLink.Peer) ((BluetoothLink.Peer)endpoint).files.received(message.optString("name")); SharedFiles.acknowledge(context, message.optString("name")); }
@@ -342,6 +347,8 @@ public final class BridgeService extends Service {
     }
 
     static abstract class Endpoint {
+        volatile boolean notificationActions;
+        volatile boolean notificationPresentation;
         private final OutputStream output;
         final ThreadPoolExecutor writer = new ThreadPoolExecutor(1, 1, 0, TimeUnit.SECONDS,
             new ArrayBlockingQueue<Runnable>(32), new ThreadPoolExecutor.AbortPolicy());

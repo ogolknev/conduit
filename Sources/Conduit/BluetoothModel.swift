@@ -11,7 +11,7 @@ struct PendingBluetoothReply {
 
 extension ConduitModel {
     var hasTrustedBluetoothPhone: Bool {
-        transport == .bluetooth && !bluetoothAddress.isEmpty && BluetoothTrust.token(for: bluetoothAddress) != nil
+        transport == .bluetooth && BluetoothTrust.contains(bluetoothAddress)
     }
     var waitingForBluetooth: Bool { transport == .bluetooth && autoReconnect && shouldReconnect && hasTrustedBluetoothPhone }
     func shareCompanionViaBluetooth() {
@@ -56,10 +56,10 @@ extension ConduitModel {
             return
         }
         refreshBluetoothPhones()
-        let savedToken = bluetoothAddress.isEmpty ? nil : BluetoothTrust.token(for: bluetoothAddress)
+        let remembered = BluetoothTrust.contains(bluetoothAddress)
         let code = bluetoothCode.trimmingCharacters(in: .whitespacesAndNewlines)
         if let problem = BluetoothPreflight.problem(permission: ConnectionDiagnostics.permission, poweredOn: ConnectionDiagnostics.poweredOn,
-                selection: bluetoothAddress, knownDevices: bluetoothPhones.map(\.id), remembered: savedToken != nil, code: code) {
+                selection: bluetoothAddress, knownDevices: bluetoothPhones.map(\.id), remembered: remembered, code: code) {
             if !automatic { reportConnectionError(L(problem), alert: true) }
             return
         }
@@ -103,6 +103,24 @@ extension ConduitModel {
             return self.reconnectPolicy.allowServiceRefresh(automatic: automatic, at: ProcessInfo.processInfo.systemUptime)
         }
         do {
+            let savedToken: String?
+            if remembered {
+                let address = phone.id
+                do {
+                    savedToken = try await Task.detached {
+                        try BluetoothTrust.token(for: address, interactive: !automatic)
+                    }.value
+                } catch {
+                    guard sessionID == id, connectionAttempt == attempt else { return }
+                    if automatic && error is BluetoothTrust.InteractionRequired {
+                        shouldReconnect = false
+                        throw AppError(L("Нажми «Подключиться», чтобы разрешить доступ к сохранённой связи."))
+                    }
+                    throw error
+                }
+                guard sessionID == id, connectionAttempt == attempt else { return }
+                if savedToken == nil && code.isEmpty { throw AppError(L("Для первого подключения нужен код Conduit. На телефоне открой приложение, нажми «Связать новый Mac» и введи 8 цифр.")) }
+            } else { savedToken = nil }
             try await channel.connect(phone)
             guard sessionID == id, connectionAttempt == attempt else { return }
             connectionStage = savedToken == nil ? L("Проверяю код Conduit на телефоне…") : L("Восстанавливаю сохранённое соединение…"); status = connectionStage
@@ -134,7 +152,10 @@ extension ConduitModel {
         }
     }
     func forgetBluetoothPhone() async {
-        await disconnect(); BluetoothTrust.forget(bluetoothAddress)
+        let address = bluetoothAddress
+        await disconnect()
+        do { try BluetoothTrust.forget(address) }
+        catch { connectionError = error.localizedDescription; return }
         status = L("Связь Conduit удалена. Получи новый код на телефоне.")
     }
     func bluetoothLost(_ reason: String) {

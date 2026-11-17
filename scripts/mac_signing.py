@@ -58,7 +58,7 @@ def designated_requirement(app):
 
 
 def sign(app, identity, keychain=None):
-    command = ['/usr/bin/codesign', '--force', '--deep', '--sign', identity]
+    command = ['/usr/bin/codesign', '--force', '--options', 'runtime', '--sign', identity]
     if keychain:
         command += ['--keychain', keychain]
     command.append(str(app))

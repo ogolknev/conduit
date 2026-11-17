@@ -26,13 +26,14 @@ import ConduitCore
     @Published var inbox = NotificationInbox()
     @Published var inboxActionResult: String?
     @Published var inboxReplyRequest: String?
+    @Published var notificationActionRequest: String?
     var notificationSyncTimeout: Task<Void, Never>?
     @Published var inboxStorageError = false
     @Published var notificationSyncError = false
     @Published var notificationSource: String?
     @Published var notificationSnapshot: String?
     var notificationSeen = Set<String>()
-    var notificationSynced = false
+    @Published var notificationSynced = false
     @Published var events: [String] = []
     @Published var wirelessAddress = ""
     @Published var pairingAddress = ""
@@ -116,9 +117,10 @@ import ConduitCore
         AppDelegate.onAction = { [weak self] action in
             guard let self, self.notificationsEnabled else { return }
             if let key = action["key"] as? String, let item = self.inbox.items.first(where: { $0.id == key }) {
+                guard action["instance"] as? String == item.instance else { return }
                 if action["type"] as? String == "dismiss" { self.dismissNotification(item) }
                 else if let text = action["text"] as? String { self.replyToNotification(item, text: text) }
-            } else if self.companionReady && self.notificationSource == nil { self.sendBridge(action) }
+            } else if self.companionReady && self.notificationSource == nil && action["instance"] == nil { self.sendBridge(action) }
         }
         wakeObserver = NSWorkspace.shared.notificationCenter.addObserver(forName: NSWorkspace.didWakeNotification, object: nil, queue: .main) { [weak self] _ in
             Task { @MainActor in
@@ -157,7 +159,7 @@ import ConduitCore
                     self.refreshBluetoothPhones()
                     if self.shouldReconnect && self.autoReconnect && !self.connected && !self.busy,
                        self.reconnectPolicy.isDue(at: ProcessInfo.processInfo.systemUptime),
-                       BluetoothTrust.token(for: self.bluetoothAddress) != nil { await self.connectBluetooth(automatic: true) }
+                       self.hasTrustedBluetoothPhone { await self.connectBluetooth(automatic: true) }
                     try? await Task.sleep(nanoseconds: 3_000_000_000)
                     continue
                 }
@@ -277,6 +279,7 @@ import ConduitCore
         sessionID = UUID()
         notificationSyncTimeout?.cancel(); notificationSyncTimeout = nil
         if inboxReplyRequest != nil { inboxActionResult = L("Телефон не подтвердил отправку ответа") }; inboxReplyRequest = nil
+        if notificationActionRequest != nil { inboxActionResult = L("Телефон не подтвердил действие") }; notificationActionRequest = nil
         notificationSource = nil; notificationSnapshot = nil; notificationSynced = false; notificationSeen = []
         bluetooth?.cancel(); bluetooth = nil; bluetoothClipboardAuto = false; bluetoothDeviceLocked = false
         androidDiagnosticsPending = false; androidDiagnosticsRequest = UUID()

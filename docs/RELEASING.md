@@ -11,8 +11,12 @@ build commands; this page covers release-specific decisions and packaging.
 2. Set the same version name in `android/AndroidManifest.xml` and
    `scripts/build-mac.py`; increment Android versionCode and Mac CFBundleVersion.
    Preserve app IDs, the existing Android signing key and the macOS signing identity.
-   Use Developer ID and notarization for public distribution; the local development
-   certificate is not a distribution identity. Commit the intended source.
+   Use Developer ID and notarization for production distribution. The existing
+   prototype release track (including 0.4.1) uses a persistent self-signed
+   development certificate. When continuing that track, retain the same identity
+   and explicitly disclose the absence of Developer ID/notarization and unverified
+   first-run behavior on other Macs in the release notes. A development certificate
+   is not a Developer ID distribution identity. Commit the intended source.
 3. Build Android and then Mac using the commands in [BUILDING.md](BUILDING.md).
    The Mac build must embed that exact APK. Keep signing keys in the existing
    private scratch directory, outside tracked source. Use fresh output paths.

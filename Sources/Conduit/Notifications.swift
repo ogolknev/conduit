@@ -34,16 +34,27 @@ final class AppDelegate: NSObject, NSApplicationDelegate, UNUserNotificationCent
     }
     func applicationShouldTerminateAfterLastWindowClosed(_ sender: NSApplication) -> Bool { false }
     func userNotificationCenter(_ center: UNUserNotificationCenter, willPresent notification: UNNotification, withCompletionHandler completion: @escaping (UNNotificationPresentationOptions) -> Void) {
-        completion([.banner, .list])
+        let info = notification.request.content.userInfo
+        if info["soundOnly"] as? Bool == true { completion([.sound]); return }
+        var options: UNNotificationPresentationOptions = [.list]
+        if info["banner"] as? Bool != false { options.insert(.banner) }
+        if notification.request.content.sound != nil { options.insert(.sound) }
+        completion(options)
     }
     func userNotificationCenter(_ center: UNUserNotificationCenter, didReceive response: UNNotificationResponse, withCompletionHandler completion: @escaping () -> Void) {
         defer { completion() }
-        guard let key = response.notification.request.content.userInfo["phoneKey"] as? String else { return }
+        let info = response.notification.request.content.userInfo
+        guard let key = info["phoneKey"] as? String else { return }
+        var action: [String: Any] = ["key": key]
+        action["instance"] = info["instance"] as? String
         if let reply = response as? UNTextInputNotificationResponse {
-            DispatchQueue.main.async { Self.onAction?(["type": "reply", "key": key, "text": String(reply.userText.prefix(4096))]) }
+            action["type"] = "reply"
+            action["text"] = String(reply.userText.prefix(4096))
         } else if response.actionIdentifier == UNNotificationDismissActionIdentifier {
-            DispatchQueue.main.async { Self.onAction?(["type": "dismiss", "key": key]) }
-        }
+            action["type"] = "dismiss"
+        } else { return }
+        let event = action
+        DispatchQueue.main.async { Self.onAction?(event) }
     }
 }
 
@@ -53,15 +64,30 @@ final class AppDelegate: NSObject, NSApplicationDelegate, UNUserNotificationCent
     }
     static func show(_ event: [String: Any]) async throws {
         guard let key = event["key"] as? String else { return }
+        let presentation = NotificationPresentation(event: event)
+        guard presentation.deliver else { return }
         let content = UNMutableNotificationContent()
         content.title = String((event["app"] as? String ?? L("Телефон")).prefix(128))
         content.subtitle = String((event["title"] as? String ?? "").prefix(256))
         content.body = String((event["body"] as? String ?? "").prefix(4096))
         content.userInfo = ["phoneKey": key]
+        content.userInfo["instance"] = event["instance"] as? String
+        content.userInfo["banner"] = presentation.banner
+        content.interruptionLevel = presentation.banner ? .active : .passive
+        content.sound = presentation.banner && presentation.sound ? .default : nil
         if let encoded = event["iconPNG"] as? String, let attachment = iconAttachment(encoded) { content.attachments = [attachment] }
         content.categoryIdentifier = (event["replyable"] as? Bool == true) ? "PHONE_REPLY" : "PHONE"
         do {
             try await UNUserNotificationCenter.current().add(UNNotificationRequest(identifier: identifier(key), content: content, trigger: nil))
+            if !presentation.banner && presentation.sound {
+                // A passive text notification never alerts. A separate sound-only request
+                // keeps sound independent of banners while leaving Focus/permissions to macOS.
+                let sound = UNMutableNotificationContent()
+                sound.sound = .default
+                sound.userInfo = content.userInfo
+                sound.userInfo["soundOnly"] = true
+                try await UNUserNotificationCenter.current().add(UNNotificationRequest(identifier: identifier(key) + ".sound", content: sound, trigger: nil))
+            }
             ConnectionDiagnostics.record("notification.accepted","attachments=\(content.attachments.count)")
         } catch {
             ConnectionDiagnostics.record("notification.failed",String(describing:type(of:error)))
@@ -83,6 +109,8 @@ final class AppDelegate: NSObject, NSApplicationDelegate, UNUserNotificationCent
         } catch { return nil }
     }
     static func remove(_ key: String) {
-        UNUserNotificationCenter.current().removeDeliveredNotifications(withIdentifiers: [identifier(key)])
+        let ids = [identifier(key), identifier(key) + ".sound"]
+        UNUserNotificationCenter.current().removePendingNotificationRequests(withIdentifiers: ids)
+        UNUserNotificationCenter.current().removeDeliveredNotifications(withIdentifiers: ids)
     }
 }

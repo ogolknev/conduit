@@ -41,6 +41,83 @@ struct NotificationInboxTests {
         let attributes = try FileManager.default.attributesOfItem(atPath: url.path)
         #expect((attributes[.posixPermissions] as? NSNumber)?.intValue == 0o600)
     }
+    @Test func hiddenInstanceDoesNotBecomeHistoryOrDeleteANewerPost() {
+        var box = NotificationInbox()
+        let entry = item(instance: "2000")
+        box.upsert(entry)
+        let stale = box.hide(id: entry.id, instance: "1000")
+        #expect(!stale)
+        #expect(box.items == [entry])
+        let current = box.hide(id: entry.id, instance: "2000")
+        #expect(current)
+        box.reconcile(source: entry.source, seen: [])
+        #expect(box.items.isEmpty)
+    }
+
+    @Test func dismissalRemainsVisibleUntilConfirmedAndCanRetryOnFailure() throws {
+        var box = NotificationInbox()
+        let entry = item()
+        box.upsert(entry)
+        let first = box.requestDismissal(id: entry.id, instance: entry.instance)
+        let duplicate = box.requestDismissal(id: entry.id, instance: entry.instance)
+        #expect(first && !duplicate)
+        box = try JSONDecoder().decode(NotificationInbox.self, from: JSONEncoder().encode(box))
+        box.upsert(entry)
+        #expect(box.items[0].visibleInActive && !box.items[0].visibleInHistory)
+        #expect(box.items[0].state == .pending && !box.items[0].canDismiss)
+        box.state(.failed, id: entry.id, instance: entry.instance)
+        let retried = box.requestDismissal(id: entry.id, instance: entry.instance)
+        #expect(retried)
+        box.reconcile(source: entry.source, seen: [])
+        #expect(!box.items[0].visibleInActive && box.items[0].visibleInHistory)
+    }
+
+    @Test func staleAndNonclearableCardsCannotQueueDismissals() {
+        var box = NotificationInbox()
+        var entry = item()
+        entry.dismissible = false
+        box.upsert(entry)
+        let ongoing = box.requestDismissal(id: entry.id, instance: entry.instance)
+        box.upsert(item(instance: "2000"))
+        let stale = box.requestDismissal(id: entry.id, instance: entry.instance)
+        #expect(!ongoing && !stale)
+        #expect(box.items[0].state == .active)
+    }
+
+    @Test func oldLocalCloseIsNotAnInstructionToDeleteFromPhone() throws {
+        let entry = item()
+        var values = try #require(JSONSerialization.jsonObject(with: JSONEncoder().encode(entry)) as? [String: Any])
+        values["closedOnMac"] = true
+        let data = try JSONSerialization.data(withJSONObject: ["items": [values]])
+        var box = try JSONDecoder().decode(NotificationInbox.self, from: data)
+        #expect(box.items[0].visibleInActive && box.items[0].state == .active)
+        box.upsert(entry)
+        box.state(.removed, id: entry.id, instance: entry.instance)
+        #expect(box.items[0].visibleInHistory)
+    }
+
+    @Test func exclusionsPurgeLegacyHistoryOnlyForTheMatchingPhone() throws {
+        let key = "0|example.app|24|tag|1000"
+        var box = NotificationInbox()
+        let old = item(key)
+        box.upsert(old)
+        box.state(.removed, id: old.id, instance: old.instance)
+        let other = item(key, source: "phone-b")
+        box.upsert(other)
+        box = try JSONDecoder().decode(NotificationInbox.self, from: JSONEncoder().encode(box))
+        #expect(box.exclude(packages: ["example.app"], source: old.source) == [old.id])
+        #expect(box.items == [other])
+    }
+
+    @Test func controlsKeepPhoneOrderAndRejectAmbiguousOrEmptyDescriptors() {
+        let actions = [["id": "pause", "label": ""], ["id": "action:2", "label": "Archive"],
+                       ["id": "action:2", "label": "Other"], ["id": "custom", "label": ""]]
+        let entry = InboxNotification(source: "phone", event: ["key": "media", "instance": "1", "actions": actions])
+        #expect(entry?.actions?.map(\.id) == ["pause", "action:2"])
+        #expect(entry?.actions?.last?.label == "Archive")
+        #expect(item().actions == nil)
+    }
+
     @Test func historyIsBoundedAndMalformedIdentityIsRejected() {
         var box = NotificationInbox()
         for n in 0..<520 { box.upsert(item("\(n)", instance: "\(n)")) }

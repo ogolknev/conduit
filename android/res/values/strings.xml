@@ -447,4 +447,16 @@
     <string name="text_5189135a6110" formatted="false">"Retry"</string>
     <string name="text_bd564868080b" formatted="false">"The phone did not confirm the reply"</string>
     <string name="text_18b74715397d" formatted="false">"Syncing notifications…"</string>
+    <string name="text_5fb8dc939842" formatted="false">"The phone did not confirm the action"</string>
+    <string name="text_3fbf9e4ea1c1" formatted="false">"Previous track"</string>
+    <string name="text_bdd37eb21746" formatted="false">"Play"</string>
+    <string name="text_65530fd463ea" formatted="false">"Pause"</string>
+    <string name="text_46da7285528f" formatted="false">"Next track"</string>
+    <string name="text_caa1f92cc95a" formatted="false">"Pending dismissal on phone · %@"</string>
+    <string name="text_1e7160bf0de1" formatted="false">"Could not access the saved pairing in Keychain."</string>
+    <string name="text_b0d299ecfa01" formatted="false">"Click Connect to allow access to the saved pairing."</string>
+    <string name="text_daca7f333525" formatted="false">"Close on Mac"</string>
+    <string name="text_cdce7092bb7a" formatted="false">"Search by name or package"</string>
+    <string name="text_6e1f7baa472f" formatted="false">"Clear search"</string>
+    <string name="text_d247ed5e2bac" formatted="false">"No apps found"</string>
 </resources>

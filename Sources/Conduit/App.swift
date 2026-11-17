@@ -64,6 +64,30 @@ private var appVersion: String { Bundle.main.object(forInfoDictionaryKey: "CFBun
             if let data = try? JSONSerialization.data(withJSONObject: output, options: [.sortedKeys]), let text = String(data: data, encoding: .utf8) { print(text) }
             return
         }
+        if let index = args.firstIndex(of: "--pairing-service-check") {
+            // A fixture may span two signed host builds. Never operate on a phone account.
+            let options = Array(args.dropFirst(index + 1))
+            let fixture: UUID
+            let mode: String
+            if options.isEmpty { fixture = UUID(); mode = "roundtrip" }
+            else if options.count == 2, ["create", "verify"].contains(options[0]), let id = UUID(uuidString: options[1]) {
+                fixture = id; mode = options[0]
+            } else { exit(64) }
+            let account = "conduit-self-test-" + fixture.uuidString
+            let token = SHA256.hash(data: Data(account.utf8)).map { String(format: "%02x", $0) }.joined()
+            guard Bundle.main.object(forInfoDictionaryKey: "ConduitPairingRequirement") != nil else { exit(1) }
+            do {
+                if mode != "verify" { try BluetoothTrust.save(token, for: account) }
+                if mode != "create" {
+                    defer { try? BluetoothTrust.forget(account) }
+                    guard BluetoothTrust.contains(account), try BluetoothTrust.token(for: account, interactive: false) == token
+                    else { throw AppError("pairing check") }
+                }
+            } catch { print("Pairing service check failed"); exit(1) }
+            if mode != "create" && BluetoothTrust.contains(account) { exit(1) }
+            print("Pairing service check passed (\(mode))")
+            return
+        }
         if args.contains("--smoke-test") {
             let resources = Bundle.main.resourceURL!
             let names = ["platform-tools/adb", "scrcpy-server-v5.0.1", "conduit-companion.apk", "AppIcon.icns", "Assets.car", "en.lproj/Localizable.strings", "ru.lproj/Localizable.strings"]
@@ -91,11 +115,18 @@ private var appVersion: String { Bundle.main.object(forInfoDictionaryKey: "CFBun
             if args.contains("--preview-notifications") {
                 let source = "00000000-0000-0000-0000-000000000001"
                 model.notificationSource = source; model.notificationSynced = true
-                for (index, title) in ["Project update", "Transfer complete", "Meeting in 15 minutes"].enumerated() {
-                    if let item = InboxNotification(source: source, event: ["key": "preview-\(index)", "instance": String(Int(Date().timeIntervalSince1970 * 1000) - index * 60000), "app": "Example", "title": title, "body": "Preview notification details", "dismissible": true, "replyable": true]) {
-                        model.inbox.upsert(item)
-                        if index == 1 { model.inbox.state(.pending, id: item.id, instance: item.instance) }
-                    }
+                let samples: [[String: Any]] = [
+                    ["app": "Music", "title": "Night Drive", "body": "Northbound", "dismissible": false,
+                     "actions": ["previous", "pause", "next"].map { ["id": $0, "label": ""] }],
+                    ["app": "Messages", "title": "Studio", "body": "The updated drawings are ready to review.",
+                     "dismissible": true, "replyable": true, "actions": [["id": "action:1", "label": "Mark as read"]]],
+                    ["app": "Calendar", "title": "Design review", "body": "10:00 – 10:30", "dismissible": true]
+                ]
+                for (index, var event) in samples.enumerated() {
+                    event["key"] = "preview-\(index)"
+                    let minutesAgo = [0, 58, 24 * 60][index]
+                    event["instance"] = String(Int(Date().timeIntervalSince1970 * 1000) - minutesAgo * 60000)
+                    if let item = InboxNotification(source: source, event: event) { model.inbox.upsert(item) }
                 }
             }
             if args.contains("--preview-permission-denied") { model.macNotificationPermission = .denied }

@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-import sys, argparse, hashlib, json, os, pathlib, plistlib, shutil, subprocess, zipfile
+import sys, argparse, hashlib, json, os, pathlib, plistlib, re, shutil, subprocess, zipfile
 from mac_signing import DEFAULT_DIRECTORY, local_identity, private_config, sign
 
 p = argparse.ArgumentParser()
@@ -68,8 +68,8 @@ shutil.copy2(icon_catalog / 'Assets.car', resources / 'Assets.car')
 (resources / 'Conduit.icns').unlink(missing_ok=True)
 with (app / 'Contents/Info.plist').open('wb') as f:
     plistlib.dump({'CFBundleName':'Conduit', 'CFBundleDisplayName':'Conduit', 'CFBundleExecutable':'Conduit',
-        'CFBundleIdentifier':'dev.conduit.mac', 'CFBundlePackageType':'APPL', 'CFBundleShortVersionString':'0.4.1',
-        'CFBundleVersion':'19', 'CFBundleIconFile':'AppIcon', 'CFBundleIconName':'AppIcon',
+        'CFBundleIdentifier':'dev.conduit.mac', 'CFBundlePackageType':'APPL', 'CFBundleShortVersionString':'0.4.2',
+        'CFBundleVersion':'35', 'CFBundleIconFile':'AppIcon', 'CFBundleIconName':'AppIcon',
         'CFBundleInfoDictionaryVersion':'6.0', 'CFBundleSupportedPlatforms':['MacOSX'], 'CFBundleDevelopmentRegion':'en', 'CFBundleLocalizations':['en','ru'], 'CFBundleSignature':'????', 'LSMinimumSystemVersion':'13.0', 'NSHighResolutionCapable':True,
         'NSPrincipalClass':'NSApplication', 'NSBluetoothAlwaysUsageDescription':'Conduit connects this Mac to Android for clipboard, notifications and files over Bluetooth.'}, f)
 for language in ['en', 'ru']:
@@ -77,5 +77,32 @@ for language in ['en', 'ru']:
 (app / 'Contents/PkgInfo').write_bytes(b'APPL????')
 if not args.ad_hoc and not args.signing_identity:
     identity, keychain = local_identity(args.signing_directory)
+# Keep the Keychain client's executable and sealed metadata independent of the host version.
+service_id = 'dev.conduit.mac.pairing'
+service = app / 'Contents/XPCServices' / (service_id + '.xpc')
+service_macos = service / 'Contents/MacOS'
+service_macos.mkdir(parents=True, exist_ok=True)
+subprocess.run(['xcrun', 'clang', '-Os', '-fobjc-arc', '-mmacosx-version-min=13.0', '-Wl,-reproducible',
+    '-framework', 'Foundation', '-framework', 'Security', str(project / 'mac/PairingService/main.m'),
+    '-o', str(service_macos / 'ConduitPairing')], check=True)
+service_info = {'CFBundleIdentifier':service_id, 'CFBundleExecutable':'ConduitPairing',
+    'CFBundleName':'Conduit Pairing', 'CFBundlePackageType':'XPC!', 'CFBundleVersion':'1',
+    'XPCService':{'ServiceType':'Application', 'JoinExistingSession':True}}
+if identity != '-':
+    listing = subprocess.check_output(['/usr/bin/security', 'find-identity', '-v', '-p', 'codesigning',
+        *([keychain] if keychain else [])], text=True)
+    matches = {digest.upper() for digest, name in re.findall(r'\b([0-9A-Fa-f]{40}) "([^"]+)"', listing)
+               if identity.upper() == digest.upper() or identity == name}
+    if len(matches) != 1: raise ValueError('Cannot resolve a unique certificate for the pairing service')
+    signer = f'certificate leaf = H"{matches.pop()}"'
+    service_info['ConduitHostRequirement'] = f'identifier "dev.conduit.mac" and {signer}'
+    info_file = app / 'Contents/Info.plist'
+    with info_file.open('rb') as f: info = plistlib.load(f)
+    info['ConduitPairingRequirement'] = f'identifier "{service_id}" and {signer}'
+    with info_file.open('wb') as f: plistlib.dump(info, f)
+with (service / 'Contents/Info.plist').open('wb') as f: plistlib.dump(service_info, f)
+nested_sign = ['/usr/bin/codesign', '--force', '--sign', identity, '--options', 'runtime']
+if keychain: nested_sign += ['--keychain', keychain]
+subprocess.run([*nested_sign, str(service)], check=True)
 print(sign(app, identity, keychain))
 print('Built:', app)

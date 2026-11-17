@@ -84,6 +84,11 @@ python3 scripts/generate-localizations.py --check
 dist/Conduit.app/Contents/MacOS/Conduit --smoke-test
 ```
 
+For a signed Mac update, run the first binary with
+`--pairing-service-check create UUID` and the updated one with
+`--pairing-service-check verify UUID`, substituting the same fresh UUID. This
+checks noninteractive access across host builds and cleans up the synthetic item.
+
 The smoke test checks bundle resources, the server digest and native English/Russian catalogs, including formatted strings. Device checks and their limits are recorded in [VALIDATION.md](VALIDATION.md).
 
 ## Translations
