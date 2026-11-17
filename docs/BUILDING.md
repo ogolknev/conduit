@@ -49,6 +49,11 @@ It stores a private dedicated keychain outside the repository in
 trust is configured for this certificate; system and TLS trust are unchanged.
 Back up this private directory securely and reuse it across checkouts and builds.
 Do not regenerate the identity when cleaning build scratch directories.
+New setups verify the saved password after locking the keychain, retain an encrypted
+`identity-backup.p12`, and keep a separate private copy under `Signing Backups`.
+The shared signer unlocks a managed keychain before calling codesign; a failed
+unlock stops the build instead of displaying a password dialog. Restore the
+encrypted backup when repairing access so the certificate remains unchanged.
 
 ```sh
 python3 scripts/build-mac.py \

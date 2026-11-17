@@ -58,6 +58,14 @@ def designated_requirement(app):
 
 
 def sign(app, identity, keychain=None):
+    # All callers, including small native fixtures, must unlock our managed store
+    # before codesign can display an unusable password prompt for that store.
+    if keychain:
+        directory = Path(keychain).expanduser().resolve().parent
+        if (directory / 'identity.json').is_file():
+            config = private_config(directory)
+            if config['identity'].lower() == identity.lower() and Path(config['keychain']).resolve() == Path(keychain).expanduser().resolve():
+                local_identity(directory)
     command = ['/usr/bin/codesign', '--force', '--options', 'runtime', '--sign', identity]
     if keychain:
         command += ['--keychain', keychain]

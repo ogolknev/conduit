@@ -1,5 +1,11 @@
 # Validation
 
+## Local signing recovery — November 17, 2026
+
+- The previous dedicated signing keychain rejected its saved credential after locking. Direct noninteractive Security API access also returned authentication failure. No usable copy of that identity was found in login or the previous project workspace; the user confirmed there was no private backup and explicitly authorized replacement.
+- The old signing store was archived intact. The replacement remains a persistent local development identity. Setup now verifies a lock/unlock cycle with the stored credential, retains an encrypted PKCS#12 export and keeps an independent private backup. The shared signer stops before codesign if automatic unlocking fails; regression checks cover this without exposing credentials.
+- This is an intentional signing-identity change from the public 0.4.2 prototype. Bundle IDs and Android's update key remain unchanged. Installed Mac build 36 reports Bluetooth allowed and notification authorization retained; its new helper passed a synthetic Keychain round trip and authenticated to the saved phone. One-time authorization can still be required on other existing installations across this identity boundary.
+
 ## 0.4.2 — release candidate 35 / 18
 
 - The release candidate contains the notification inbox/actions/swipe updates, app search with native icons and independent banner/sound policy. Its functional source matches device-checked development builds 34 / 17; release packaging increments build numbers only. Release binaries are checked separately from the earlier device observations below.
