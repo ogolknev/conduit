@@ -91,6 +91,29 @@ resources. They do not prove Bluetooth reliability, OEM background behavior,
 notification delivery, permissions or visual layout. Record those observations with
 versions and conditions in [validation](VALIDATION.md), including what was not checked.
 
+## File transfers
+
+Both native Files views keep bounded in-memory transfer state: preparation, queue,
+transferring, verification, completion and failure. Bytes advance from Bluetooth
+chunk acknowledgements / receiver writes. Android's outgoing count advances only
+after the socket writer finishes the frame. Reaching the byte total is not success:
+Bluetooth upload requires `fileDone` after SHA-256 verification and publication;
+a download is acknowledged only after verification and local publication. Session
+cleanup fails active records and prevents old callbacks from changing a new session.
+
+ADB progress comes from the real `push -p` / `pull -p` terminal output, captured
+through a cancellable PTY child. Percentages are coarse; fast commands may emit no
+intermediate sample. ADB completion requires a successful exit and matching file
+size. An additive `fileTransferProgress` message mirrors this state to the authenticated
+Android companion; older peers ignore it. Existing Bluetooth protocol 2, ADB
+protocol 1, transfer limits and 16 KiB Bluetooth blocks are unchanged.
+
+Android retains one buffered line reader per connection, including authentication,
+to preserve read-ahead across frames. High-volume file-frame diagnostics count every
+event but append a log sample at most once per second per stage; errors and lifecycle
+transitions remain immediate. Transfer names and error details stay in UI memory,
+not diagnostic logs.
+
 ## Notification inbox
 
 The Mac retains up to 500 received notifications in a private local JSON store,

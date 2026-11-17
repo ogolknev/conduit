@@ -58,7 +58,11 @@ import ConduitCore
     @Published var androidDiagnosticsPending = false
     @Published var androidDiagnosticsStatus = L("Журнал телефона ещё не получен")
     var androidDiagnosticsRequest = UUID()
-    @Published var transferProgress = ""
+    @Published var fileTransfers: [FileTransfer] = []
+    var fileTransferUpdates: [UUID: TimeInterval] = [:]
+    var fileTransferCommands: [UUID: Task<String, Error>] = [:]
+    var fileTransferSessions: [UUID: UUID] = [:]
+    var remoteFileTransferIDs: [UUID: String] = [:]
     @Published var connectionError: String?
     @Published var showConnectionError = false
     @Published var connectionStage = ""
@@ -276,6 +280,10 @@ import ConduitCore
     }
 
     func cleanup() async {
+        failActiveFileTransfers()
+        let commands = fileTransferCommands; fileTransferCommands.removeAll()
+        for command in commands.values { command.cancel() }
+        transferBusy = false; receivingBluetoothFile = false; activeFiles.removeAll()
         sessionID = UUID()
         notificationSyncTimeout?.cancel(); notificationSyncTimeout = nil
         if inboxReplyRequest != nil { inboxActionResult = L("Телефон не подтвердил отправку ответа") }; inboxReplyRequest = nil
@@ -416,7 +424,7 @@ import ConduitCore
                 case "removed":
                     if let key = event["key"] as? String { PhoneNotifications.remove(key) }
                 case "file":
-                    Task { await receiveFile(event) }
+                    Task { guard sessionID == id else { return }; await receiveFile(event) }
                 case "result":
                     if event["ok"] as? Bool == false { log(L(event["message"] as? String ?? L("Действие не выполнено на телефоне"))) }
                 default: break
@@ -453,19 +461,28 @@ import ConduitCore
     func sendFiles(_ urls: [URL]) async {
         if transport == .bluetooth { await sendBluetoothFiles(urls); return }
         guard let adb, let serial = sessionSerial, connected, !transferBusy else { return }
-        transferBusy = true; defer { transferBusy = false }
-        do {
-            _ = try await adb.run(["shell", "mkdir", "-p", "/sdcard/Download/Conduit"], serial: serial)
-            for url in urls {
-                let file = url.standardizedFileURL
-                let values = try file.resourceValues(forKeys: [.isRegularFileKey])
-                guard values.isRegularFile == true else { log(L("Папки пока не поддерживаются. Можно отправить ZIP.")); continue }
+        let session = sessionID
+        transferBusy = true; defer { if sessionID == session { transferBusy = false } }
+        do { _ = try await adb.run(["shell", "mkdir", "-p", "/sdcard/Download/Conduit"], serial: serial) }
+        catch { log(error.localizedDescription); return }
+        for url in urls {
+            guard sessionID == session, connected else { return }
+            let file = url.standardizedFileURL
+            let progress = beginFileTransfer(name: file.lastPathComponent, direction: .sending, total: nil, measurable: false)
+            do {
+                let values = try file.resourceValues(forKeys: [.isRegularFileKey,.fileSizeKey])
+                guard values.isRegularFile == true, let size = values.fileSize else { throw AppError(L("Папки пока не поддерживаются. Можно отправить ZIP.")) }
+                fileTransferPhase(progress, .transferring, total: Int64(size))
                 let destination = "/sdcard/Download/Conduit/" + UUID().uuidString.prefix(8) + "_" + FilePolicy.safeName(file.lastPathComponent)
-                log(L("Передаю: ") + file.lastPathComponent)
-                _ = try await adb.run(["push", file.path, destination], serial: serial, timeout: 3600)
+                try await runFileTransferCommand(progress, adb: adb, serial: serial, arguments: ["push","-p",file.path,destination])
+                fileTransferPhase(progress, .verifying)
+                let remote = try await adb.run(["shell","stat","-c","%s","'" + destination + "'"], serial: serial)
+                guard sessionID == session else { throw CancellationError() }
+                guard Int64(remote.trimmingCharacters(in: .whitespacesAndNewlines)) == Int64(size) else { throw AppError(L("Размер полученного файла не совпал.")) }
+                advanceFileTransfer(progress, bytes: Int64(size), force: true); completeFileTransfer(progress)
                 log(L("На телефоне: Download/Conduit/") + destination.components(separatedBy: "/").last!)
-            }
-        } catch { log(L("Передача не завершена: ") + error.localizedDescription) }
+            } catch { failFileTransfer(progress,error.localizedDescription); if sessionID == session { log(error.localizedDescription) } }
+        }
     }
 
     func receiveFile(_ event: [String: Any]) async {
@@ -478,7 +495,9 @@ import ConduitCore
         let key = path.components(separatedBy: "/").last ?? "file"
         if receivedFiles.contains(key) { sendBridge(["type": "fileReceived", "name": key]); return }
         guard !activeFiles.contains(key) else { return }
-        activeFiles.insert(key); defer { activeFiles.remove(key) }
+        let session = sessionID
+        let progress = beginFileTransfer(name: name, direction: .receiving, total: size.int64Value, measurable: false, remoteID: key)
+        activeFiles.insert(key); defer { if sessionID == session { activeFiles.remove(key) } }
         let folder = FileManager.default.urls(for: .downloadsDirectory, in: .userDomainMask)[0].appendingPathComponent("Conduit", isDirectory: true)
         let stage = FileManager.default.temporaryDirectory.appendingPathComponent("conduit-" + UUID().uuidString, isDirectory: true)
         do {
@@ -486,7 +505,9 @@ import ConduitCore
             try FileManager.default.createDirectory(at: stage, withIntermediateDirectories: true)
             defer { try? FileManager.default.removeItem(at: stage) }
             let partial = stage.appendingPathComponent("payload")
-            _ = try await adb.run(["pull", path, partial.path], serial: serial, timeout: 3600)
+            fileTransferPhase(progress, .transferring)
+            try await runFileTransferCommand(progress, adb: adb, serial: serial, arguments: ["pull","-p",path,partial.path])
+            fileTransferPhase(progress, .verifying)
             let actual = try partial.resourceValues(forKeys: [.fileSizeKey]).fileSize
             guard actual.map(Int64.init) == size.int64Value else { throw AppError(L("Размер полученного файла не совпал.")) }
             let destination = folder.appendingPathComponent(UUID().uuidString.prefix(8) + "_" + name)
@@ -494,9 +515,10 @@ import ConduitCore
             receivedFiles.append(key)
             if receivedFiles.count > 256 { receivedFiles.removeFirst(receivedFiles.count - 256) }
             UserDefaults.standard.set(receivedFiles, forKey: "receivedFiles")
+            advanceFileTransfer(progress, bytes: size.int64Value, force: true); completeFileTransfer(progress)
             sendBridge(["type": "fileReceived", "name": key])
             log(L("Получен: ") + name)
-        } catch { log(L("Не удалось получить файл: ") + error.localizedDescription) }
+        } catch { failFileTransfer(progress,error.localizedDescription); if sessionID == session { log(L("Не удалось получить файл: ") + error.localizedDescription) } }
     }
 
     func pairWireless() async {

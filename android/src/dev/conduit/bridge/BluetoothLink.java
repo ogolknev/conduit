@@ -98,8 +98,8 @@ final class BluetoothLink {
         try {
             PhoneDiagnostics.record(context, "peer.accept");
             if (socket.getRemoteDevice().getBondState() != BluetoothDevice.BOND_BONDED) return;
-            InputStream input = socket.getInputStream();
-            JSONObject hello = new JSONObject(BridgeService.readLine(input, 4096));
+            JsonLineInput input = new JsonLineInput(socket.getInputStream());
+            JSONObject hello = new JSONObject(input.readLine(4096));
             String id = hello.optString("client");
             if (!"hello".equals(hello.optString("type")) || hello.optInt("protocol") != 2 || !validUUID(id)) return;
             SharedPreferences prefs = context.getSharedPreferences("bluetooth-trust", Context.MODE_PRIVATE);
@@ -128,7 +128,7 @@ final class BluetoothLink {
             PhoneDiagnostics.record(context, "peer.ready");
             SharedFiles.sendPending(context);
             while (current(version) && BridgeService.client == peer) {
-                JSONObject message = new JSONObject(BridgeService.readLine(input, 1_048_576));
+                JSONObject message = new JSONObject(input.readLine(1_048_576));
                 BridgeService.handleCommand(context, peer, message);
             }
         } catch (Exception failure) { PhoneDiagnostics.record(context, "peer.failed", failure); }

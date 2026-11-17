@@ -214,11 +214,11 @@ struct MainView: View {
                     .font(.system(size: 13)).foregroundStyle(Palette.muted)
                 Button(model.transferBusy ? L("Передача…") : L("Выбрать файлы")) { Task { await model.chooseFiles() } }
                     .buttonStyle(ActionStyle(primary: true)).disabled(!model.connected || model.transferBusy)
-                if !model.transferProgress.isEmpty { Text(model.transferProgress).font(.callout).foregroundStyle(Palette.accent) }
-            }.frame(maxWidth: .infinity).padding(.vertical, 45)
+            }.frame(maxWidth: .infinity).padding(.vertical, model.fileTransfers.isEmpty ? 45 : 16)
                 .background(targeted ? Palette.soft : Palette.surface, in: RoundedRectangle(cornerRadius: 10))
                 .overlay(RoundedRectangle(cornerRadius: 10).strokeBorder(targeted ? Palette.accent : Palette.line, style: StrokeStyle(lineWidth: 1.5, dash: [6, 5])))
                 .onDrop(of: [UTType.fileURL.identifier], isTargeted: $targeted, perform: acceptFiles)
+            if !model.fileTransfers.isEmpty { FileTransferList(transfers: model.fileTransfers) }
             panel {
                 HStack {
                     LineIcon("download").frame(width: 24, height: 24).foregroundStyle(Palette.accent)

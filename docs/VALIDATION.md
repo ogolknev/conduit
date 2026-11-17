@@ -1,5 +1,29 @@
 # Validation
 
+## File-transfer progress — November 17, 2026
+
+Issue [#4](https://github.com/ogolknev/conduit/issues/4), development Mac 0.4.2 build 37 / Android versionCode 19. The available pair is Apple Silicon / macOS 26.6.2 and Xiaomi 15 / Android 16. Measurements used the authenticated RFCOMM protocol 2 path, sequential 16 KiB JSON/base64 blocks and deterministic incompressible 1 / 8 MiB files. USB remained attached for ADB preparation and inspection. Other phone activity and Bluetooth/audio traffic were not controlled; these are device observations, not an isolated radio benchmark.
+
+Elapsed time covers the protocol exchange and integrity check, including Android publication for uploads. Source selection and queue preparation are excluded. The baseline is the previous installed Android build 17 and the same Mac transfer request sequence; candidate measurements use build 19. Throughput is payload KiB/s, not wire bitrate.
+
+| Direction | Size | Baseline: seconds / KiB/s | Buffered reader only: seconds / KiB/s | Final repeat: seconds / KiB/s |
+| --- | --- | --- | --- | --- |
+| Mac → Android | 1 MiB | 12.23 / 83.7 | 12.58 / 81.4 | 12.52 / 81.8 |
+| Mac → Android | 8 MiB | 98.66 / 83.0 | 100.67 / 81.4 | 122.14 / 67.1 |
+| Android → Mac | 1 MiB | 20.25 / 50.6 | 20.76 / 49.3 | 14.46 / 70.8 |
+| Android → Mac | 8 MiB | 156.66 / 52.3 | 160.04 / 51.2 | 222.61 / 36.8 |
+
+The original Android reader called the socket stream once per byte. A connection-scoped buffered reader removes that call overhead and preserves frame boundaries/read-ahead, but did not improve measured throughput. Synchronous diagnostic file appends also occurred on every data/ACK/read frame, including transmit begin/end. Those high-volume stages now keep every counter and write at most one sample per second per stage. An initial 1 MiB trial after this change measured 9.79 s / 104.5 KiB/s upward and 13.73 s / 74.6 KiB/s downward; the final repeat above did not sustain that gain. Ten-ping mean RTT varied from about 10 to 35 ms between runs. The dominant bottleneck and the slower final 8 MiB result remain unresolved; no stable throughput improvement or theoretical Bluetooth speed is claimed. Distinguishing radio contention from protocol/native-stack costs requires a controlled crossover measurement.
+
+Hardware checks:
+
+- The actual Mac model and SwiftUI Files view sent and received 1 MiB over Bluetooth. Native captures show byte progress advancing from 16,384 to 98,304; completion followed verification. Disconnecting an 8 MiB upload at 65,536 bytes produced a terminal error with no active progress bar. Reconnection and an empty upload succeeded. Light/dark Mac states and native Android progress/error rows were inspected.
+- The actual ADB model sent and received 64 MiB through the companion. Mac captured progress before completion; Android displayed advancing bytes/percentage in the compact Files layout. A real missing-file pull failed visibly. Session cleanup cancelled a second push, stopped its child process and left a failed record on both sides. Fast ADB commands may produce no intermediate percentage; completion still requires a successful exit and size check.
+- Bluetooth receivers verified SHA-256 against the synthetic corpus. Independent hashes of the published test results matched on Android (13 complete files, including an empty file) and Mac (three complete native-model downloads, including two 64 MiB ADB results). The benchmark's separate 1 / 8 MiB downloads also matched the source corpus. Interrupted Bluetooth uploads were not published.
+- 57 Swift tests in 11 suites, eight Android JVM suites, 14 Python packaging/signing tests, both full native builds, repository/generator checks and the Mac resource smoke test passed. Tests cover monotonic/terminal state, unknown/empty sizes, frame buffering/limits, real PTY parsing, nonzero exit, cancellation and timeout.
+- Synthetic phone/Mac downloads and MediaStore sources were removed after hash checks. The original 60,000 ms screen timeout was restored, and the ordinary installed Mac app was reopened.
+- Mac build 37 reused the newly authorized persistent signing identity. A synthetic Keychain item created by installed build 36 was read noninteractively by installed build 37; Bluetooth remained allowed and notification authorization remained granted. Android retained its existing update key. Bluetooth protocol 2 and ADB protocol 1 remain compatible; the new ADB progress event is additive.
+
 ## Local signing recovery — November 17, 2026
 
 - The previous dedicated signing keychain rejected its saved credential after locking. Direct noninteractive Security API access also returned authentication failure. No usable copy of that identity was found in login or the previous project workspace; the user confirmed there was no private backup and explicitly authorized replacement.

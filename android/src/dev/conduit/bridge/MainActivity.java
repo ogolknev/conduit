@@ -31,6 +31,8 @@ public final class MainActivity extends Activity {
     private SettingsRow appearanceRow, languageRow;
     private MinimalSwitch autoClipboard;
     private LinearLayout page;
+    private LinearLayout transferList;
+    private final Map<String,TransferRow> transferRows = new LinkedHashMap<>();
     private int selectedPage;
     private int canvas, surface, ink, muted, accent, soft, line, success, warning, error, info;
     private SettingsRow bluetoothPermissionRow, ownNotificationsRow, shizukuPermissionRow;
@@ -51,6 +53,9 @@ public final class MainActivity extends Activity {
     };
     private final Runnable update = new Runnable() {
         @Override public void run() { refreshState(); handler.postDelayed(this, 2000); }
+    };
+    private final Runnable transferUpdate = new Runnable() {
+        @Override public void run() { refreshFileTransfers(); handler.postDelayed(this,transferList==null?1000:250); }
     };
 
     @Override protected void attachBaseContext(Context base) {
@@ -90,6 +95,7 @@ public final class MainActivity extends Activity {
     }
 
     private void buildScreen() {
+        transferList=null;transferRows.clear();
         connection = access = clipboardState = heroTitle = stateBadge = null;
         bluetoothButton = pairButton = null; autoClipboard = null;
         backgroundRow = notificationPermissionRow = applicationsRow = manualClipboardRow = connectionControlRow = authorizationRow = null;
@@ -180,16 +186,73 @@ public final class MainActivity extends Activity {
 
     private void filesPage() {
         heading(t("Файлы"));
-        LinearLayout drop = card(); drop.setGravity(Gravity.CENTER_HORIZONTAL); drop.setPadding(dp(24), dp(34), dp(24), dp(30));
-        drop.addView(iconTile("upload", 48), new LinearLayout.LayoutParams(dp(48), dp(48))); gap(drop, 24);
-        TextView title = label(t("Отправить файлы"), 20, true, ink); title.setGravity(Gravity.CENTER); drop.addView(title); gap(drop, 10);
-        TextView hint = label(t("Фото, документы и другие файлы"), 14, false, muted); hint.setGravity(Gravity.CENTER); drop.addView(hint); gap(drop, 26);
+        LinearLayout drop = card();
+        LinearLayout header=row();IconView uploadIcon=new IconView("upload",muted);
+        LinearLayout.LayoutParams uploadParams=new LinearLayout.LayoutParams(dp(28),dp(28));uploadParams.setMarginEnd(dp(12));header.addView(uploadIcon,uploadParams);
+        header.addView(label(t("Отправить файлы"),16,true,ink));drop.addView(header);gap(drop,10);
+        drop.addView(label(t("Фото, документы и другие файлы"),14,false,muted));gap(drop,18);
         button(drop, t("Выбрать файлы"), this::chooseFiles, true); page.addView(drop); gap(page, 24);
+        transferList=column();page.addView(transferList,new LinearLayout.LayoutParams(-1,-2));refreshFileTransfers();
         LinearLayout help = card();
         help.addView(label(t("Отправка из приложений"), 16, true, ink)); gap(help, 10);
         help.addView(label(t("Файл → Поделиться → Conduit. При отсутствии соединения файл сохраняется в очереди."), 14, false, muted));
         page.addView(help); gap(page, 20);
         page.addView(label(t("По Bluetooth — до 100 МБ на файл. Очередь — до 32 файлов, суммарно 1 ГБ."), 12, false, muted));
+    }
+
+    private void refreshFileTransfers() {
+        if(transferList==null)return;
+        List<FileTransfers.Entry> entries=FileTransfers.snapshot();
+        Collections.sort(entries,(left,right)->Boolean.compare(!left.active(),!right.active()));
+        List<String> ids=new ArrayList<>();for(FileTransfers.Entry entry:entries)ids.add(entry.id);
+        if(!new ArrayList<>(transferRows.keySet()).equals(ids)) {
+            transferRows.clear();transferList.removeAllViews();
+            for(FileTransfers.Entry entry:entries) {
+                TransferRow view=new TransferRow(entry);transferRows.put(entry.id,view);
+                LinearLayout.LayoutParams params=new LinearLayout.LayoutParams(-1,-2);params.bottomMargin=dp(12);transferList.addView(view,params);
+            }
+        }
+        for(FileTransfers.Entry entry:entries)transferRows.get(entry.id).update(entry);
+    }
+    private final class TransferRow extends LinearLayout {
+        final TextView state,details,statistics,failure;
+        final ProgressBar progress;
+        TransferRow(FileTransfers.Entry entry) {
+            super(MainActivity.this);setOrientation(VERTICAL);setPadding(dp(16),dp(16),dp(16),dp(16));setBackground(shape(soft,10,false));
+            LinearLayout header=row();IconView icon=new IconView(entry.outgoing?"upload":"download",muted);
+            LinearLayout.LayoutParams iconParams=new LinearLayout.LayoutParams(dp(24),dp(24));iconParams.setMarginEnd(dp(12));header.addView(icon,iconParams);
+            TextView name=label(entry.name,14,true,ink);name.setMaxLines(2);name.setEllipsize(android.text.TextUtils.TruncateAt.MIDDLE);header.addView(name,new LinearLayout.LayoutParams(0,-2,1));addView(header);
+            gap(this,8);state=label("",12,false,muted);addView(state);
+            progress=new ProgressBar(MainActivity.this,null,android.R.attr.progressBarStyleHorizontal);progress.setMax(1000);
+            progress.setProgressTintList(ColorStateList.valueOf(accent));progress.setIndeterminateTintList(ColorStateList.valueOf(accent));progress.setProgressBackgroundTintList(ColorStateList.valueOf(line));
+            LinearLayout.LayoutParams bar=new LinearLayout.LayoutParams(-1,dp(8));bar.topMargin=dp(8);addView(progress,bar);
+            gap(this,6);details=label("",11,false,muted);addView(details);statistics=label("",11,false,muted);addView(statistics);
+            failure=label("",12,false,error);LinearLayout.LayoutParams errorParams=new LinearLayout.LayoutParams(-1,-2);errorParams.topMargin=dp(6);addView(failure,errorParams);
+        }
+        void update(FileTransfers.Entry entry) {
+            long now=FileTransfers.now();String title;
+            switch(entry.phase) {
+                case PREPARING:title=t("Подготовка файла…");break;
+                case WAITING:title=t("Ожидание передачи");break;
+                case TRANSFERRING:title=entry.stalled(now)?t("Ожидаю данные…"):t("Передача…");break;
+                case VERIFYING:title=t("Проверка и сохранение…");break;
+                case COMPLETED:title=entry.outgoing?t("Отправлено"):t("Получено");break;
+                default:title=t("Передача не завершена");
+            }
+            state.setText((entry.outgoing?t("На Mac"):t("С Mac"))+" · "+title+(entry.transport.isEmpty()?"":" · "+entry.transport));
+            state.setTextColor(entry.phase==FileTransfers.Phase.FAILED?error:entry.phase==FileTransfers.Phase.COMPLETED?success:muted);
+            boolean measurable=entry.phase==FileTransfers.Phase.TRANSFERRING && entry.total>0;
+            progress.setVisibility(entry.active()?View.VISIBLE:View.GONE);progress.setIndeterminate(!measurable);
+            if(measurable)progress.setProgress((int)(entry.transferred*1000/entry.total));
+            String amount=entry.total>=0?size(entry.transferred)+" / "+size(entry.total):t("Размер неизвестен");
+            if(measurable || entry.phase==FileTransfers.Phase.COMPLETED)amount+=" · "+(entry.total==0?100:entry.transferred*100/entry.total)+"%";
+            details.setText(amount);
+            statistics.setVisibility(entry.started>=0 && entry.phase!=FileTransfers.Phase.FAILED?View.VISIBLE:View.GONE);
+            long seconds=entry.elapsed(now)/1000;
+            statistics.setText(size((long)entry.rate(now))+t("/с")+" · "+String.format(java.util.Locale.ROOT,"%d:%02d",seconds/60,seconds%60));
+            failure.setVisibility(entry.error==null?View.GONE:View.VISIBLE);failure.setText(entry.error==null?"":entry.error);
+        }
+        String size(long bytes) { return android.text.format.Formatter.formatShortFileSize(MainActivity.this,bytes); }
     }
 
     private void settingsPage() {
@@ -433,6 +496,7 @@ public final class MainActivity extends Activity {
         }).show();
     }
     @Override protected void onDestroy() {
+        handler.removeCallbacks(transferUpdate);
         handler.removeCallbacks(update); if (startupTimeout != null) handler.removeCallbacks(startupTimeout);
         if (appDialog != null) appDialog.dismiss();
         Shizuku.removeRequestPermissionResultListener(permissionResult); super.onDestroy();
@@ -533,9 +597,10 @@ public final class MainActivity extends Activity {
     }
     @Override protected void onResume() {
         super.onResume(); PhoneDiagnostics.record(this, "activity.resume"); handler.removeCallbacks(update); update.run();
+        handler.removeCallbacks(transferUpdate);transferUpdate.run();
         if (!bluetoothBusy) BridgeService.restoreIfWanted(this);
     }
-    @Override protected void onPause() { PhoneDiagnostics.record(this, "activity.pause"); handler.removeCallbacks(update); super.onPause(); }
+    @Override protected void onPause() { PhoneDiagnostics.record(this, "activity.pause"); handler.removeCallbacks(update);handler.removeCallbacks(transferUpdate);super.onPause(); }
     @Override protected void onNewIntent(Intent intent) { super.onNewIntent(intent); setIntent(intent); handleShare(intent); }
     private void handleShare(Intent intent) {
         if (intent == null) return;
@@ -754,6 +819,7 @@ public final class MainActivity extends Activity {
             else if (kind.equals("clipboard")) { c.drawRoundRect(5,5,19,22,2,2,paint); c.drawRoundRect(9,2,15,7,1.5f,1.5f,paint); c.drawLine(9,12,15,12,paint); c.drawLine(9,16,14,16,paint); }
             else if (kind.equals("bell")) { Path p=new Path(); p.moveTo(5,17); p.lineTo(7,14); p.lineTo(7,9); p.cubicTo(7,2,17,2,17,9); p.lineTo(17,14); p.lineTo(19,17); p.close(); c.drawPath(p,paint); c.drawArc(10,17,14,22,0,180,false,paint); }
             else if (kind.equals("upload")) { c.drawRoundRect(5,3,19,22,2,2,paint); c.drawLine(12,16,12,8,paint); c.drawLine(8,12,12,8,paint); c.drawLine(16,12,12,8,paint); }
+            else if (kind.equals("download")) { Path p=new Path(); p.moveTo(4,14); p.lineTo(4,21); p.lineTo(20,21); p.lineTo(20,14); c.drawPath(p,paint); c.drawLine(12,3,12,16,paint); c.drawLine(8,12,12,16,paint); c.drawLine(16,12,12,16,paint); }
             else if (kind.equals("copy")) { c.drawRoundRect(8,8,21,21,2,2,paint); Path p=new Path(); p.moveTo(5,16); p.lineTo(3,16); p.lineTo(3,3); p.lineTo(16,3); p.lineTo(16,5); c.drawPath(p,paint); }
             else if (kind.equals("send")) { c.drawLine(5,19,19,5,paint); c.drawLine(9,5,19,5,paint); c.drawLine(19,5,19,15,paint); }
             else if (kind.equals("chevron")) { c.drawLine(9,6,15,12,paint); c.drawLine(15,12,9,18,paint); }

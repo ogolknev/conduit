@@ -459,4 +459,17 @@
     <string name="text_cdce7092bb7a" formatted="false">"Search by name or package"</string>
     <string name="text_6e1f7baa472f" formatted="false">"Clear search"</string>
     <string name="text_d247ed5e2bac" formatted="false">"No apps found"</string>
+    <string name="text_877ecc1ae368" formatted="false">"To phone"</string>
+    <string name="text_8e457cae88c4" formatted="false">"From phone"</string>
+    <string name="text_50735f2d20fe" formatted="false">"To Mac"</string>
+    <string name="text_e30b19e90d26" formatted="false">"From Mac"</string>
+    <string name="text_00c75847629c" formatted="false">"Unknown size"</string>
+    <string name="text_3cc13dd6da7b" formatted="false">"Preparing file…"</string>
+    <string name="text_b38c0ddf95fb" formatted="false">"Waiting to transfer"</string>
+    <string name="text_954610dfce03" formatted="false">"Waiting for data…"</string>
+    <string name="text_6991465bb4c6" formatted="false">"Verifying and saving…"</string>
+    <string name="text_13b9719ae180" formatted="false">"Sent"</string>
+    <string name="text_06124cee5f21" formatted="false">"Received"</string>
+    <string name="text_7b620630d52d" formatted="false">"Transfer interrupted"</string>
+    <string name="text_e875245583c8" formatted="false">"/s"</string>
 </resources>

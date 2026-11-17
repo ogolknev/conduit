@@ -22,11 +22,14 @@ final class PhoneDiagnostics {
     private static final ConcurrentHashMap<String, AtomicLong> counters = new ConcurrentHashMap<>();
     static synchronized void record(Context context, String stage) { record(context, stage, null); }
     static synchronized void record(Context context, String stage, Throwable failure) {
+        append(context,stage,failure,true);
+    }
+    private static void append(Context context, String stage, Throwable failure, boolean count) {
         try {
             File file = new File(context.getFilesDir(), "connection.log");
             SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'", Locale.US);
             format.setTimeZone(TimeZone.getTimeZone("UTC"));
-            counters.computeIfAbsent(stage, key -> new AtomicLong()).incrementAndGet();
+            if(count)counters.computeIfAbsent(stage, key -> new AtomicLong()).incrementAndGet();
             String line = format.format(new Date()) + " #" + sequence.incrementAndGet() + " uptime=" + SystemClock.elapsedRealtime() +
                 " pid=" + android.os.Process.myPid() + " [" + stage + "]" + (failure == null ? "" : DiagnosticText.failure(failure)) + "\n";
             byte[] entry = line.getBytes(StandardCharsets.UTF_8);
@@ -46,13 +49,23 @@ final class PhoneDiagnostics {
             case "ping": case "pong": case "clipboard": case "clipboardAck": case "preferences":
             case "diagnosticsRequest": case "diagnostics": case "reply": case "dismiss":
             case "fileBegin": case "fileChunk": case "fileEnd": case "fileReady": case "fileAck":
-            case "fileDone": case "fileInfo": case "fileData": case "fileReceived": case "fileError":
+            case "fileDone": case "fileInfo": case "fileData": case "fileRead": case "fileTransferProgress": case "fileReceived": case "fileError":
             case "notificationSnapshot": case "notificationSnapshotEnd": case "notificationDismiss": case "notificationDismissed":
             case "notification": case "removed": case "status": case "ready": case "result": return type;
             default: return "other";
         }
     }
-    static void frame(Context context, String direction, String type) { record(context, direction + "." + kind(type)); }
+    private static final java.util.Map<String,Long> fileFrameLogAt = new java.util.HashMap<>();
+    static synchronized void frame(Context context, String direction, String type) {
+        String stage=direction+"."+kind(type);
+        if(type.equals("fileChunk") || type.equals("fileAck") || type.equals("fileRead") || type.equals("fileData") || type.equals("fileTransferProgress")) {
+            // Preserve every counter, but avoid opening/appending the log for
+            // every block on the transfer thread. Errors/transitions stay immediate.
+            counters.computeIfAbsent(stage,key->new AtomicLong()).incrementAndGet();
+            long now=SystemClock.elapsedRealtime();Long last=fileFrameLogAt.get(stage);
+            if(last==null || now-last>=1000) {fileFrameLogAt.put(stage,now);append(context,stage,null,false);}
+        } else record(context,stage);
+    }
     static synchronized String report(Context context) {
         String version = "unknown";
         try { version = context.getPackageManager().getPackageInfo(context.getPackageName(), 0).versionName; }

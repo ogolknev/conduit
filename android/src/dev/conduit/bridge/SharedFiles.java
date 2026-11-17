@@ -20,6 +20,7 @@ final class SharedFiles {
         Context app = context.getApplicationContext();
         BridgeService.IO.execute(() -> {
             File payload = null, metadata = null;
+            String id=UUID.randomUUID().toString()+".bin";
             try {
                 File outbox = new File(app.getExternalFilesDir(null), "outbox");
                 File index = new File(app.getFilesDir(), "shares");
@@ -30,13 +31,14 @@ final class SharedFiles {
                     for (File file : existing) used += file.length();
                 }
                 String name = "file";
-                try (Cursor cursor = app.getContentResolver().query(uri, new String[] {OpenableColumns.DISPLAY_NAME}, null, null, null)) {
-                    if (cursor != null && cursor.moveToFirst()) name = cursor.getString(0);
+                long expected=-1;
+                try (Cursor cursor = app.getContentResolver().query(uri, new String[] {OpenableColumns.DISPLAY_NAME,OpenableColumns.SIZE}, null, null, null)) {
+                    if (cursor != null && cursor.moveToFirst()) { name = cursor.getString(0);if(!cursor.isNull(1))expected=cursor.getLong(1); }
                 }
                 if (name == null) name = "file";
                 name = name.substring(0, Math.min(name.length(), 200));
-                String id = UUID.randomUUID().toString();
-                payload = new File(outbox, id + ".bin"); metadata = new File(index, id + ".bin.json");
+                FileTransfers.begin(id,name,true,"",expected,FileTransfers.Phase.PREPARING);
+                payload = new File(outbox, id); metadata = new File(index, id + ".json");
                 long size = 0;
                 try (InputStream input = app.getContentResolver().openInputStream(uri); OutputStream output = new FileOutputStream(payload)) {
                     if (input == null) throw new IOException(t("Не удалось открыть файл"));
@@ -47,11 +49,14 @@ final class SharedFiles {
                         output.write(buffer, 0, read);
                     }
                 }
+                FileTransfers.total(id,size);FileTransfers.phase(id,FileTransfers.Phase.WAITING);
                 JSONObject event = BridgeService.object("type", "file", "path", payload.getAbsolutePath(), "name", name, "size", size);
                 try (OutputStream output = new FileOutputStream(metadata)) { output.write(event.toString().getBytes(StandardCharsets.UTF_8)); }
                 BridgeService.emit(event);
                 toast(app, BridgeService.client == null ? t("Файл в очереди. Подключи Conduit на Mac.") : t("Передаю файл на Mac"));
             } catch (Exception e) {
+                FileTransfers.queued(id,"file",-1);
+                FileTransfers.fail(id,e.getMessage()==null?t("Не удалось отправить файл"):e.getMessage());
                 if (payload != null) payload.delete(); if (metadata != null) metadata.delete();
                 toast(app, e.getMessage() == null ? t("Не удалось отправить файл") : e.getMessage());
             }
@@ -64,7 +69,11 @@ final class SharedFiles {
             if (files == null) return;
             for (File file : files) {
                 if (!file.getName().matches("[a-f0-9-]{36}\\.bin\\.json") || file.length() > 16384) continue;
-                try { BridgeService.emit(new JSONObject(new String(Files.readAllBytes(file.toPath()), StandardCharsets.UTF_8))); }
+                try {
+                    JSONObject event=new JSONObject(new String(Files.readAllBytes(file.toPath()), StandardCharsets.UTF_8));
+                    FileTransfers.queued(file.getName().substring(0,file.getName().length()-5),event.optString("name","file"),event.optLong("size",-1));
+                    BridgeService.emit(event);
+                }
                 catch (Exception ignored) {}
             }
         });
@@ -72,6 +81,9 @@ final class SharedFiles {
     static void acknowledge(Context context, String name) {
         if (!name.matches("[a-f0-9-]{36}\\.bin")) return;
         BridgeService.IO.execute(() -> {
+            for(FileTransfers.Entry entry:FileTransfers.snapshot()) if(entry.id.equals(name) && entry.active()) {
+                FileTransfers.progress(name,entry.total);FileTransfers.complete(name);
+            }
             new File(new File(context.getExternalFilesDir(null), "outbox"), name).delete();
             new File(new File(context.getFilesDir(), "shares"), name + ".json").delete();
         });

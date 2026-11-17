@@ -221,7 +221,7 @@ extension ConduitModel {
                 case "notification":
                     if notificationsEnabled { Task { do { try await PhoneNotifications.show(event) } catch { log(L("Проверь разрешение уведомлений macOS")) } } }
                 case "removed": if let key = event["key"] as? String { PhoneNotifications.remove(key) }
-                case "file": Task { await receiveBluetoothFile(event) }
+                case "file": Task { guard sessionID == id else { return }; await receiveBluetoothFile(event) }
                 case "result": if event["ok"] as? Bool == false { log(L(event["message"] as? String ?? L("Действие не выполнено"))) }
                 default: break
                 }
@@ -250,53 +250,78 @@ extension ConduitModel {
     }
     func sendBluetoothFiles(_ urls: [URL]) async {
         guard connected, !transferBusy else { return }
-        transferBusy = true; defer { transferBusy = false; transferProgress = "" }
+        let session = sessionID
+        transferBusy = true; defer { if sessionID == session { transferBusy = false } }
         for url in urls {
+            guard sessionID == session, connected else { return }
             let id = UUID().uuidString.lowercased()
+            let progress = beginFileTransfer(name: url.lastPathComponent, direction: .sending, total: nil)
             do {
                 let values = try url.resourceValues(forKeys: [.isRegularFileKey, .fileSizeKey])
                 guard values.isRegularFile == true, let size = values.fileSize, size <= BluetoothFilePolicy.maxSize else { throw AppError(L("По Bluetooth поддерживаются файлы до 100 МБ. Папку можно отправить ZIP.")) }
-                transferProgress = L("Проверяю файл…")
+                fileTransferPhase(progress, .preparing, total: Int64(size))
                 let hash = try await Task.detached { try BluetoothFilePolicy.sha256(url) }.value
+                guard sessionID == session else { throw CancellationError() }
+                fileTransferPhase(progress, .waiting)
                 let reply = try await bluetoothRequest(["type":"fileBegin", "id":id, "name":FilePolicy.safeName(url.lastPathComponent), "size":size, "sha256":hash])
+                guard sessionID == session else { throw CancellationError() }
                 guard reply["type"] as? String == "fileReady" else { throw ProtocolError.malformed }
+                fileTransferPhase(progress, .transferring)
                 let file = try FileHandle(forReadingFrom: url); defer { try? file.close() }
                 var offset = 0
                 while let bytes = try file.read(upToCount: BluetoothFilePolicy.chunkSize), !bytes.isEmpty {
                     let ack = try await bluetoothRequest(["type":"fileChunk", "id":id, "offset":offset, "data":bytes.base64EncodedString()])
+                    guard sessionID == session else { throw CancellationError() }
                     offset += bytes.count
                     guard ack["type"] as? String == "fileAck", ack["offset"] as? Int == offset else { throw ProtocolError.malformed }
-                    transferProgress = "\(url.lastPathComponent) · \(size == 0 ? 100 : offset * 100 / size)%"
+                    advanceFileTransfer(progress, bytes: Int64(offset))
                 }
+                fileTransferPhase(progress, .verifying)
                 let done = try await bluetoothRequest(["type":"fileEnd", "id":id])
+                guard sessionID == session else { throw CancellationError() }
                 guard done["type"] as? String == "fileDone" else { throw ProtocolError.malformed }
+                completeFileTransfer(progress)
                 log(L("Отправлен по Bluetooth: ") + url.lastPathComponent)
-            } catch { sendBridge(["type":"fileAbort", "id":id]); log(error.localizedDescription) }
+            } catch {
+                if sessionID == session { sendBridge(["type":"fileAbort", "id":id]); log(error.localizedDescription) }
+                failFileTransfer(progress, error.localizedDescription)
+            }
         }
     }
     func receiveBluetoothFile(_ event: [String: Any]) async {
-        guard let path = event["path"] as? String, FilePolicy.allowedRemoteFile(path) else { return }
+        guard transport == .bluetooth, connected, let path = event["path"] as? String, FilePolicy.allowedRemoteFile(path) else { return }
         let id = path.components(separatedBy: "/").last ?? ""
         guard BluetoothFilePolicy.validID(id) else { return }
-        while receivingBluetoothFile && connected && transport == .bluetooth { try? await Task.sleep(nanoseconds: 200_000_000) }
-        guard transport == .bluetooth, connected, !activeFiles.contains(id) else { return }
         if receivedFiles.contains(id) { sendBridge(["type":"fileReceived", "name":id]); return }
-        receivingBluetoothFile = true; activeFiles.insert(id)
-        defer { receivingBluetoothFile = false; activeFiles.remove(id) }
+        guard !activeFiles.contains(id) else { return }
+        let session = sessionID
+        let progress = beginFileTransfer(name: FilePolicy.safeName(event["name"] as? String ?? "file"), direction: .receiving,
+                                         total: (event["size"] as? NSNumber)?.int64Value, phase: .waiting)
+        activeFiles.insert(id)
+        var ownsReceiver = false
+        defer { if sessionID == session { if ownsReceiver { receivingBluetoothFile = false }; activeFiles.remove(id) } }
         let stage = FileManager.default.temporaryDirectory.appendingPathComponent("conduit-bt-" + UUID().uuidString, isDirectory: true)
         do {
+            while receivingBluetoothFile && connected && sessionID == session { try await Task.sleep(nanoseconds: 200_000_000) }
+            guard transport == .bluetooth, connected, sessionID == session else { throw CancellationError() }
+            receivingBluetoothFile = true; ownsReceiver = true
             try FileManager.default.createDirectory(at: stage, withIntermediateDirectories: true)
             defer { try? FileManager.default.removeItem(at: stage) }
             let info = try await bluetoothRequest(["type":"fileGet", "id":id])
+            guard sessionID == session else { throw CancellationError() }
             guard info["type"] as? String == "fileInfo", let size = info["size"] as? Int,
                   let hash = info["sha256"] as? String else { throw ProtocolError.malformed }
             let receiver = try BluetoothFileReceiver(url: stage.appendingPathComponent("payload"), size: size, sha256: hash)
+            fileTransferPhase(progress, .transferring, total: Int64(size))
             while receiver.offset < size {
                 let chunk = try await bluetoothRequest(["type":"fileRead", "id":id, "offset":receiver.offset])
+                guard sessionID == session else { throw CancellationError() }
                 guard chunk["type"] as? String == "fileData", let offset = chunk["offset"] as? Int,
                       let base64 = chunk["data"] as? String, let bytes = Data(base64Encoded: base64) else { throw ProtocolError.malformed }
                 try receiver.append(bytes, at: offset)
+                advanceFileTransfer(progress, bytes: Int64(receiver.offset))
             }
+            fileTransferPhase(progress, .verifying)
             try receiver.finish()
             let folder = FileManager.default.urls(for: .downloadsDirectory, in: .userDomainMask)[0].appendingPathComponent("Conduit", isDirectory: true)
             try FileManager.default.createDirectory(at: folder, withIntermediateDirectories: true)
@@ -305,6 +330,10 @@ extension ConduitModel {
             receivedFiles.append(id); if receivedFiles.count > 256 { receivedFiles.removeFirst(receivedFiles.count - 256) }
             UserDefaults.standard.set(receivedFiles, forKey: "receivedFiles")
             sendBridge(["type":"fileReceived", "name":id]); log(L("Получен по Bluetooth: ") + name)
-        } catch { sendBridge(["type":"fileAbort", "id":id]); log(L("Файл не получен: ") + error.localizedDescription) }
+            completeFileTransfer(progress)
+        } catch {
+            if sessionID == session { sendBridge(["type":"fileAbort", "id":id]); log(L("Файл не получен: ") + error.localizedDescription) }
+            failFileTransfer(progress, error.localizedDescription)
+        }
     }
 }

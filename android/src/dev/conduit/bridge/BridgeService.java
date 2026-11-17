@@ -225,8 +225,8 @@ public final class BridgeService extends Service {
         Client session = null;
         try {
             socket.setSoTimeout(5000);
-            InputStream input = socket.getInputStream();
-            JSONObject hello = new JSONObject(readLine(input, 4096));
+            JsonLineInput input = new JsonLineInput(socket.getInputStream());
+            JSONObject hello = new JSONObject(input.readLine(4096));
             String supplied = hello.optString("token");
             if (!"hello".equals(hello.optString("type")) || hello.optInt("protocol") != 1 || token.length() != 64 ||
                 !MessageDigest.isEqual(token.getBytes(StandardCharsets.UTF_8), supplied.getBytes(StandardCharsets.UTF_8))) return;
@@ -237,7 +237,7 @@ public final class BridgeService extends Service {
             activate(session);
             SharedFiles.sendPending(this);
             while (running && client == session) {
-                JSONObject message = new JSONObject(readLine(input, 65536));
+                JSONObject message = new JSONObject(input.readLine(65536));
                 handleCommand(this, session, message);
             }
         } catch (Exception ignored) {
@@ -284,10 +284,14 @@ public final class BridgeService extends Service {
     }
     static void emit(JSONObject message) { emitTo(client, message); }
     static void emitTo(Endpoint target, JSONObject message) {
+        emitTo(target, message, null);
+    }
+    static void emitTo(Endpoint target, JSONObject message, Runnable sent) {
         if (target == null) return;
         try {
             target.writer.execute(() -> {
-                try { target.send(message); } catch (IOException e) { deactivate(target); target.close(); }
+                try { target.send(message); if (sent != null && client == target) sent.run(); }
+                catch (IOException e) { deactivate(target); target.close(); }
             });
         } catch (RejectedExecutionException e) { deactivate(target); target.close(); }
     }
@@ -296,6 +300,19 @@ public final class BridgeService extends Service {
         String type = message.optString("type");
         PhoneDiagnostics.frame(context, "rx", type);
         if ("ping".equals(type)) emitTo(endpoint, object("type", "pong", "deviceLocked", deviceLocked(context)));
+        else if ("fileTransferProgress".equals(type) && !endpoint.isBluetooth()) {
+            String id=message.optString("id"),direction=message.optString("direction"),state=message.optString("phase");
+            String stem=id.endsWith(".bin")?id.substring(0,id.length()-4):id;
+            long size=message.optLong("size",-1),bytes=message.optLong("bytes",-1);
+            if(!BluetoothLink.validUUID(stem) || (!direction.equals("sending") && !direction.equals("receiving"))
+                    || size < -1 || size > 1_073_741_824L || bytes < -1 || bytes > 1_073_741_824L || (size>=0 && bytes>size))return;
+            FileTransfers.Phase phase;
+            try { phase=FileTransfers.Phase.valueOf(state.toUpperCase(java.util.Locale.ROOT)); }catch(IllegalArgumentException invalid){return;}
+            String name=message.optString("name","file"),error=message.optString("error",t("Передача не завершена"));
+            FileTransfers.remote(id,name.substring(0,Math.min(name.length(),200)),direction.equals("receiving"),size,phase,bytes,error.substring(0,Math.min(error.length(),1000)));
+            if(phase==FileTransfers.Phase.COMPLETED || phase==FileTransfers.Phase.FAILED)endpoint.remoteFileTransfers.remove(id);
+            else endpoint.remoteFileTransfers.add(id);
+        }
         else if ("diagnosticsRequest".equals(type)) {
             long now = SystemClock.elapsedRealtime();
             if (now - endpoint.lastDiagnosticsAt >= 5000) {
@@ -335,20 +352,10 @@ public final class BridgeService extends Service {
     }
     static void result(boolean ok, String message) { emit(object("type", "result", "ok", ok, "message", message)); }
 
-    static String readLine(InputStream input, int limit) throws IOException {
-        ByteArrayOutputStream buffer = new ByteArrayOutputStream();
-        int next;
-        while ((next = input.read()) != -1) {
-            if (next == '\n') return buffer.toString("UTF-8");
-            if (buffer.size() >= limit) throw new IOException("Frame too long");
-            buffer.write(next);
-        }
-        throw new EOFException();
-    }
-
     static abstract class Endpoint {
         volatile boolean notificationActions;
         volatile boolean notificationPresentation;
+        final java.util.Set<String> remoteFileTransfers=java.util.concurrent.ConcurrentHashMap.newKeySet();
         private final OutputStream output;
         final ThreadPoolExecutor writer = new ThreadPoolExecutor(1, 1, 0, TimeUnit.SECONDS,
             new ArrayBlockingQueue<Runnable>(32), new ThreadPoolExecutor.AbortPolicy());
@@ -370,7 +377,10 @@ public final class BridgeService extends Service {
                 if (instance != null) PhoneDiagnostics.frame(instance, "tx.done", message.optString("type"));
             } finally { pending.set(false); timeout.cancel(false); }
         }
-        final void closeWriter() { writer.shutdownNow(); }
+        final void closeWriter() {
+            writer.shutdownNow();
+            for(String id:remoteFileTransfers)FileTransfers.fail(id,t("Соединение закрыто"));remoteFileTransfers.clear();
+        }
         abstract boolean isBluetooth();
         abstract void close();
     }
