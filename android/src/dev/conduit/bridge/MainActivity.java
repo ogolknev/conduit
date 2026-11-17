@@ -599,12 +599,26 @@ public final class MainActivity extends Activity {
         results.addView(list, new FrameLayout.LayoutParams(-1, -1)); results.addView(empty, new FrameLayout.LayoutParams(-1, -1)); list.setEmptyView(empty);
         final class AppsAdapter extends BaseAdapter {
             List<AppSelection.App> visible = selection.search("");
+            final android.util.LruCache<String, Drawable> icons = new android.util.LruCache<>(40);
+            private Drawable applicationIcon(String pkg) {
+                Drawable icon = icons.get(pkg);
+                if (icon == null) {
+                    try { icon = getPackageManager().getApplicationIcon(pkg); }
+                    catch (PackageManager.NameNotFoundException | RuntimeException ignored) { icon = getPackageManager().getDefaultActivityIcon(); }
+                    icons.put(pkg, icon);
+                }
+                return icon;
+            }
             public int getCount() { return visible.size(); }
             public AppSelection.App getItem(int position) { return visible.get(position); }
             public long getItemId(int position) { return position; }
             public View getView(int position, View recycled, ViewGroup parent) {
                 AppSelection.App app = getItem(position);
                 LinearLayout cell = row(); cell.setMinimumHeight(dp(64)); cell.setPadding(dp(2), dp(8), dp(2), dp(8));
+                ImageView icon = new ImageView(MainActivity.this); icon.setImageDrawable(applicationIcon(app.packageName));
+                icon.setScaleType(ImageView.ScaleType.FIT_CENTER); icon.setImportantForAccessibility(View.IMPORTANT_FOR_ACCESSIBILITY_NO);
+                LinearLayout.LayoutParams iconParams = new LinearLayout.LayoutParams(dp(36), dp(36)); iconParams.setMarginEnd(dp(12));
+                cell.addView(icon, iconParams);
                 LinearLayout words = column(); words.addView(label(app.label, 14, false, ink));
                 TextView pkg = label(app.packageName, 11, false, muted); pkg.setMaxLines(1); pkg.setEllipsize(android.text.TextUtils.TruncateAt.MIDDLE); words.addView(pkg);
                 cell.addView(words, new LinearLayout.LayoutParams(0, -2, 1));
